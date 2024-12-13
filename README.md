@@ -6,6 +6,12 @@ The source code in `sheet_to_graph` provides a tool that validates flow data in 
 
 The source code in `shiny/mappingmuseums` defines an interactive web app for exploring the data.
 
+## The Dataset
+
+The dataset is contained within `data`. It describes the dispersal of collections away from about 500 UK museums in the wake of the museum's closure.
+
+The dataset details the different types of event that collections and objects are involved in and the different types of actor and location that collections flow between.
+
 ## Instructions for Use
 
 - Follow the setup instructions inside `sheet_to_graph/readme.md` and `shiny/mappingmuseums/readme.md` to setup the database and web app hosting.
@@ -18,7 +24,7 @@ The source code in `shiny/mappingmuseums` defines an interactive web app for exp
 
 ## The Museum Closure Project
 
-The collection of data and development of tools in this repository was undertaken as part of the project "Museum Closure in the UK 2000–2025", funded by UKRI-AHRC Grant No. AH/X012816/1, October 2023–September 2025.
+The collection of data and development of tools in this repository was undertaken as part of the project ["Museum Closure in the UK 2000–2025"](https://mapping-museums.bbk.ac.uk/museum-closure-in-the-uk-2000-2025/), funded by UKRI-AHRC Grant No. AH/X012816/1, October 2023–September 2025.
 
 The data in this repository was collected and curated by Mark Liebenrood and Fiona Candlin. The tools were designed and implemented by George A. Wright, Andrea Ballatore, Alexandra Poulovassilis, and Peter T. Wood.
 
