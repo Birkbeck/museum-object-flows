@@ -8,7 +8,7 @@ The source code in `shiny/mappingmuseums` defines an interactive web app for exp
 
 ## The Dataset
 
-The dataset is contained within `data`. It describes the dispersal of collections away from about 500 UK museums in the wake of the museum's closure.
+The dataset is contained within `data`. It describes the dispersal of collections away from about 500 UK museums in the wake of each museum's closure.
 
 The dataset details the different types of event that collections and objects are involved in and the different types of actor and location that collections flow between.
 
