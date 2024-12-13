@@ -1,0 +1,95 @@
+type_name,is_core_category,sub_type_of
+actor,False,
+unknown,False,actor
+no recipient,True,actor
+organisation,False,actor
+storage,True,organisation
+storage facility,False,storage
+garage,False,storage
+religious organisation,True,organisation
+synagogue,False,religious organisation
+museum/library/archive,True,organisation
+national museum group,False,museum/library/archive
+museum,True,museum/library/archive
+museum outreach,False,museum
+mobile museum,False,museum
+museum (pop up),False,museum
+library,False,museum/library/archive
+national trust,False,museum/library/archive
+archive,False,museum/library/archive
+museum service,False,museum/library/archive
+museum and archive service,False,museum/library/archive
+transport provider,True,organisation
+lighthouse,False,transport provider
+local authority transport authority,False,transport provider
+dock management company,False,transport provider
+aviation service provider,False,transport provider
+airport,False,transport provider
+airfield,False,transport provider
+leisure,True,organisation
+arts centre,False,leisure
+sport stadium,False,leisure
+leisure centre,False,leisure
+tourism business,False,leisure
+restaurant,False,leisure
+trader,True,organisation
+furniture dealer,False,trader
+film prop business,False,trader
+technology company,False,trader
+housing developer,False,trader
+scrapyard,False,trader
+liquidator,False,trader
+auction house,False,trader
+art gallery,False,trader
+art dealer,False,trader
+other organisation,True,organisation
+sports club,False,other organisation
+heritage charity,False,other organisation
+company,False,other organisation
+textile mill,False,other organisation
+restorers,False,other organisation
+mining company,False,other organisation
+lenders,False,other organisation
+charity,False,other organisation
+broadcaster,False,other organisation
+education/research,True,organisation
+college,False,education/research
+university,False,education/research
+scientific organisation,False,education/research
+school,False,education/research
+service,True,organisation
+fire station,False,service
+care home,False,service
+hospital,False,service
+emergency service,False,service
+police college,False,service
+armed forces,True,organisation
+armed forces support charity,False,armed forces
+RAF base,False,armed forces
+naval dockyard,False,armed forces
+military site,False,armed forces
+civic organisation,True,organisation
+government organisation,False,civic organisation
+parish council,False,civic organisation
+embassy,False,civic organisation
+civic centre,False,civic organisation
+city corporation,False,civic organisation
+village hall,False,civic organisation
+community centre,False,civic organisation
+local authority,False,civic organisation
+visitor centre,False,civic organisation
+town hall,False,civic organisation
+society,True,organisation
+enthusiast organisation,False,society
+private members club,False,society
+railway preservation,False,society
+heritage railway,False,railway preservation
+railway preservation company,False,railway preservation
+railway preservation association,False,railway preservation
+social club,False,society
+shareholder consortium,False,society
+natural history society,False,society
+heritage society,False,society
+craft guild,False,society
+individual,True,actor
+historic house,True,actor

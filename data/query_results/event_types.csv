@@ -1,0 +1,46 @@
+end_of_existence,definition,type_name,is_core_category,sub_type_of,change_of_ownership,change_of_custody
+False,Generic category for events,event,False,,False,False
+False,Item has been left behind (redundant category?),left,True,event,False,False
+False,Item remains in place,left-in-situ,False,left,False,False
+False,"Item has been recorded, e.g. for details of condition and construction",recorded,True,event,False,False
+False,"Rescued, e.g. from a fire or to prevent disposal",rescued,True,event,False,False
+False,"Item rescued in some way, e.g. a sunken boat lifted from the water",salvaged,False,rescued,False,False
+False,"Items changed in some way, such as being cut up",modified,True,event,False,False
+False,Restoration or conservation,restored,False,modified,False,False
+False,Unknown,unknown,True,event,False,False
+False,Kept by closed museum,kept,True,event,False,False
+False,"Item is used, rather than merely being stored or displayed",used,True,event,False,False
+False,Kept by closed museum as decoration,used-set_dressing,False,used,False,False
+False,On display,displayed,False,used,False,False
+False,Used as part of the facilities (e.g. as a leaflet rack),used-as-facility,False,used,False,False
+False,"Used as a storage facility, e.g. a rail van used as a store",used-for-storage,False,used,False,False
+False,Used for interpretation purposes,used-interpretation,False,used,False,False
+False,Used for teaching purposes,used-teaching,False,used,False,False
+False,Stored,stored,True,event,False,False
+False,Category of damage and destruction events,damaged/destroyed,True,event,False,False
+True,Human remains have been buried,interred,False,damaged/destroyed,False,False
+False,Damaged deliberately,vandalised,False,damaged/destroyed,False,False
+False,Damaged accidentally,damaged,False,damaged/destroyed,False,False
+True,Item disposed of,thrown-away,False,damaged/destroyed,False,False
+True,Sent to a scrapyard,scrapped,False,damaged/destroyed,False,False
+False,Boat or ship has sunk,sank,False,damaged/destroyed,False,False
+True,Destroyed in a fire,destroyed-fire,False,damaged/destroyed,False,False
+False,Category of lost and stolen events,lost/stolen,True,event,False,True
+False,Items have been stolen,stolen,False,lost/stolen,False,True
+False,Items have been lost,lost,False,lost/stolen,False,True
+False,Category of return events (e.g. loans-returned),returned,True,event,False,True
+False,Items returned to donors,donation-returned,False,returned,True,True
+False,Items returned to lenders,loans-returned,False,returned,False,True
+False,Sale but not known whether a direct sale or at auction,sold,True,event,True,True
+False,An event which encompasses both sending to auction and sale at auction,auction sale,False,sold,True,True
+False,Sold by an auction house to a buyer,sold-at-auction,False,auction sale,True,True
+False,Sent by seller to an auction house,sent-to-auction,False,auction sale,True,True
+False,Direct sale (i.e. not sent to auction),direct sale,False,sold,True,True
+False,Generic category for transfer events,free-transfer,True,event,True,True
+False,Ownership was transferred by default via a liquidation process,acquired by liquidation,False,free-transfer,True,True
+False,Animals have been rehomed,rehomed,False,free-transfer,True,True
+False,Usually archival items deposited with an archive,deposited,False,free-transfer,True,True
+False,Given to another - usually a museum,given,False,free-transfer,True,True
+False,Transferred to a new custodian,transferred,False,free-transfer,True,True
+False,Loaned to a new museum,loaned,True,event,False,True
+False,Moved to a new location (but not necessarily transferred to a new owner),moved,True,event,False,True

@@ -1,0 +1,38 @@
+{
+    "credentials_file": "credentials.json",
+    "dispersal_sheet_file": "../data/dispersal-sheet-anonymized-2024-12-12.xlsx",
+    "sheets": {
+	"actor types": {
+	    "file": "",
+	    "sheet": "actor-types-hierarchy"
+	},
+	"event types": {
+	    "file": "",
+	    "sheet": "event-types-hierarchy"
+	},
+	"super-event types": {
+	    "file": "",
+	    "sheet": "super-event-types-hierarchy"
+	},
+	"default recipient types": {
+	    "file": "",
+	    "sheet": "default-recipient-types"
+	},
+	"super causes hierarchy": {
+	    "file": "",
+	    "sheet": "closure-causes-hierarchy"
+	},
+	"museums": {
+	    "file": "../data/mapping-museums-2024-10-15.csv",
+	    "sheet": ""
+	},
+	"actors": {
+	    "file": "",
+	    "sheet": "model-v1-actors"
+	},
+	"events": {
+	    "file": "",
+	    "sheet": "model-v1-events"
+	}
+    }
+}

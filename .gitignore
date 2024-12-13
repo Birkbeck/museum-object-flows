@@ -1,0 +1,15 @@
+*.DS_Store
+.Rhistory
+*~*
+data/ONSPD*
+*__pycache__*
+*.Rproj*
+
+sheet_to_graph/credentials.json
+sheet_to_graph/output.xlsx
+sheet_to_graph/postcode_directory.json
+sheet_to_graph/queries.txt
+
+shiny/mappingmuseums/keys.csv
+shiny/mappingmuseums/users.rds
+shiny/mappingmuseums/rsconnect
