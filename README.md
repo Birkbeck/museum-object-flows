@@ -1,10 +1,10 @@
 # Museum Object Flows
 
-This repository contains data concerning the flows of objects from closed museums, and source code for tools used in analysis of the data.
+This repository contains data concerning the flows of objects from closed museums, and source code for the tools developed for analysis of the data.
 
-The source code in `sheet_to_graph` provides a tool that validates flow data in spreadsheet format and translates it into a Neo4j database.
+The source code in `sheet_to_graph` provides a tool that validates object flow data in spreadsheet format and translates it into a Neo4j database.
 
-The source code in `shiny/mappingmuseums` defines an interactive web app for exploring the data.
+The source code in `shiny/mappingmuseums` provides an interactive web app for exploring the data.
 
 ## The Dataset
 
