@@ -12,11 +12,33 @@ actor_types_query = """
 MATCH (actor_type:Type)-[:SUB_TYPE_OF*0..]->(:Type {type_name: "actor"})
 WITH actor_type
 OPTIONAL MATCH (actor_type)-[:SUB_TYPE_OF]->(super_type:Type)-[:SUB_TYPE_OF*0..]->(:Type {type_name: "actor"})
+WITH actor_type.type_name AS type_name, 
+     super_type.type_name AS sub_type_of, 
+     actor_type.is_core_category AS is_core_category,
+     actor_type
+OPTIONAL MATCH (actor_type)<-[:SUB_TYPE_OF*0..]-(:Type)<-[:INSTANCE_OF]-(a:Actor)
+WITH type_name, 
+     sub_type_of, 
+     is_core_category, 
+     COUNT(a) AS total_instances,
+     COUNT(CASE WHEN a.actor_sector_name = "public" THEN 1 END) AS public_instances,
+     COUNT(CASE WHEN a.actor_sector_name = "private" THEN 1 END) AS private_instances,
+     COUNT(CASE WHEN a.actor_sector_name = "third" THEN 1 END) AS third_instances,
+     COUNT(CASE WHEN a.actor_sector_name = "university" THEN 1 END) AS university_instances,
+     COUNT(CASE WHEN a.actor_sector_name = "hybrid" THEN 1 END) AS hybrid_instances,
+     COUNT(CASE WHEN a.actor_sector_name = "unknown" THEN 1 END) AS unknown_instances
 RETURN {
-    type_name: actor_type.type_name,
-    sub_type_of: super_type.type_name,
-    is_core_category: actor_type.is_core_category
-} as record
+    type_name: type_name,
+    sub_type_of: sub_type_of,
+    is_core_category: is_core_category,
+    total_instances: total_instances,
+    public_instances: public_instances,
+    private_instances: private_instances,
+    third_instances: third_instances,
+    university_instances: university_instances,
+    hybrid_instances: hybrid_instances,
+    unknown_instances: unknown_instances
+} AS record
 """
 
 event_types_query = """
