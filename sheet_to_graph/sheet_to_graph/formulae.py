@@ -261,13 +261,15 @@ def get_stage_in_path(table, row_index):
 def get_previous_event_id(table, row_index):
     # the event_id of the last row referring to the same collection or super collection
     row = table[row_index]
+    super_event_id = row["super_event_id"]
     if row["collection_id"] == "":
         return None
     try:
         return [
             r
             for r in table.rows[:row_index]
-            if r["collection_id"] != ""
+            if r["super_event_id"] == super_event_id
+            and r["collection_id"] != ""
             and (
                 r["collection_id"] == row["collection_id"]
                 or r["collection_id"] == row["coll_subset_of"]

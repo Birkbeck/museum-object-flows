@@ -702,60 +702,60 @@ filtered_sequence_data <- function(
       to=paste(recipient_governance_broad, .data[[recipient_grouping_dimension]], recipient_position, sep="@"),
     )
 
-  # find end points of collections
-  collections_destinations <- sequential_events |>
-    group_by(collection_id, ancestor_collections) |>
+  # find end points of events 
+  events_destinations <- sequential_events |>
+    group_by(event_id, ancestor_events) |>
     filter(recipient_position==max(recipient_position)) |>
     summarize(
       destination=paste(recipient_governance_broad, .data[[recipient_grouping_dimension]], sep="@")
     ) |>
     ungroup()
-  ancestor_destinations <- collections_destinations |>
+  ancestor_destinations <- events_destinations |>
     mutate(
-      ancestor_collections = str_remove_all(ancestor_collections, "\\[|\\]"),
-      ancestor_collections = strsplit(as.character(ancestor_collections), ", ")
+      ancestor_events = str_remove_all(ancestor_events, "\\[|\\]"),
+      ancestor_events = strsplit(as.character(ancestor_events), ", ")
     ) |>
-    unnest(ancestor_collections) |>
+    unnest(ancestor_events) |>
     mutate(
-      ancestor_collections = str_remove_all(ancestor_collections, "^'|'$")
+      ancestor_events = str_remove_all(ancestor_events, "^'|'$")
     ) |>
-    select(collection_id=ancestor_collections, destination)
-  collections_destinations <- rbind(
-    collections_destinations |> select(collection_id, destination),
+    select(event_id=ancestor_events, destination)
+  events_destinations <- rbind(
+    events_destinations |> select(event_id, destination),
     ancestor_destinations
   )
 
-  # find all recipients of collections
-  collections_recipients <- sequential_events |>
+  # find all recipients before event
+  events_recipients <- sequential_events |>
     mutate(
       recipient=paste(recipient_governance_broad, .data[[recipient_grouping_dimension]], sep="@")
     )
-  ancestor_recipients <- collections_recipients |>
+  ancestor_recipients <- events_recipients |>
     mutate(
-      ancestor_collections = str_remove_all(ancestor_collections, "\\[|\\]"),
-      ancestor_collections = strsplit(as.character(ancestor_collections), ", ")
+      ancestor_events = str_remove_all(ancestor_events, "\\[|\\]"),
+      ancestor_events = strsplit(as.character(ancestor_events), ", ")
     ) |>
-    unnest(ancestor_collections) |>
+    unnest(ancestor_events) |>
     mutate(
-      ancestor_collections = str_remove_all(ancestor_collections, "^'|'$")
+      ancestor_events = str_remove_all(ancestor_events, "^'|'$")
     ) |>
-    select(collection_id=ancestor_collections, recipient)
-  collections_recipients <- rbind(
-    collections_recipients |> select(collection_id, recipient),
+    select(event_id=ancestor_events, recipient)
+  events_recipients <- rbind(
+    events_recipients |> select(event_id, recipient),
     ancestor_recipients
   )
 
-  # remove collections that don't end in end points and filter by collection status and event type
-  collections_with_filtered_destinations <- collections_destinations |>
+  # remove events that don't lead to end points and filter by collection status and event type
+  events_with_filtered_destinations <- events_destinations |>
     filter(destination %in% show_ending_points)
-  collections_with_filtered_recipients <- collections_recipients |>
+  events_with_filtered_recipients <- events_recipients |>
     filter(recipient %in% show_passes_through)
 
   sequential_events <- sequential_events |>
     filter(
-      collection_id %in% collections_with_filtered_destinations$collection_id,
-      collection_id %in% collections_with_filtered_recipients$collection_id,
       collection_status %in% collection_status_filter,
+      event_id %in% events_with_filtered_destinations$event_id,
+      event_id %in% events_with_filtered_recipients$event_id,
       event_core_type %in% event_type_filter,
     )
 

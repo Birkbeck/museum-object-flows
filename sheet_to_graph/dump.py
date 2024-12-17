@@ -86,6 +86,9 @@ RETURN {
     previous_event_id: [
       (previous_event)-[:PRECEDES]->(event) | previous_event.event_id
     ][0],
+    ancestor_events: [
+      (event)<-[:PRECEDES*0..]-(ancestor_event:Event) | ancestor_event.event_id
+    ],
     event_type: event_type.type_name,
     event_core_type: [
       (event_type)-[:SUB_TYPE_OF*0..]->(event_core_type:Type {is_core_category: TRUE})

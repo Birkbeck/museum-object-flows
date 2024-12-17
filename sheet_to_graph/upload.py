@@ -736,26 +736,31 @@ DETACH DELETE sent_to_auction
 MATCH (:Type {type_name: "sent-to-auction"})<-[:INSTANCE_OF]-(sent_to_auction:Event {stage_in_path: 0})
     -[:INVOLVES]->(:CollectionOrObject)<-[was_removed_from:WAS_REMOVED_FROM]-(:CollectionOrObject)<-[:INVOLVES]-
     (sold_at_auction:Event)-[:INSTANCE_OF]->(:Type {type_name: "sold-at-auction"})
-WHERE (sent_to_auction)-[:PRECEDES]->(sold_at_auction)
 WITH sent_to_auction, was_removed_from, sold_at_auction
+MATCH (sent_to_auction)-[precedes:PRECEDES]->(sold_at_auction)
+WITH sent_to_auction, precedes, was_removed_from, sold_at_auction
 MATCH (sender:Actor)<-[:HAS_SENDER]-(sent_to_auction)-[:HAS_RECIPIENT]->(auction_house:Actor)
     <-[has_auction_house_sender:HAS_SENDER]-(sold_at_auction)
 DELETE has_auction_house_sender
 SET sold_at_auction.stage_in_path = sent_to_auction.stage_in_path
 CREATE (sender)<-[:HAS_SENDER]-(sold_at_auction)-[:HAS_ENABLER]->(auction_house)
 DELETE was_removed_from
+DELETE precedes 
     """
 
     separate_sent_and_sold_auction_events_where_sub_collection_is_sold = """
 MATCH (:Type {type_name: "sent-to-auction"})<-[:INSTANCE_OF]-(sent_to_auction:Event)
     -[:INVOLVES]->(:CollectionOrObject)<-[was_removed_from:WAS_REMOVED_FROM]-(:CollectionOrObject)<-[:INVOLVES]-
     (sold_at_auction:Event)-[:INSTANCE_OF]->(:Type {type_name: "sold-at-auction"})
-WHERE (sent_to_auction)-[:PRECEDES]->(sold_at_auction) AND sent_to_auction.stage_in_path > 0
+WHERE sent_to_auction.stage_in_path > 0
 WITH sent_to_auction, was_removed_from, sold_at_auction
+MATCH (sent_to_auction)-[precedes:PRECEDES]->(sold_at_auction)
+WITH sent_to_auction, precedes, was_removed_from, sold_at_auction
 OPTIONAL MATCH (preceding_event:Event)-[:PRECEDES]->(sent_to_auction)
 MATCH (sender:Actor)<-[:HAS_SENDER]-(sent_to_auction)-[:HAS_RECIPIENT]->(auction_house:Actor)
     <-[has_auction_house_sender:HAS_SENDER]-(sold_at_auction)
 DELETE has_auction_house_sender
+DELETE precedes 
 SET sold_at_auction.stage_in_path = sent_to_auction.stage_in_path
 CREATE (preceding_event)-[:PRECEDES]->(sold_at_auction)
 CREATE (sender)<-[:HAS_SENDER]-(sold_at_auction)-[:HAS_ENABLER]->(auction_house)
