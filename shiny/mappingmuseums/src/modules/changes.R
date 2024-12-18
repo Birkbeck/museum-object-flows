@@ -14,7 +14,7 @@ changesUI <- function(id) {
         ticks=TRUE,
         width="100%"
       ),
-    ),
+      ),
     hr(style=hr_style),
     fluidRow(
       sidebarLayout(
@@ -45,13 +45,13 @@ changesUI <- function(id) {
             choices=field_names$name,
             selected="Country/Region"
           ),
-        ),
+          ),
         mainPanel(
           plotlyOutput(NS(id, "mainPlot"), height="720px", width="720px"),
           uiOutput(NS(id, "mainplotExplanation"))
         )
       ),
-    ),
+      ),
     hr(style=hr_style),
     fluidRow(
       p("Click on one of the small charts below to see it enlarged in the main panel above.")
@@ -96,19 +96,19 @@ changesUI <- function(id) {
       column(
         3,
         plotOutput(
-          NS(id, "openingsSmall"),
+          NS(id, "openingsClosuresSmall"),
           width=small_chart_size_px,
           height=small_chart_size_px,
-          click=NS(id, "openings")
+          click=NS(id, "openingsClosures")
         )
       ),
       column(
         3,
         plotOutput(
-          NS(id, "closuresSmall"),
+          NS(id, "startEndSmall"),
           width=small_chart_size_px,
           height=small_chart_size_px,
-          click=NS(id, "closures")
+          click=NS(id, "startEnd")
         )
       ),
       column(
@@ -150,19 +150,19 @@ changesUI <- function(id) {
       column(
         3,
         plotOutput(
-          NS(id, "absoluteChangeSmall2Way"),
+          NS(id, "openStartSmall2Way"),
           width=small_chart_size_px,
           height=small_chart_size_px,
-          click=NS(id, "absoluteChange2Way")
+          click=NS(id, "openStart2Way")
         )
       ),
       column(
         3,
         plotOutput(
-          NS(id, "percentageChangeSmall2Way"),
+          NS(id, "openEndSmall2Way"),
           width=small_chart_size_px,
           height=small_chart_size_px,
-          click=NS(id, "percentageChange2Way")
+          click=NS(id, "openEnd2Way")
         )
       ),
       column(
@@ -186,22 +186,22 @@ changesUI <- function(id) {
       column(
         3,
         plotOutput(
-          NS(id, "openStartSmall2Way"),
+          NS(id, "absoluteChangeSmall2Way"),
           width=small_chart_size_px,
           height=small_chart_size_px,
-          click=NS(id, "openStart2Way")
+          click=NS(id, "absoluteChange2Way")
         )
       ),
       column(
         3,
         plotOutput(
-          NS(id, "openEndSmall2Way"),
+          NS(id, "percentageChangeSmall2Way"),
           width=small_chart_size_px,
           height=small_chart_size_px,
-          click=NS(id, "openEnd2Way")
+          click=NS(id, "percentageChange2Way")
         )
       ),
-      ),
+    ),
     hr(style=hr_style),
     fluidRow(
       h3("Museum Closures"),
@@ -216,7 +216,7 @@ changesUI <- function(id) {
 
 changesServer <- function(id) {
   moduleServer(id, function(input, output, session) {
-
+    
     small_chart_size <- 300
     x_labels <- reactive({c(
       "start_total"=paste("Open Museums at start of", input$year_range[1]),
@@ -234,7 +234,7 @@ changesServer <- function(id) {
       "main_subject"="Subject Matter",
       "region"="Country/Region"
     )
-
+    
     openings_and_closures_data <- reactive({
       get_open_and_close_data(
         museums,
@@ -250,23 +250,21 @@ changesServer <- function(id) {
         input$year_range[1],
         input$year_range[2])
     })
-
+    
     currentMainPlot <- reactiveVal("openingsVsClosuresScatter")
     # Update the current plot based on user clicks
     observeEvent(input$openingsVsClosuresScatter, { currentMainPlot("openingsVsClosuresScatter") })
     observeEvent(input$timeSeriesLine, { currentMainPlot("timeSeriesLine") })
     observeEvent(input$closureRateLine, { currentMainPlot("closureRateLine") })
     observeEvent(input$openingRateLine, { currentMainPlot("openingRateLine") })
-    observeEvent(input$openings, { currentMainPlot("openings") })
-    observeEvent(input$closures, { currentMainPlot("closures") })
+    observeEvent(input$openingsClosures, { currentMainPlot("openingsClosures") })
+    observeEvent(input$startEnd, { currentMainPlot("startEnd") })
     observeEvent(input$openings2Way, { currentMainPlot("openings.2Way") })
     observeEvent(input$closures2Way, { currentMainPlot("closures.2Way") })
     observeEvent(input$absoluteChange, { currentMainPlot("change") })
     observeEvent(input$percentageChange, { currentMainPlot("change_pc") })
     observeEvent(input$absoluteChange2Way, { currentMainPlot("change.2Way") })
     observeEvent(input$percentageChange2Way, { currentMainPlot("change_pc.2Way") })
-    observeEvent(input$openStart, { currentMainPlot("start_total") })
-    observeEvent(input$openEnd, { currentMainPlot("end_total") })
     observeEvent(input$openStart2Way, { currentMainPlot("start_total.2Way") })
     observeEvent(input$openEnd2Way, { currentMainPlot("end_total.2Way") })
     
@@ -414,6 +412,42 @@ changesServer <- function(id) {
           input$year_range[1],
           input$year_range[2]
         )
+      } else if(currentMainPlot() == "openingsClosures") {
+        two_measure_bar_chart(
+          openings_and_closures_data(),
+          filter_field(),
+          c("openings", "closures"),
+          paste0("Openings vs Closures ", input$year_range[1], "-", input$year_range[2]),
+          input$filterField,
+          "Number of openings/closures",
+          c("openings"="openings", "closures"="closures"),
+          c("start_total"="#DDDDDD", "end_total"="#555555", "openings"="#6666FF", "closures"="#FF6666"),
+          choices()
+        )
+      } else if(currentMainPlot() == "startEnd") {
+        two_measure_bar_chart(
+          openings_and_closures_data(),
+          filter_field(),
+          c(
+            paste("open museums in", input$year_range[2]),
+            paste("open museums in", input$year_range[1])
+          ),
+          paste0("Open Museums in ", input$year_range[1], " vs in ", input$year_range[2]),
+          input$filterField,
+          "Number of open museums",
+          c(
+            "start_total"=paste("open museums in", input$year_range[1]),
+            "end_total"=paste("open museums in", input$year_range[2])
+          ),
+          setNames(
+            c("#DDDDDD", "#555555"),
+            c(
+              paste("open museums in", input$year_range[1]),
+              paste("open museums in", input$year_range[2])
+            )
+          ),
+          choices()
+        )
       } else if(grepl("2Way", currentMainPlot(), fixed=TRUE)) {
         measure <- strsplit(currentMainPlot(), ".", fixed=TRUE)[[1]][1]
         title <- paste(x_labels()[measure])
@@ -491,23 +525,37 @@ changesServer <- function(id) {
         input$year_range[2]
       )
     }, width=small_chart_size, height=small_chart_size)
-    output$openingsSmall <- renderPlot({
-      bar_chart_small(
+    output$openingsClosuresSmall <- renderPlot({
+      two_measure_bar_chart_small(
         openings_and_closures_data(),
         filter_field(),
-        "openings",
-        paste0("Openings ", input$year_range[1], "-", input$year_range[2]),
-        "Openings",
+        c("openings", "closures"),
+        paste0("Openings vs Closures ", input$year_range[1], "-", input$year_range[2]),
+        c("openings"="openings", "closures"="closures"),
+        c("start_total"="#DDDDDD", "end_total"="#555555", "openings"="#6666FF", "closures"="#FF6666"),
         choices()
       )
     }, width=small_chart_size, height=small_chart_size)
-    output$closuresSmall <- renderPlot({
-      bar_chart_small(
+    output$startEndSmall <- renderPlot({
+      two_measure_bar_chart_small(
         openings_and_closures_data(),
         filter_field(),
-        "closures",
-        paste0("Closures ", input$year_range[1], "-", input$year_range[2]),
-        "Closures",
+        c(
+          paste("open in", input$year_range[2]),
+          paste("open in", input$year_range[1])
+        ),
+        paste0("Open Museums ", input$year_range[1], " & ", input$year_range[2]),
+        c(
+          "start_total"=paste("open in", input$year_range[1]),
+          "end_total"=paste("open in", input$year_range[2])
+        ),
+        setNames(
+          c("#DDDDDD", "#555555"),
+          c(
+            paste("open in", input$year_range[1]),
+            paste("open in", input$year_range[2])
+          )
+        ),
         choices()
       )
     }, width=small_chart_size, height=small_chart_size)
@@ -571,26 +619,6 @@ changesServer <- function(id) {
         choices()
       )
     }, width=small_chart_size, height=small_chart_size)
-    output$openStartSmall <- renderPlot({
-      bar_chart_small(
-        openings_and_closures_data(),
-        filter_field(),
-        "start_total",
-        paste0("Open Museums ", input$year_range[1]),
-        paste("Open start of", input$year_range[1]),
-        choices()
-      )
-    }, width=small_chart_size, height=small_chart_size)
-    output$openEndSmall <- renderPlot({
-      bar_chart_small(
-        openings_and_closures_data(),
-        filter_field(),
-        "end_total",
-        paste0("Open Museums ", input$year_range[2]),
-        paste("Open end of", input$year_range[2]),
-        choices()
-      )
-    }, width=small_chart_size, height=small_chart_size)
     output$openStartSmall2Way <- renderPlot({
       heatmap_small(
         openings_and_closures_data_2_way(),
@@ -640,41 +668,41 @@ changesServer <- function(id) {
 }
 
 openings_vs_closures_scatter <- function(data, dimension, show_only_choices) {
-    if (dimension == "No filter") {
-        show_only_choices <- c("All")
-    }
-    ggplot(data |> filter(.data[[dimension]] %in% show_only_choices), aes(x=closure_rate, y=opening_rate)) +
-        annotate("text", x=3, y=2, size=6, label="Stasis", alpha=0.5) +
-        annotate("text", x=3, y=77, size=6, label="Growth", alpha=0.5) +
-        annotate("text", x=75, y=2, size=6, label="Decline", alpha=0.5) +
-        annotate("text", x=75, y=77, size=6, label="Churn", alpha=0.5) +
-        geom_point(aes(colour=.data[[dimension]], size=turnover)) +
-        geom_abline(colour="grey") +
-        geom_text(aes(label=tidy_labels[.data[[dimension]]])) +
-        scale_x_continuous(expand=c(0,1), limits=c(0,80)) +
-        scale_y_continuous(expand=c(0,1), limits=c(0,80)) +
-        scale_size_continuous(limits=c(1, 2000), range=c(2, 40), breaks=c(1, 5, 10, 50, 100, 500, 1000), labels=c("1", "5", "10", "50", "100", "500", "1000")) +
-        scale_colour_manual(values=museum_attribute_colours) +
-        labs(
-            title = "Opening vs Closure Rates",
-            x = "Closures per hundred museums",
-            y = "Openings per hundred museums"
-        ) +
-        guides(
-            colour="none",
-            size=guide_legend(title="Total Openings and Closures")
-        ) +
-        theme_minimal() +
-        theme(
-            legend.position = "right"
-        )
+  if (dimension == "No filter") {
+    show_only_choices <- c("All")
+  }
+  ggplot(data |> filter(.data[[dimension]] %in% show_only_choices), aes(x=closure_rate, y=opening_rate)) +
+    annotate("text", x=3, y=2, size=6, label="Stasis", alpha=0.5) +
+    annotate("text", x=3, y=77, size=6, label="Growth", alpha=0.5) +
+    annotate("text", x=75, y=2, size=6, label="Decline", alpha=0.5) +
+    annotate("text", x=75, y=77, size=6, label="Churn", alpha=0.5) +
+    geom_point(aes(colour=.data[[dimension]], size=turnover)) +
+    geom_abline(colour="grey") +
+    geom_text(aes(label=tidy_labels[.data[[dimension]]])) +
+    scale_x_continuous(expand=c(0,1), limits=c(0,80)) +
+    scale_y_continuous(expand=c(0,1), limits=c(0,80)) +
+    scale_size_continuous(limits=c(1, 2000), range=c(2, 40), breaks=c(1, 5, 10, 50, 100, 500, 1000), labels=c("1", "5", "10", "50", "100", "500", "1000")) +
+    scale_colour_manual(values=museum_attribute_colours) +
+    labs(
+      title = "Opening vs Closure Rates",
+      x = "Closures per hundred museums",
+      y = "Openings per hundred museums"
+    ) +
+    guides(
+      colour="none",
+      size=guide_legend(title="Total Openings and Closures")
+    ) +
+    theme_minimal() +
+    theme(
+      legend.position = "right"
+    )
 }
 
 openings_vs_closures_scatter_small <- function(data, dimension, show_only_choices) {
   if (dimension == "No filter") {
     show_only_choices <- c("All")
   }
-
+  
   ggplot(data |> filter(.data[[dimension]] %in% show_only_choices), aes(x=closure_rate, y=opening_rate)) +
     geom_point(aes(colour=.data[[dimension]], size=turnover)) +
     geom_text_repel(aes(label=very_short_labels[.data[[dimension]]])) +
@@ -698,194 +726,294 @@ openings_vs_closures_scatter_small <- function(data, dimension, show_only_choice
 }
 
 bar_chart <- function(data, dimension, measure, title, y_label, x_label, show_only_choices) {
-    if (dimension == "No filter") {
-        show_only_choices <- c("All")
-    }
-    data <- data |> filter(.data[[dimension]] %in% show_only_choices)
-
-    if (measure %in% c("closures")) {
-        fill_scale <- scale_fill_manual(values=c("TRUE"="#FF6666", "FALSE"="#FF6666"))
-    } else {
-        fill_scale <- scale_fill_manual(values=c("TRUE"="#6666FF", "FALSE"="#FF6666"))
-    }
-
-    ggplot(
-        data |> filter(.data[[dimension]] %in% show_only_choices),
-        aes(
-            x=.data[[measure]],
-            y=factor(.data[[dimension]], museum_attribute_ordering),
-            fill=.data[[measure]] > 0
-        )
+  if (dimension == "No filter") {
+    show_only_choices <- c("All")
+  }
+  data <- data |> filter(.data[[dimension]] %in% show_only_choices)
+  
+  if (measure %in% c("closures")) {
+    fill_scale <- scale_fill_manual(values=c("TRUE"="#FF6666", "FALSE"="#FF6666"))
+  } else {
+    fill_scale <- scale_fill_manual(values=c("TRUE"="#6666FF", "FALSE"="#FF6666"))
+  }
+  
+  ggplot(
+    data |> filter(.data[[dimension]] %in% show_only_choices),
+    aes(
+      x=.data[[measure]],
+      y=factor(.data[[dimension]], museum_attribute_ordering),
+      fill=.data[[measure]] > 0
+    )
+  ) +
+    geom_bar(position="dodge", stat="identity", show.legend=FALSE) +
+    scale_y_discrete(labels=tidy_labels) +
+    fill_scale +
+    guides(fill=FALSE) +
+    geom_text(
+      aes(label=.data[[measure]]),
+      position=position_dodge(),
+      size=3
     ) +
-        geom_bar(position="dodge", stat="identity", show.legend=FALSE) +
-        scale_y_discrete(labels=tidy_labels) +
-        fill_scale +
-        guides(fill=FALSE) +
-        geom_text(
-            aes(label=.data[[measure]]),
-            position=position_dodge(),
-            size=3
-        ) +
-        labs(
-            title = title,
-            y = y_label,
-            x = x_label
-        ) +
-        theme_minimal()
+    labs(
+      title = title,
+      y = y_label,
+      x = x_label
+    ) +
+    theme_minimal()
 }
 
 bar_chart_small <- function(data, dimension, measure, title, x_label, show_only_choices) {
-    if (dimension == "No filter") {
-        show_only_choices <- c("All")
+  if (dimension == "No filter") {
+    show_only_choices <- c("All")
+  }
+  data <- data |> filter(.data[[dimension]] %in% show_only_choices)
+  
+  if (measure %in% c("closures")) {
+    fill_scale <- scale_fill_manual(values=c("TRUE"="#FF6666", "FALSE"="#FF6666"))
+  } else {
+    fill_scale <- scale_fill_manual(values=c("TRUE"="#6666FF", "FALSE"="#FF6666"))
+  }
+  
+  if (measure %in% c("openings", "closures")) {
+    axis_max <- max(c(max(data$openings), max(data$closures)))
+    axis_min <- 0
+  } else if (measure %in% c("start_total", "end_total")) {
+    axis_max <- max(c(max(data$start_total), max(data$end_total)))
+    axis_min <- 0
+  } else {
+    axis_max <- max(data[[measure]])
+    axis_min <- min(data[[measure]])
+    if (axis_max < 0) {
+      axis_max <- 0
     }
-    data <- data |> filter(.data[[dimension]] %in% show_only_choices)
-
-    if (measure %in% c("closures")) {
-        fill_scale <- scale_fill_manual(values=c("TRUE"="#FF6666", "FALSE"="#FF6666"))
-    } else {
-        fill_scale <- scale_fill_manual(values=c("TRUE"="#6666FF", "FALSE"="#FF6666"))
+    if (axis_min > 0) {
+      axis_min <- 0
     }
-
-    if (measure %in% c("openings", "closures")) {
-        axis_max <- max(c(max(data$openings), max(data$closures)))
-        axis_min <- 0
-    } else if (measure %in% c("start_total", "end_total")) {
-        axis_max <- max(c(max(data$start_total), max(data$end_total)))
-        axis_min <- 0
-    } else {
-        axis_max <- max(data[[measure]])
-        axis_min <- min(data[[measure]])
-        if (axis_max < 0) {
-            axis_max <- 0
-        }
-        if (axis_min > 0) {
-            axis_min <- 0
-        }
-    }
-    largest_magnitude <- max(axis_max, abs(axis_min))
-    if (largest_magnitude > 100) {
-        scaling_factor <- 0.01
-    } else {
-        scaling_factor <- 0.1
-    }
-    axis_max <- ceiling(axis_max * scaling_factor) / scaling_factor
-    axis_min <- floor(axis_min * scaling_factor) / scaling_factor
-    if (axis_min < 0) {
-        limits <- c(axis_min*1.1, axis_max*1.1)
-        breaks <- c(axis_min, 0, axis_max)
-    } else {
-        limits <- c(0, axis_max*1.1)
-        breaks <- c(0, axis_max)
-    }
-
-    ggplot(
-        data,
-        aes(
-            x=.data[[measure]],
-            y=factor(.data[[dimension]], museum_attribute_ordering),
-            fill=.data[[measure]] > 0
-        )
+  }
+  largest_magnitude <- max(axis_max, abs(axis_min))
+  if (largest_magnitude > 100) {
+    scaling_factor <- 0.01
+  } else {
+    scaling_factor <- 0.1
+  }
+  axis_max <- ceiling(axis_max * scaling_factor) / scaling_factor
+  axis_min <- floor(axis_min * scaling_factor) / scaling_factor
+  if (axis_min < 0) {
+    limits <- c(axis_min*1.1, axis_max*1.1)
+    breaks <- c(axis_min, 0, axis_max)
+  } else {
+    limits <- c(0, axis_max*1.1)
+    breaks <- c(0, axis_max)
+  }
+  
+  ggplot(
+    data,
+    aes(
+      x=.data[[measure]],
+      y=factor(.data[[dimension]], museum_attribute_ordering),
+      fill=.data[[measure]] > 0
+    )
+  ) +
+    geom_bar(position="dodge", stat="identity") +
+    geom_vline(xintercept=0, colour="black") +
+    scale_x_continuous(limits=limits, expand=c(0.001,0), breaks=breaks) +
+    scale_y_discrete(labels=short_labels) +
+    fill_scale +
+    labs(
+      title = title,
+      y = "",
+      x = "" 
     ) +
-        geom_bar(position="dodge", stat="identity") +
-        geom_vline(xintercept=0, colour="black") +
-        scale_x_continuous(limits=limits, expand=c(0.001,0), breaks=breaks) +
-        scale_y_discrete(labels=short_labels) +
-        fill_scale +
-        labs(
-            title = title,
-            y = "",
-            x = "" 
-        ) +
-        theme_minimal() +
-        theme(
-            plot.title = element_text(size=14),
-            plot.subtitle = element_text(size=0),
-            axis.title.x = element_text(size=14),
-            axis.title.y = element_text(size=0),
-            axis.text.y = element_text(size=11),
-            axis.text.x = element_text(size=11),
-            axis.line.x.bottom = element_line(colour="black"),
-            legend.position="Non"
-        )
+    theme_minimal() +
+    theme(
+      plot.title = element_text(size=14),
+      plot.subtitle = element_text(size=0),
+      axis.title.x = element_text(size=14),
+      axis.title.y = element_text(size=0),
+      axis.text.y = element_text(size=11),
+      axis.text.x = element_text(size=11),
+      axis.line.x.bottom = element_line(colour="black"),
+      legend.position="Non"
+    )
+}
+
+two_measure_bar_chart <- function(data, dimension, measures, title, y_label, x_label, fill_labels, fill_values, show_only_choices) {
+  if (dimension == "No filter") {
+    show_only_choices <- c("All")
+  }
+  colnames(data) <- ifelse(
+    colnames(data) %in% names(fill_labels),
+    fill_labels[colnames(data)],
+    colnames(data)
+  )
+  data <- data |> filter(.data[[dimension]] %in% show_only_choices) |>
+    pivot_longer(
+      cols=measures,
+      names_to="label",
+      values_to="count"
+    )
+  fill_scale <- scale_fill_manual(values=fill_values)
+  ggplot(
+    data,
+    aes(
+      x=count,
+      y=factor(.data[[dimension]], museum_attribute_ordering),
+      fill=label
+    )
+  ) +
+    geom_bar(position="dodge", stat="identity") +
+    scale_y_discrete(labels=tidy_labels) +
+    fill_scale +
+    guides(fill=guide_legend(reverse=TRUE)) +
+    geom_text(
+      data=data |> filter(label==measures[1]),
+      aes(label=count),
+      nudge_y=0.25,
+      size=3
+    ) +
+    geom_text(
+      data=data |> filter(label==measures[2]),
+      aes(label=count),
+      nudge_y=-0.25,
+      size=3
+    ) +
+    labs(
+      title = title,
+      y = y_label,
+      x = x_label,
+      fill = ""
+    ) +
+    theme_minimal() +
+    theme(
+      legend.position="bottom"
+    )
+}
+
+two_measure_bar_chart_small <- function(data, dimension, measures, title, fill_labels, fill_values, show_only_choices) {
+  if (dimension == "No filter") {
+    show_only_choices <- c("All")
+  }
+  colnames(data) <- ifelse(
+    colnames(data) %in% names(fill_labels),
+    fill_labels[colnames(data)],
+    colnames(data)
+  )
+  data <- data |> filter(.data[[dimension]] %in% show_only_choices) |>
+    pivot_longer(
+      cols=measures,
+      names_to="label",
+      values_to="count"
+    )
+  fill_scale <- scale_fill_manual(values=fill_values)
+  ggplot(
+    data,
+    aes(
+      x=count,
+      y=factor(.data[[dimension]], museum_attribute_ordering),
+      fill=label
+    )
+  ) +
+    geom_bar(position="dodge", stat="identity") +
+    geom_vline(xintercept=0, colour="black") +
+    scale_y_discrete(labels=short_labels) +
+    fill_scale +
+    labs(
+      title = title,
+      y = "",
+      x = "" 
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(size=14),
+      plot.subtitle = element_text(size=0),
+      legend.title = element_text(size=0),
+      legend.text = element_text(size=11),
+      axis.title.x = element_text(size=0),
+      axis.title.y = element_text(size=0),
+      axis.text.y = element_text(size=11),
+      axis.text.x = element_text(size=11),
+      axis.line.x.bottom = element_line(colour="black"),
+      legend.position="bottom"
+    )
 }
 
 heatmap <- function(museums, dimension, dimension2, measure, title, y_label, x_label, show_only_choices) {
-    data <- museums |>
-        filter(.data[[dimension]] %in% show_only_choices) |>
-        mutate(
-            fill_metric=ifelse(
-                is.infinite(.data[[measure]]),
-                NA,
-                .data[[measure]]
-            )
-        )
-    if (measure %in% c("openings", "start_total", "end_total")) {
-        fill_scale <- scale_fill_gradient(low="white", high="blue")
-    } else if (measure %in% c("closures")) {
-        fill_scale <- scale_fill_gradient(low="white", high="red")
-    } else {
-        fill_scale <- scale_fill_gradient2(low="red", mid="white", high="blue", midpoint=0)
-    }
-    ggplot(
-        data,
-        aes(
-            x=fct_rev(factor(.data[[dimension2]], museum_attribute_ordering)),
-            y=factor(.data[[dimension]], museum_attribute_ordering),
-            fill=fill_metric
-        )
+  data <- museums |>
+    filter(.data[[dimension]] %in% show_only_choices) |>
+    mutate(
+      fill_metric=ifelse(
+        is.infinite(.data[[measure]]),
+        NA,
+        .data[[measure]]
+      )
+    )
+  if (measure %in% c("openings", "start_total", "end_total")) {
+    fill_scale <- scale_fill_gradient(low="white", high="blue")
+  } else if (measure %in% c("closures")) {
+    fill_scale <- scale_fill_gradient(low="white", high="red")
+  } else {
+    fill_scale <- scale_fill_gradient2(low="red", mid="white", high="blue", midpoint=0)
+  }
+  ggplot(
+    data,
+    aes(
+      x=fct_rev(factor(.data[[dimension2]], museum_attribute_ordering)),
+      y=factor(.data[[dimension]], museum_attribute_ordering),
+      fill=fill_metric
+    )
+  ) +
+    geom_tile(alpha=0.7, show.legend=FALSE) +
+    geom_text(aes(label=.data[[measure]]), size=4) +
+    scale_x_discrete(labels=short_labels) +
+    scale_y_discrete(labels=short_labels) +
+    fill_scale +
+    labs(
+      title=title,
+      x=x_label,
+      y=y_label
     ) +
-        geom_tile(alpha=0.7, show.legend=FALSE) +
-        geom_text(aes(label=.data[[measure]]), size=4) +
-        scale_x_discrete(labels=short_labels) +
-        scale_y_discrete(labels=short_labels) +
-        fill_scale +
-        labs(
-            title=title,
-            x=x_label,
-            y=y_label
-        ) +
-        theme_minimal() +
-        theme(
-            plot.title=element_text(size=14),
-            axis.text.y=element_text(size=11),
-            axis.text.x=element_text(size=11, angle=45, vjust=1, hjust=1)
-        )
+    theme_minimal() +
+    theme(
+      plot.title=element_text(size=14),
+      axis.text.y=element_text(size=11),
+      axis.text.x=element_text(size=11, angle=45, vjust=1, hjust=1)
+    )
 }
 
 heatmap_small <- function(museums, dimension, dimension2, measure, title, show_only_choices) {
-    if (measure %in% c("openings", "start_total", "end_total")) {
-        fill_scale <- scale_fill_gradient(low="white", high="blue")
-    } else if (measure %in% c("closures")) {
-        fill_scale <- scale_fill_gradient(low="white", high="red")
-    } else {
-        fill_scale <- scale_fill_gradient2(low="red", mid="white", high="blue", midpoint=0)
-    }
-    ggplot(
-        museums |>
-        filter(.data[[dimension]] %in% show_only_choices),
-        aes(
-            x=fct_rev(factor(.data[[dimension2]], museum_attribute_ordering)),
-            y=factor(.data[[dimension]], museum_attribute_ordering),
-            fill=.data[[measure]]
-        )
-    ) +
-        geom_tile(alpha=0.7) +
-        geom_text(aes(label=round(.data[[measure]], 0)), size=4) +
-        scale_x_discrete(labels=very_short_labels) +
-        scale_y_discrete(labels=short_labels) +
-        fill_scale +
-        labs(
-            title=title,
-            x="",
-            y="",
-            ) +
-        theme_minimal() +
-        theme(
-            legend.position="Non",
-            plot.title=element_text(size=14),
-            axis.text.y=element_text(size=11),
-            axis.text.x=element_text(size=11, angle=45, vjust=1, hjust=1)
-        )
+  if (measure %in% c("openings", "start_total", "end_total")) {
+    fill_scale <- scale_fill_gradient(low="white", high="blue")
+  } else if (measure %in% c("closures")) {
+    fill_scale <- scale_fill_gradient(low="white", high="red")
+  } else {
+    fill_scale <- scale_fill_gradient2(low="red", mid="white", high="blue", midpoint=0)
+  }
+  ggplot(
+    museums |>
+      filter(.data[[dimension]] %in% show_only_choices),
+    aes(
+      x=fct_rev(factor(.data[[dimension2]], museum_attribute_ordering)),
+      y=factor(.data[[dimension]], museum_attribute_ordering),
+      fill=.data[[measure]]
+    )
+  ) +
+    geom_tile(alpha=0.7) +
+    geom_text(aes(label=round(.data[[measure]], 0)), size=4) +
+    scale_x_discrete(labels=very_short_labels) +
+    scale_y_discrete(labels=short_labels) +
+    fill_scale +
+    labs(
+      title=title,
+      x="",
+      y="",
+      ) +
+    theme_minimal() +
+    theme(
+      legend.position="Non",
+      plot.title=element_text(size=14),
+      axis.text.y=element_text(size=11),
+      axis.text.x=element_text(size=11, angle=45, vjust=1, hjust=1)
+    )
 }
 
 
@@ -929,87 +1057,87 @@ cumulative_counts_by_dimension <- function(df, dimension) {
 }
 
 time_series_line <- function(data, dimension, measure, title, y_label, show_only_choices, start_year, end_year) {
-    if (dimension == "No filter") {
-        show_only_choices <- c("All")
-    }
-    ggplot(
-        data |> filter(.data[[dimension]] %in% show_only_choices) |> filter(year>=start_year & year <= end_year),
-        aes(x=year, y=.data[[measure]], colour=.data[[dimension]])
-    ) + 
-        geom_line(alpha=0.6 , size=1) +
-        geom_text(
-            data=data |> filter(.data[[dimension]] %in% show_only_choices) |> filter(year==floor(mean(c(start_year, end_year)))),
-            aes(y=.data[[measure]]*1.1, label=tidy_labels[.data[[dimension]]])
-        ) +
-        scale_y_continuous(limits=function(x){c(0, max(x))}) +
-        scale_colour_manual(values=museum_attribute_colours) +
-        labs(
-            title=title,
-            y=y_label,
-            x="Year"
-        ) +
-        guides(
-            colour="none"
-        ) +
-        theme_minimal() +
-        theme(
-            legend.position = "None"
-        )
+  if (dimension == "No filter") {
+    show_only_choices <- c("All")
+  }
+  ggplot(
+    data |> filter(.data[[dimension]] %in% show_only_choices) |> filter(year>=start_year & year <= end_year),
+    aes(x=year, y=.data[[measure]], colour=.data[[dimension]])
+  ) + 
+    geom_line(alpha=0.6 , size=1) +
+    geom_text(
+      data=data |> filter(.data[[dimension]] %in% show_only_choices) |> filter(year==floor(mean(c(start_year, end_year)))),
+      aes(y=.data[[measure]]*1.1, label=tidy_labels[.data[[dimension]]])
+    ) +
+    scale_y_continuous(limits=function(x){c(0, max(x))}) +
+    scale_colour_manual(values=museum_attribute_colours) +
+    labs(
+      title=title,
+      y=y_label,
+      x="Year"
+    ) +
+    guides(
+      colour="none"
+    ) +
+    theme_minimal() +
+    theme(
+      legend.position = "None"
+    )
 }
 
 time_series_line_small <- function(data, dimension, measure, title, y_label, show_only_choices, start_year, end_year) {
-    if (dimension == "No filter") {
-        show_only_choices <- c("All")
-    }
-    data <- data |> filter(.data[[dimension]] %in% show_only_choices) |> filter(year>=start_year & year <= end_year)
-
-    if (measure %in% c("opening_count", "closure_count")) {
-        axis_max <- max(c(max(data$opening_count), max(data$closure_count)))
-        axis_min <- 0
-    } else {
-        axis_max <- max(data[[measure]])
-        axis_min <- min(data[[measure]])
-    }
-    largest_magnitude <- max(axis_max, abs(axis_min))
-    if (largest_magnitude > 100) {
-        scaling_factor <- 0.01
-    } else {
-        scaling_factor <- 0.1
-    }
-    axis_max <- ceiling(axis_max * scaling_factor) / scaling_factor
-    axis_min <- floor(axis_min * scaling_factor) / scaling_factor
-    if (axis_min < 0) {
-        limits <- c(axis_min*1.1, axis_max*1.1)
-        breaks <- c(axis_min, 0, axis_max)
-    } else {
-        limits <- c(0, axis_max*1.1)
-        breaks <- c(0, axis_max)
-    }
-
-    ggplot(
-        data,
-        aes(x=year, y=.data[[measure]], colour=.data[[dimension]])
-    ) + 
-        geom_line(alpha=0.6 , size=1) +
-        geom_text(
-            data=data |> filter(.data[[dimension]] %in% show_only_choices) |> filter(year==floor(mean(c(start_year, end_year)))),
-            aes(y=.data[[measure]]*1.1, label=tidy_labels[.data[[dimension]]])
-        ) +
-        scale_x_continuous(expand=c(0,0)) +
-        scale_y_continuous(expand=c(0,0), limits=limits, breaks=breaks) +
-        scale_colour_manual(values=museum_attribute_colours) +
-        labs(
-            title=title,
-            y=y_label,
-            x="Year"
-        ) +
-        theme_minimal() +
-        theme(
-            legend.position = "None",
-            plot.title = element_text(size=14),
-            axis.title = element_text(size=14),
-            axis.text = element_text(size=11),
-            axis.line.x.bottom = element_line(colour="black"),
-            axis.line.y.left = element_line(colour="black")
-        )
+  if (dimension == "No filter") {
+    show_only_choices <- c("All")
+  }
+  data <- data |> filter(.data[[dimension]] %in% show_only_choices) |> filter(year>=start_year & year <= end_year)
+  
+  if (measure %in% c("opening_count", "closure_count")) {
+    axis_max <- max(c(max(data$opening_count), max(data$closure_count)))
+    axis_min <- 0
+  } else {
+    axis_max <- max(data[[measure]])
+    axis_min <- min(data[[measure]])
+  }
+  largest_magnitude <- max(axis_max, abs(axis_min))
+  if (largest_magnitude > 100) {
+    scaling_factor <- 0.01
+  } else {
+    scaling_factor <- 0.1
+  }
+  axis_max <- ceiling(axis_max * scaling_factor) / scaling_factor
+  axis_min <- floor(axis_min * scaling_factor) / scaling_factor
+  if (axis_min < 0) {
+    limits <- c(axis_min*1.1, axis_max*1.1)
+    breaks <- c(axis_min, 0, axis_max)
+  } else {
+    limits <- c(0, axis_max*1.1)
+    breaks <- c(0, axis_max)
+  }
+  
+  ggplot(
+    data,
+    aes(x=year, y=.data[[measure]], colour=.data[[dimension]])
+  ) + 
+    geom_line(alpha=0.6 , size=1) +
+    geom_text(
+      data=data |> filter(.data[[dimension]] %in% show_only_choices) |> filter(year==floor(mean(c(start_year, end_year)))),
+      aes(y=.data[[measure]]*1.1, label=tidy_labels[.data[[dimension]]])
+    ) +
+    scale_x_continuous(expand=c(0,0)) +
+    scale_y_continuous(expand=c(0,0), limits=limits, breaks=breaks) +
+    scale_colour_manual(values=museum_attribute_colours) +
+    labs(
+      title=title,
+      y=y_label,
+      x="Year"
+    ) +
+    theme_minimal() +
+    theme(
+      legend.position = "None",
+      plot.title = element_text(size=14),
+      axis.title = element_text(size=14),
+      axis.text = element_text(size=11),
+      axis.line.x.bottom = element_line(colour="black"),
+      axis.line.y.left = element_line(colour="black")
+    )
 }

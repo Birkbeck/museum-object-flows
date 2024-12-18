@@ -10,6 +10,7 @@ Running this app requires the following R packages:
 - ggmap
 - ggplot2
 - ggraph
+- ggrepel
 - htmlwidgets
 - igraph
 - janitor
