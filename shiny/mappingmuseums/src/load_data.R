@@ -200,5 +200,3 @@ sector_type_ordering_table <- actor_types |>
   arrange(ordering, desc=TRUE)
 
 sector_type_ordering <- sector_type_ordering_table$type_name
-
-print(sector_type_ordering)
