@@ -96,19 +96,19 @@ changesUI <- function(id) {
       column(
         3,
         plotOutput(
-          NS(id, "openingsClosuresSmall"),
+          NS(id, "openingsMap"),
           width=small_chart_size_px,
           height=small_chart_size_px,
-          click=NS(id, "openingsClosures")
+          click=NS(id, "openingsMap")
         )
       ),
       column(
         3,
         plotOutput(
-          NS(id, "startEndSmall"),
+          NS(id, "closuresMap"),
           width=small_chart_size_px,
           height=small_chart_size_px,
-          click=NS(id, "startEnd")
+          click=NS(id, "closuresMap")
         )
       ),
       column(
@@ -132,19 +132,19 @@ changesUI <- function(id) {
       column(
         3,
         plotOutput(
-          NS(id, "absoluteChangeSmall"),
+          NS(id, "openingsClosuresSmall"),
           width=small_chart_size_px,
           height=small_chart_size_px,
-          click=NS(id, "absoluteChange")
+          click=NS(id, "openingsClosures")
         )
       ),
       column(
         3,
         plotOutput(
-          NS(id, "percentageChangeSmall"),
+          NS(id, "startEndSmall"),
           width=small_chart_size_px,
           height=small_chart_size_px,
-          click=NS(id, "percentageChange")
+          click=NS(id, "startEnd")
         )
       ),
       column(
@@ -168,19 +168,19 @@ changesUI <- function(id) {
       column(
         3,
         plotOutput(
-          NS(id, "openStartSmall"),
+          NS(id, "absoluteChangeSmall"),
           width=small_chart_size_px,
           height=small_chart_size_px,
-          click=NS(id, "openStart")
+          click=NS(id, "absoluteChange")
         )
       ),
       column(
         3,
         plotOutput(
-          NS(id, "openEndSmall"),
+          NS(id, "percentageChangeSmall"),
           width=small_chart_size_px,
           height=small_chart_size_px,
-          click=NS(id, "openEnd")
+          click=NS(id, "percentageChange")
         )
       ),
       column(
@@ -267,6 +267,8 @@ changesServer <- function(id) {
     observeEvent(input$percentageChange2Way, { currentMainPlot("change_pc.2Way") })
     observeEvent(input$openStart2Way, { currentMainPlot("start_total.2Way") })
     observeEvent(input$openEnd2Way, { currentMainPlot("end_total.2Way") })
+    observeEvent(input$openingsMap, { currentMainPlot("openingsMap") })
+    observeEvent(input$closuresMap, { currentMainPlot("closuresMap") })
     
     filter_field <- reactive({
       if (filter_field_1() == "main_subject" && subject_filter() != "All") {
@@ -379,7 +381,7 @@ changesServer <- function(id) {
           filter_field(),
           choices()
         )
-      } else if(currentMainPlot() == "timeSeriesLine") {
+      } else if (currentMainPlot() == "timeSeriesLine") {
         time_series_line(
           cumulative_counts_by_dimension(museums, filter_field()),
           filter_field(),
@@ -390,7 +392,7 @@ changesServer <- function(id) {
           input$year_range[1],
           input$year_range[2]
         )
-      } else if(currentMainPlot() == "openingRateLine") {
+      } else if (currentMainPlot() == "openingRateLine") {
         time_series_line(
           cumulative_counts_by_dimension(museums, filter_field()),
           filter_field(),
@@ -401,7 +403,7 @@ changesServer <- function(id) {
           input$year_range[1],
           input$year_range[2]
         )
-      } else if(currentMainPlot() == "closureRateLine") {
+      } else if (currentMainPlot() == "closureRateLine") {
         time_series_line(
           cumulative_counts_by_dimension(museums, filter_field()),
           filter_field(),
@@ -412,7 +414,7 @@ changesServer <- function(id) {
           input$year_range[1],
           input$year_range[2]
         )
-      } else if(currentMainPlot() == "openingsClosures") {
+      } else if (currentMainPlot() == "openingsClosures") {
         two_measure_bar_chart(
           openings_and_closures_data(),
           filter_field(),
@@ -424,7 +426,7 @@ changesServer <- function(id) {
           c("start_total"="#DDDDDD", "end_total"="#555555", "openings"="#6666FF", "closures"="#FF6666"),
           choices()
         )
-      } else if(currentMainPlot() == "startEnd") {
+      } else if (currentMainPlot() == "startEnd") {
         two_measure_bar_chart(
           openings_and_closures_data(),
           filter_field(),
@@ -448,7 +450,25 @@ changesServer <- function(id) {
           ),
           choices()
         )
-      } else if(grepl("2Way", currentMainPlot(), fixed=TRUE)) {
+      } else if (currentMainPlot() == "openingsMap") {
+        changes_map(
+          museums,
+          filter_field(),
+          "openings",
+          choices(),
+          input$year_range[1],
+          input$year_range[2]
+        )
+      } else if (currentMainPlot() == "closuresMap") {
+        changes_map(
+          museums,
+          filter_field(),
+          "closures",
+          choices(),
+          input$year_range[1],
+          input$year_range[2]
+        )
+      } else if (grepl("2Way", currentMainPlot(), fixed=TRUE)) {
         measure <- strsplit(currentMainPlot(), ".", fixed=TRUE)[[1]][1]
         title <- paste(x_labels()[measure])
         y_label <- input$filterField
@@ -617,6 +637,26 @@ changesServer <- function(id) {
         "change_pc",
         paste0("Change (%) ", input$year_range[1], "-", input$year_range[2]),
         choices()
+      )
+    }, width=small_chart_size, height=small_chart_size)
+    output$openingsMap <- renderPlot({
+      changes_map_small(
+        museums,
+        filter_field(),
+        "openings",
+        choices(),
+        input$year_range[1],
+        input$year_range[2]
+      )
+    }, width=small_chart_size, height=small_chart_size)
+    output$closuresMap <- renderPlot({
+      changes_map_small(
+        museums,
+        filter_field(),
+        "closures",
+        choices(),
+        input$year_range[1],
+        input$year_range[2]
       )
     }, width=small_chart_size, height=small_chart_size)
     output$openStartSmall2Way <- renderPlot({
@@ -934,6 +974,70 @@ two_measure_bar_chart_small <- function(data, dimension, measures, title, fill_l
       axis.text.x = element_text(size=11),
       axis.line.x.bottom = element_line(colour="black"),
       legend.position="bottom"
+    )
+}
+
+changes_map <- function(museums, dimension, measure, show_only_choices, start, end) {
+  if (dimension == "No filter") {
+    show_only_choices <- c("All")
+  }
+  if (measure == "openings") {
+    data <- museums |>
+      filter(.data[[dimension]] %in% show_only_choices) |>
+      filter(year_opened_2 > start & year_opened_1 < end)
+  } else if (measure == "closures") {
+    data <- museums |>
+      filter(.data[[dimension]] %in% show_only_choices) |>
+      filter(year_closed_2 > start & year_closed_1 < end)
+  }
+  ggplot(data) +
+    geom_polygon(data=regions, aes(x=x, y=y, group=group), linewidth=0.1, label=NA, colour="black", fill=NA) +
+    geom_point(aes(label=name_of_museum, x=bng_x, y=bng_y, colour=.data[[dimension]]), size=0.5) +
+    scale_colour_manual(values=museum_attribute_colours, labels=tidy_labels) +
+    coord_fixed() +
+    labs(
+      title=paste("Museum", measure, start, "-", end),
+      x = "",
+      y = "",
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(size=14),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.text = element_text(colour="white")
+    )
+}
+
+changes_map_small <- function(museums, dimension, measure, show_only_choices, start, end) {
+  if (dimension == "No filter") {
+    show_only_choices <- c("All")
+  }
+  if (measure == "openings") {
+    data <- museums |>
+      filter(.data[[dimension]] %in% show_only_choices) |>
+      filter(year_opened_2 > start & year_opened_1 < end)
+  } else if (measure == "closures") {
+    data <- museums |>
+      filter(.data[[dimension]] %in% show_only_choices) |>
+      filter(year_closed_2 > start & year_closed_1 < end)
+  }
+  ggplot(data) +
+    geom_polygon(data=regions, aes(x=x, y=y, group=group), linewidth=0.1, label=NA, colour="black", fill=NA) +
+    geom_point(aes(label=name_of_museum, x=bng_x, y=bng_y, colour=.data[[dimension]]), size=0.5) +
+    scale_colour_manual(values=museum_attribute_colours, labels=tidy_labels) +
+    coord_fixed() +
+    labs(
+      title=paste("Museum", measure, start, "-", end),
+      x="",
+      y="",
+    ) +
+    theme_minimal() +
+    theme(
+      legend.position="Non",
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.text = element_text(colour="white")
     )
 }
 
