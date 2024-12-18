@@ -417,11 +417,12 @@ museum_map <- function(museums, dimension, show_only_choices, year_or_range, sta
   ggplot(
     museums |>
       filter(.data[[dimension]] %in% show_only_choices) |>
-      filter(year_closed_2 > start & year_opened_1 < end),
-    aes(label=name_of_museum, x=longitude, y=latitude, colour=.data[[dimension]])
+      filter(year_closed_2 > start & year_opened_1 < end)
   ) +
-    geom_point(size=0.5) +
+    geom_polygon(data=regions, aes(x=x, y=y, group=group), linewidth=0.1, label=NA, colour="black", fill=NA) +
+    geom_point(aes(label=name_of_museum, x=bng_x, y=bng_y, colour=.data[[dimension]]), size=0.5) +
     scale_colour_manual(values=museum_attribute_colours, labels=tidy_labels) +
+    coord_fixed() +
     labs(
       title = paste("Museums in the UK", period),
       x = "",
@@ -429,7 +430,10 @@ museum_map <- function(museums, dimension, show_only_choices, year_or_range, sta
     ) +
     theme_minimal() +
     theme(
-      plot.title = element_text(size=14)
+      plot.title = element_text(size=14),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.text = element_text(colour="white")
     )
 }
 
@@ -447,10 +451,11 @@ museum_map_small <- function(museums, dimension, show_only_choices, year_or_rang
     museums |>
       filter(.data[[dimension]] %in% show_only_choices) |>
       filter(year_closed_2 > start & year_opened_1 < end),
-    aes(label=name_of_museum, x=longitude, y=latitude, colour=.data[[dimension]])
   ) +
-    geom_point(size=0.5) +
+    geom_polygon(data=regions, aes(x=x, y=y, group=group), linewidth=0.1, label=NA, colour="black", fill=NA) +
+    geom_point(aes(label=name_of_museum, x=bng_x, y=bng_y, colour=.data[[dimension]]), size=0.5) +
     scale_colour_manual(values=museum_attribute_colours, labels=tidy_labels) +
+    coord_fixed() +
     labs(
       title=paste("Museums in the UK", period),
       x="",
@@ -458,7 +463,10 @@ museum_map_small <- function(museums, dimension, show_only_choices, year_or_rang
     ) +
     theme_minimal() +
     theme(
-      legend.position="Non"
+      legend.position="Non",
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.text = element_text(colour="white")
     )
 }
 

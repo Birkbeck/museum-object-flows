@@ -3,6 +3,9 @@ museums <- read_csv("data/all_museums_data.csv") |>
   mutate(`No filter`="All")
 museums_including_crown_dependencies <- read_csv("data/all_museums_data.csv")
 
+regions <- read_csv("data/regions.csv") |>
+  mutate(group=paste(L1, L2, L3))
+
 actor_types_csv <- "data/query_results/actor_types.csv"
 actor_types <- read_csv(actor_types_csv)
  
