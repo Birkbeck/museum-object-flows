@@ -9,6 +9,7 @@ library(janitor)
 library(ggplot2)
 library(igraph)
 library(ggraph)
+library(ggrepel)
 library(tidyverse)
 library(readr)
 

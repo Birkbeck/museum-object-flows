@@ -1,9 +1,3 @@
-library(ggmap)
-library(jsonlite)
-
-stadia_key <- read.csv("keys.csv") |> filter(service == "stadia") |> pull(key)
-register_stadiamaps(stadia_key, write = TRUE)
-
 movementsUI <- function(id) {
   fluidPage(
     fluidRow(
@@ -11,121 +5,73 @@ movementsUI <- function(id) {
     ),
     fluidRow(
       sidebarLayout(
-        sidebarPanel(
-          width=3,
-          p("Group collections by origin museum type:"),
-          selectInput(
-            NS(id, "collectionDistancesCategory"),
-            label="Group by:",
-            choices=field_names$name,
-            selected="Subject Matter"
-          ),
-          p("Highlight collection types (show in red):"),
-          pickerInput(
-            NS(id, "collectionDistancesTypes"),
-            "Collection Type:",
-            choices=c(),
-            selected=c(),
-            options=pickerOptions(
-              actionsBox=TRUE, 
-              size=10,
-              selectedTextFormat="count > 3"
-            ), 
-            multiple=TRUE
-          )
-        ),
+        sidebarPanel(width=3, dispersalFiltersUI(NS(id, "dispersalFilters"))),
         mainPanel(
-          plotlyOutput(NS(id, "movementDistances"), width="100%", height="900px"),
-          p("This scatter plot shows the distance travelled by objects and collections in their initial transfer from a closed museum. Use the 'group by' box to group collections according to the type of museum that they come from. Use the 'collection type' box to highlight specific types of collection in red. Hover over a point to see details of the collection transfer that it represents.")
+          plotOutput(NS(id, "movementsMap"), width="80%", height="850px"),
+          tagList(
+            tags$span(
+              tags$strong("Display: "),
+              tags$i(
+                class = "fa fa-info-circle",
+                style = "color: #007bff; cursor: pointer;",
+                `data-toggle` = "popover",
+                `data-placement` = "right",
+                title = "Display steps or first and last actors",
+                `data-content` = "<p><strong>Steps in path:</strong> View intermediate actors in the sequences of ownership and/or custody changes</p><p><strong>First and last actors:</strong> View only the initial museum and the last known actor in the sequence.</p>"
+              )
+            ),
+            tags$script(popover_js),
+            radioButtons(
+              NS(id, "stepsOrFirstLast"),
+              label="",
+              choices=c("Steps in path", "First and last actors"),
+              selected="Steps in path",
+              inline=TRUE
+            ),
+          ),
+          tagList(
+            tags$span(
+              tags$strong("Steps in path: "),
+              tags$i(
+                class = "fa fa-info-circle",
+                style = "color: #007bff; cursor: pointer;",
+                `data-toggle` = "popover",
+                `data-placement` = "right",
+                title = "Steps in path",
+                `data-content` = "<p>Select the start and end point of sequences. Step 1 shows the initial museums where collections originated.</p><p>Use the slider to increase the number of steps away from the museum shown on the diagram.</p>"
+              )
+            ),
+            tags$script(popover_js),
+            sliderInput(
+              NS(id, "stagesInOwnershipPath"),
+              label="",
+              value=7,
+              min=1,
+              max=7,
+              step=1,
+              ticks=FALSE,
+              width="50%"
+            )
+          ),
+          img(src='actor-sector-key.png', align="left", width="150px")
         )
-      )
+      ),
     ),
-    hr(style=hr_style),
     fluidRow(
-      sidebarLayout(
-        sidebarPanel(
-          width=3,
-          p("Involving collections:"),
-          pickerInput(
-            NS(id, "collectionMapTypes"),
-            "Collection Type:",
-            choices=c(),
-            selected=c(),
-            options=pickerOptions(
-              actionsBox=TRUE, 
-              size=10,
-              selectedTextFormat="count > 3"
-            ), 
-            multiple=TRUE
-          ),
-          p("Involving collections from museum type:"),
-          pickerInput(
-            NS(id, "movementsSizeFilter"), 
-            "Size:", 
-            choices=tidy_labels_size,
-            selected=tidy_labels_size,
-            options=pickerOptions(
-              actionsBox=TRUE, 
-              size=10,
-              selectedTextFormat="count > 3"
-            ), 
-            multiple=TRUE
-          ),
-          pickerInput(
-            NS(id, "movementsGovernanceFilter"), 
-            "Governance:", 
-            choices=tidy_labels_governance,
-            selected=tidy_labels_governance,
-            options=pickerOptions(
-              actionsBox=TRUE, 
-              size=10,
-              selectedTextFormat="count > 3"
-            ), 
-            multiple=TRUE
-          ),
-          pickerInput(
-            NS(id, "movementsAccreditationFilter"), 
-            "Accreditation:", 
-            choices=tidy_labels_accreditation,
-            selected=tidy_labels_accreditation,
-            options=pickerOptions(
-              actionsBox=TRUE, 
-              size=10,
-              selectedTextFormat="count > 3"
-            ), 
-            multiple=TRUE
-          ),
-          pickerInput(
-            NS(id, "movementsSubjectFilter"), 
-            "Subject Matter:", 
-            choices=tidy_labels_subject,
-            selected="War & Conflict",
-            options=pickerOptions(
-              actionsBox=TRUE, 
-              size=10,
-              selectedTextFormat="count > 3"
-            ), 
-            multiple=TRUE
-          ),
-          pickerInput(
-            NS(id, "movementsRegionFilter"), 
-            "Country/Region:", 
-            choices=tidy_labels_country_region,
-            selected=tidy_labels_country_region,
-            options=pickerOptions(
-              actionsBox=TRUE, 
-              size=10,
-              selectedTextFormat="count > 3"
-            ), 
-            multiple=TRUE
-          ),
-          ),
-        mainPanel(
-          p("This map shows the initial movements of collections and objects from a closed museum. Arrows point from the closed museum to the recipients of its collection.
-By default, this map only shows collections originating in war & conflict museums. On the side panel, change filters for specific types of collection and specific types of museum. Altering the filters in the side panel will also update the table below so that it shows only the transactions depicted on the map."),
-          plotOutput(NS(id, "movementsMap"), width="720px", height="1000px")
-        )
-      )
+      h3("Sequences Data"),
+      pickerInput(
+        NS(id, "tableSelect"),
+        label="show columns:",
+        choices=sequences_table_choices,
+        selected=sequences_table_choices,
+        options = pickerOptions(
+          actionsBox = TRUE, 
+          size = 10,
+          selectedTextFormat = "count > 3"
+        ), 
+        multiple = TRUE
+      ), 
+      downloadButton(NS(id, "downloadSequencesTable"), label="Download table as CSV")
     ),
     fluidRow(
       DTOutput(NS(id, "movementsTable"))
@@ -135,357 +81,229 @@ By default, this map only shows collections originating in war & conflict museum
 
 movementsServer <- function(id) {
   moduleServer(id, function(input, output, session) {
-    group_movements_by_category <- reactive({input$collectionDistancesCategory})
-    updatePickerInput(
-      inputId="collectionDistancesTypes",
-      choices=collection_types_in_moves(),
-      selected=c(),
-      )
-    highlight_movements_of_types <- reactive({input$collectionDistancesTypes})
-    output$movementDistances <- renderPlotly({
-      distances_scatter(group_movements_by_category(), highlight_movements_of_types())
+
+    steps_or_first_last <- reactive({input$stepsOrFirstLast})
+
+    observeEvent(steps_or_first_last(), {
+      if (input$stepsOrFirstLast == "First and last actors") {
+        shinyjs::disable("stagesInOwnershipPath")
+      } else {
+        shinyjs::enable("stagesInOwnershipPath")
+      }
     })
-    
-    updatePickerInput(
-      inputId="collectionMapTypes",
-      choices=collection_types_in_moves(),
-      selected=collection_types_in_moves(),
-      )
-    movements_size_filter_choices <- reactive({input$movementsSizeFilter})
-    movements_governance_filter_choices <- reactive({input$movementsGovernanceFilter})
-    movements_accreditation_filter_choices <- reactive({input$movementsAccreditationFilter})
-    movements_subject_filter_choices <- reactive({input$movementsSubjectFilter})
-    movements_region_filter_choices <- reactive({input$movementsRegionFilter})
-    movements_collection_type_choices <- reactive({input$collectionMapTypes})
+
+    filtered_sequences <- dispersalFiltersServer("dispersalFilters", steps_or_first_last)
+
+    selected_columns <- reactive({input$tableSelect})
+
+    ownershipChangesStart <- reactiveVal(1)
+    ownershipChangesEnd <- reactiveVal(2)
+    debouncedStagesInOwnershipPath <- debounce(
+      reactive(input$stagesInOwnershipPath),
+      millis=300
+    )
+    observeEvent(debouncedStagesInOwnershipPath(), {
+      ownershipChangesEnd(debouncedStagesInOwnershipPath())
+    })
+
     output$movementsMap <- renderPlot({
-      movements_map(
-        movements_collection_type_choices(),
-        movements_size_filter_choices(),
-        movements_governance_filter_choices(),
-        movements_accreditation_filter_choices(),
-        movements_subject_filter_choices(),
-        movements_region_filter_choices()
+      generate_movements_map(
+        filtered_sequences(),
+        ownershipChangesStart(),
+        ownershipChangesEnd(),
+        input$`dispersalFilters-grouping`,
+        input$`dispersalFilters-showTransactionCounts`,
+        steps_or_first_last()
       )
-    }, width=720, height=1000)
-    
+    })
+
+    output$downloadSequencesTable <- downloadHandler(
+      filename = function() {
+        paste('dispersal-sequences-data-', Sys.Date(), '.csv', sep='')
+      },
+      content = function(con) {
+        write.csv(
+          filtered_sequences() |> select(all_of(selected_columns())),
+          con
+        )
+      },
+      contentType = "text/csv"
+    )
+
     output$movementsTable <- renderDT({
-      movements_table(
-        movements_collection_type_choices(),
-        movements_size_filter_choices(),
-        movements_governance_filter_choices(),
-        movements_accreditation_filter_choices(),
-        movements_subject_filter_choices(),
-        movements_region_filter_choices()
-      )
+      pathway_table(filtered_sequences(), selected_columns())
     }, options=list(pageLength=100))
+
   })
 }
 
-calculate_distance <- function(lat1, lon1, lat2, lon2) {
-  # Convert degrees to radians
-  radians <- function(degrees) {
-    degrees * pi / 180
-  }
-  earth_radius <- 6371
-  dlat <- radians(lat2 - lat1)
-  dlon <- radians(lon2 - lon1)
-  lat1 <- radians(lat1)
-  lat2 <- radians(lat2)
-  # Haversine formula
-  a <- sin(dlat / 2) * sin(dlat / 2) +
-    cos(lat1) * cos(lat2) * sin(dlon / 2) * sin(dlon / 2)
-  c <- 2 * atan2(sqrt(a), sqrt(1 - a))
-  # Distance in kilometers
-  distance <- earth_radius * c
-  return(distance)
-}
+generate_movements_map <- function(sequences,
+                                   start_position,
+                                   end_position,
+                                   grouping_dimension,
+                                   show_transaction_counts,
+                                   steps_or_first_last) {
+  grouping_dimension <- list(
+    "Actor Sector"="sector",
+    "Actor Type (Core Categories)"="core_type",
+    "Actor Type (Most General)"="general_type",
+    "Actor Type (Most Specific)"="type"
+  )[grouping_dimension]
+  sender_grouping_dimension <- paste0("sender_", grouping_dimension)
+  recipient_grouping_dimension <- paste0("recipient_", grouping_dimension)
 
-movements_table <- function(collection_type_filter, size_filter, governance_filter, accreditation_filter, subject_filter, region_filter) {
-  size_filter <- names(tidy_labels_size)[match(size_filter, tidy_labels_size)]
-  governance_filter <- names(tidy_labels_governance)[match(governance_filter, tidy_labels_governance)]
-  accreditation_filter <- names(tidy_labels_accreditation)[match(accreditation_filter, tidy_labels_accreditation)]
-  subject_filter <- names(tidy_labels_subject)[match(subject_filter, tidy_labels_subject)]
-  region_filter <- names(tidy_labels_country_region)[match(region_filter, tidy_labels_country_region)]
-  
-  movements <- dispersal_events |>
-    filter(destination_lat < 90) |>
-    filter(sender_size %in% size_filter) |>
-    filter(sender_governance %in% governance_filter | sender_governance_broad %in% governance_filter) |>
-    filter(sender_accreditation %in% accreditation_filter) |>
-    filter(sender_subject %in% subject_filter) |>
-    filter(sender_region %in% region_filter | sender_country %in% region_filter) |>
-    mutate(
+  from_nodes <- sequences |>
+    filter(sender_position >= start_position & sender_position <= end_position) |>
+    select(
+      id=origin_id,
+      name=sender_name,
+      governance_broad=sender_governance_broad,
+      grouping_dimension=.data[[sender_grouping_dimension]],
+      x=origin_x,
+      y=origin_y
+    )
+  to_nodes <- sequences |>
+    filter(recipient_position >= start_position & recipient_position <= end_position) |>
+    select(
+      id=destination_id,
+      name=recipient_name,
+      governance_broad=recipient_governance_broad,
+      grouping_dimension=.data[[recipient_grouping_dimension]],
+      x=destination_x,
+      y=destination_y
+    )
+  nodes <- rbind(from_nodes, to_nodes) |>
+    distinct() |>
+    filter(
+      !is.na(x),
+      !is.na(y),
+      y < 2e6
+    )
+
+  edges <- sequences |>
+    filter(
+      sender_position >= start_position,
+      recipient_position <= end_position,
+      !is.na(origin_x),
+      !is.na(destination_x)
+    )
+  count_edges <- sequences |>
+    select(
       from=origin_id,
-      to=destination_id
+      to=destination_id,
+      sender_sector
     ) |>
-    rowwise() |>
+    group_by(from, to, sender_sector) |>
+    summarize(count=n()) |>
+    ungroup() |>
+    mutate(label=count)
+  size_edges <- sequences |>
     mutate(
-      distance=as.numeric(calculate_distance(origin_lat, origin_long, destination_lat, destination_long))
+      collection_estimated_size = ifelse(is.na(collection_estimated_size), 1, collection_estimated_size)
     ) |>
     select(
-      sender_name,
-      sender_size,
-      sender_governance,
-      sender_subject,
-      origin_region,
-      origin_lat,
-      origin_long,
-      recipient_name,
-      destination_region,
-      destination_lat,
-      destination_long,
-      collection_type,
-      distance
-    )
-
-  if (length(collection_type_filter) > 0) {
-    movements <- movements |>
-      filter(str_detect(collection_type, str_c(collection_type_filter, collapse = "|")))
-  }
-
-  movements
-}
-
-movements_map <- function(collection_type_filter, size_filter, governance_filter, accreditation_filter, subject_filter, region_filter) {
-  size_filter <- names(tidy_labels_size)[match(size_filter, tidy_labels_size)]
-  governance_filter <- names(tidy_labels_governance)[match(governance_filter, tidy_labels_governance)]
-  accreditation_filter <- names(tidy_labels_accreditation)[match(accreditation_filter, tidy_labels_accreditation)]
-  subject_filter <- names(tidy_labels_subject)[match(subject_filter, tidy_labels_subject)]
-  region_filter <- names(tidy_labels_country_region)[match(region_filter, tidy_labels_country_region)]
-  
-  movements <- dispersal_events |>
-    filter(destination_lat < 90) |>
-    filter(sender_size %in% size_filter) |>
-    filter(sender_governance %in% governance_filter | sender_governance_broad %in% governance_filter) |>
-    filter(sender_accreditation %in% accreditation_filter) |>
-    filter(sender_subject %in% subject_filter) |>
-    filter(sender_region %in% region_filter | sender_country %in% region_filter) |>
-    mutate(
       from=origin_id,
-      to=destination_id
+      to=destination_id,
+      sender_sector,
+      collection_estimated_size
     ) |>
-    rowwise() |>
-    mutate(
-      distance=as.numeric(calculate_distance(origin_lat, origin_long, destination_lat, destination_long))
-    ) |>
-    filter(!is.na(destination_lat)) |>
-    filter(!is.na(origin_lat))
-
-  if (length(collection_type_filter) > 0) {
-    movements <- movements |>
-      filter(str_detect(collection_type, str_c(collection_type_filter, collapse = "|")))
-  }
-  
-  from_nodes_counts <- movements |>
-    mutate(
-      name=from,
-      lat=origin_lat,
-      long=origin_long,
-      label=sender_name,
-      governance=sender_governance
-    ) |>
-    select(name, lat, long, label, governance) |>
-    group_by(name, lat, long, label, governance) |>
-    summarize(from_count = n()) |>
-    ungroup()
-  
-  to_nodes_counts <- movements |>
-    mutate(
-      name=to,
-      lat=destination_lat,
-      long=destination_long,
-      label=recipient_name,
-      governance=recipient_governance
-    ) |>
-    select(name, lat, long, label, governance) |>
-    group_by(name, lat, long, label, governance) |>
-    summarize(to_count = n()) |>
-    ungroup()
-  
-  node_counts <- from_nodes_counts |>
-    full_join(to_nodes_counts, by="name") |>
-    mutate(
-      count = ifelse(
-        is.na(to_count),
-        from_count,
-        ifelse(
-          is.na(from_count), 
-          to_count,
-          ifelse(
-            from_count > to_count,
-            from_count,
-            to_count
-          )
-        )
-      )
-    ) |>
-    mutate(
-      lat = ifelse(is.na(lat.x), lat.y, lat.x),
-      long = ifelse(is.na(long.x), long.y, long.x),
-      label = ifelse(is.na(label.x), label.y, label.x),
-      governance = ifelse(is.na(governance.x), governance.y, governance.x)
-    ) |>
-    select(name, lat, long, label, governance, count)
-  
-  size_edges <- movements |>
-    mutate(
-      transaction_size = ifelse(is.na(transaction_size), 1, transaction_size),
-    ) |>
-    select(from, to, origin_lat, origin_long, destination_lat, destination_long, distance, transaction_size) |>
-    group_by(from, to, origin_lat, origin_long, destination_lat, destination_long, distance) |>
-    summarize(count = sum(transaction_size)) |>
+    group_by(from, to, sender_sector) |>
+    summarize(count=sum(collection_estimated_size)) |>
     ungroup() |>
+    mutate(label="")
+  max_size_edges <- sequences |>
     mutate(
-      label=""
-    )
-  
-  edges <- size_edges
-  
-  g <- graph_from_data_frame(edges)
-  
-  layout <- create_layout(g, layout="stress") |>
-    left_join(node_counts, by="name")
-  
-  layout$x <- layout$long
-  layout$y <- layout$lat
-  
-  # Get the base map using ggmap
-  bbox <- c(
-    left=min(filter(node_counts, !is.nan(long))$long) - 2,
-    right=max(filter(node_counts, !is.nan(long))$long) + 2,
-    bottom=min(filter(node_counts, !is.nan(lat))$lat) - 0.5,
-    top=max(filter(node_counts, !is.nan(lat))$lat) + 0.5
+      collection_estimated_size = ifelse(is.na(collection_estimated_size_max), 1, collection_estimated_size_max)
+    ) |>
+    select(
+      from=origin_id,
+      to=destination_id,
+      sender_sector,
+      collection_estimated_size
+    ) |>
+    group_by(from, to, sender_sector) |>
+    summarize(count=sum(collection_estimated_size)) |>
+    ungroup() |>
+    mutate(label="")
+  min_size_edges <- sequences |>
+    mutate(
+      collection_estimated_size = ifelse(is.na(collection_estimated_size_min), 1, collection_estimated_size_min)
+    ) |>
+    select(
+      from=origin_id,
+      to=destination_id,
+      sender_sector,
+      collection_estimated_size
+    ) |>
+    group_by(from, to, sender_sector) |>
+    summarize(count=sum(collection_estimated_size)) |>
+    ungroup() |>
+    mutate(label="")
+  edges <- rbind(
+    count_edges,
+    min_size_edges |> mutate(count = count * 0.25),
+    min_size_edges |> mutate(count = count * 0.5),
+    min_size_edges |> mutate(count = count * 0.75),
+    min_size_edges,
+    size_edges |> mutate(count = count * 0.25),
+    size_edges |> mutate(count = count * 0.5),
+    size_edges |> mutate(count = count * 0.75),
+    size_edges,
+    max_size_edges |> mutate(count = count * 0.25),
+    max_size_edges |> mutate(count = count * 0.5),
+    max_size_edges |> mutate(count = count * 0.75),
+    max_size_edges
   )
-  map <- get_stadiamap(bbox, zoom = 6, source = "stadia", maptype = "stamen_toner_lite")
-  
-  # Plotting with ggmap and adding the other layers
-  ggmap(map) +
+
+  start_positions <- nodes |>
+    select(from=id, x, y)
+  end_positions <- nodes |>
+    select(to=id, xend=x, yend=y)
+  edges <- edges |>
+    left_join(start_positions, by="from") |>
+    left_join(end_positions, by="to") |>
+    mutate(
+      label_position_x=(x + xend) / 2,
+      label_position_y=(y + yend) / 2
+    )
+
+  movements_plot <- ggplot(nodes, aes(x=x, y=y)) +
+    geom_polygon(data=regions, aes(x=x, y=y, group=group), linewidth=0.1, label=NA, colour="black", fill=NA) +
     geom_segment(
-      data=size_edges,
-      aes(x=origin_long, y=origin_lat, xend=destination_long, yend=destination_lat),
-      arrow=arrow(angle=30, length=unit(0.25, "cm"), ends="last", type="closed")
+      data=edges,
+      aes(
+        x=x,
+        y=y,
+        xend=xend,
+        yend=yend,
+        linewidth=count,
+        colour=sender_sector
+      ),
+      alpha=0.1,
+      arrow=arrow(ends="last", length=unit(0.1, "inches"))
     ) +
-    scale_edge_radius(name=count) +
     geom_point(
-      data=node_counts,
-      aes(x=long, y=lat),
-      color=map_points_red,
-      size=3
+      aes(
+        fill=grouping_dimension_and_governance_to_sector(governance_broad, grouping_dimension)
+      ),
+      size=2,
+      pch=21,
+      colour="black",
+      alpha=0.9
     ) +
-    geom_text(
-      data=from_nodes_counts,
-      aes(x=long, y=lat, label=ifelse(!is.na(governance), label, "")), 
-      size=3,
-      family="sans-serif"
-    ) +
-    scale_edge_alpha('Edge direction', guide='edge_direction') +
+    coord_fixed() +
+    scale_size_continuous(range=c(5, 20)) +
+    scale_linewidth(range=c(0.5,5)) +
+    public_private_fill_scale +
+    public_private_colour_scale +
     labs(
-      title="Movement of Collections from Museums"
+      title="Pathways Taken by Museum Collections"
     ) +
-    network_theme
-}
-
-collection_types_in_moves <- function() {
-   coll_types <- dispersal_events |>
-    mutate(
-      # replace single quotes with double except for internal
-      collection_type = str_replace_all(collection_type, "^\\[|\\]$", function(x) gsub("'", "\"", x)),
-      collection_type = str_replace_all(collection_type, "'([^']+)'", "\"\\1\""),
-      # replace empty lists with unknown 
-      collection_type = ifelse(collection_type == "['']", '["unknown"]', collection_type),
-      # remove extra whitespace
-      collection_type = str_replace_all(collection_type, "\\s*,\\s*", ","),
-      distance = calculate_distance(origin_lat, origin_long, destination_lat, destination_long)
-    ) |>
-    mutate(collection_type = lapply(collection_type, fromJSON)) |>
-    unnest_longer(collection_type) |>
-    group_by(collection_type) |>
-    summarize(
-      mean_distance = mean(distance),
-      count = n()
-    ) |>
-    ungroup() |>
-   arrange(desc(mean_distance))
-  return(as.data.frame(coll_types)[["collection_type"]]) 
-}
-
-distances_scatter <- function(group_by_category, highlighted_collections) {
-  y_label <- paste(group_by_category, "of origin museum")
-
-  if (group_by_category == "Governance") {
-    group_by_category <- "origin_governance"
-  } else if (group_by_category == "Size") {
-    group_by_category <- "origin_size"
-  } else if (group_by_category == "Subject Matter") {
-    group_by_category <- "origin_subject"
-  } else if (group_by_category == "Accreditation") {
-    group_by_category <- "origin_accreditation"
-  } else if (group_by_category == "Country/Region") {
-    group_by_category <- "origin_region"
-  }
-
-  collection_movements <- dispersal_events |>
-    mutate(
-      # replace single quotes with double except for internal
-      collection_type = str_replace_all(collection_type, "^\\[|\\]$", function(x) gsub("'", "\"", x)),
-      collection_type = str_replace_all(collection_type, "'([^']+)'", "\"\\1\""),
-      # replace empty lists with unknown 
-      collection_type = ifelse(collection_type == "['']", '["unknown"]', collection_type),
-      # remove extra whitespace
-      collection_type = str_replace_all(collection_type, "\\s*,\\s*", ","),
-      distance = calculate_distance(origin_lat, origin_long, destination_lat, destination_long),
-      collection = paste0(collection, " (", origin_museum, ")")
+    network_theme +
+    theme(
+      axis.title=element_text(size=0),
+      axis.text=element_text(size=0),
+      legend.position="None"
     )
-
-  chart <- ggplot(
-    collection_movements,
-    aes(
-      x=distance,
-      y=factor(.data[[group_by_category]], museum_attribute_ordering),
-      label=collection,
-      group=collection_type
-    )
-  )
-
-  if (length(highlighted_collections) == 0) {
-    chart <- chart +
-      geom_point(
-        data=collection_movements,
-        shape=21,
-        fill="black",
-        colour="black",
-        alpha=0.5,
-        lwd=1,
-        position=position_jitter(width=0, height=0.2, seed=1)
-      )
-  } else {
-    chart <- chart +
-      geom_point(
-        data=collection_movements |> filter(!str_detect(collection_type, str_c(highlighted_collections, collapse = "|"))),
-        shape=21,
-        fill="black",
-        colour="black",
-        alpha=0.2,
-        lwd=1,
-        position=position_jitter(width=0, height=0.2, seed=1)
-      ) +
-      geom_point(
-        data=collection_movements |> filter(str_detect(collection_type, str_c(highlighted_collections, collapse = "|"))),
-        shape=21,
-        fill="red",
-        colour="red",
-        alpha=0.9,
-        lwd=1,
-        position=position_jitter(width=0, height=0.2, seed=1)
-      )
-  }
-  
-  chart +
-    scale_y_discrete(labels=tidy_labels) +
-    labs(
-      title="Distance Travelled by Collections When Leaving a Closed Museum",
-      x="Distance (km)",
-      y=y_label
-    ) +
-    theme_minimal()
+  movements_plot
 }
