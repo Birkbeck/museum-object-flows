@@ -1,6 +1,8 @@
 import csv
 import json
 
+from bng_latlon import WGS84toOSGB36
+
 
 class PostcodeToLatLong:
     """This class is used to define a mapping from postcodes to latitudes, longitudes,
@@ -43,6 +45,12 @@ class PostcodeToLatLong:
     def get_longitude(self, postcode: str):
         return self._get_geo_info(postcode)["long"]
 
+    def get_bng_x(self, postcode: str):
+        return self._get_geo_info(postcode)["bng_x"]
+
+    def get_bng_y(self, postcode: str):
+        return self._get_geo_info(postcode)["bng_y"]
+
     def get_region(self, postcode: str):
         return self._get_geo_info(postcode)["region"]
 
@@ -53,11 +61,10 @@ class PostcodeToLatLong:
         return self._get_geo_info(postcode)["lad23nm"]
 
     def _get_geo_info(self, postcode: str):
+        if self.saved_geo_info is None:
+            self._open_saved_geo_info()
         try:
             return self.saved_geo_info[postcode]
-        except TypeError:
-            self._open_saved_geo_info()
-            return self._get_geo_info(postcode)
         except KeyError:
             self._add_new_postcode(postcode)
             return self._get_geo_info(postcode)
@@ -73,13 +80,14 @@ class PostcodeToLatLong:
         blank_details = {
             "lat": None,
             "long": None,
+            "bng_x": None,
+            "bng_y": None,
             "region": None,
             "lad23cd": None,
             "lad23nm": None,
         }
         if postcode == "":
-            self._update_saved_geo_info(postcode, blank_details)
-            return
+            return self._update_saved_geo_info(postcode, blank_details)
         initial_letter = self._get_initial_letters(postcode)
         postcode_file = (
             f"{self.postcode_directory_path}/Data/multi_csv/"
@@ -90,20 +98,26 @@ class PostcodeToLatLong:
                 postcode_table = csv.DictReader(f)
                 for row in postcode_table:
                     if postcode in {row["pcd"], row["pcd2"], row["pcds"]}:
-                        self._update_saved_geo_info(
+                        lat = float(row["lat"])
+                        lon = float(row["long"])
+                        bng = WGS84toOSGB36(lat, lon)
+                        return self._update_saved_geo_info(
                             postcode,
                             {
-                                "lat": row["lat"],
-                                "long": row["long"],
+                                "lat": lat,
+                                "long": lon,
+                                "bng_x": bng[0],
+                                "bng_y": bng[1],
                                 "region": self.regions_map[row["rgn"]],
                                 "lad23cd": row["oslaua"],
                                 "lad23nm": self.lads_map.get(row["oslaua"], None),
                             },
                         )
-                        return
         except FileNotFoundError:
-            pass
-        self._update_saved_geo_info(postcode, blank_details)
+            print(f"No postcode directory found for postcode '{initial_letter}'")
+        except Exception as e:
+            print(str(e))
+        return self._update_saved_geo_info(postcode, blank_details)
 
     def _update_saved_geo_info(self, postcode: str, geo_info: dict):
         self.saved_geo_info[postcode] = geo_info

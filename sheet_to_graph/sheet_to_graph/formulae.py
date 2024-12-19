@@ -83,6 +83,16 @@ def get_latitude(table, row_index, postcode_to_lat_long):
     return postcode_to_lat_long.get_latitude(postcode)
 
 
+def get_bng_x(table, row_index, postcode_to_lat_long):
+    postcode = table[row_index]["postcode"]
+    return postcode_to_lat_long.get_bng_x(postcode)
+
+
+def get_bng_y(table, row_index, postcode_to_lat_long):
+    postcode = table[row_index]["postcode"]
+    return postcode_to_lat_long.get_bng_y(postcode)
+
+
 def get_region(table, row_index, postcode_to_lat_long):
     postcode = table[row_index]["postcode"]
     return postcode_to_lat_long.get_region(postcode)

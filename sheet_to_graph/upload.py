@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     postcode_to_lat_long = PostcodeToLatLong(
         "postcode_directory.json",
-        "../data/sources/ONSPD_FEB_2024_UK",
+        "../data/ONSPD_FEB_2024_UK",
     )
 
     print("Defining Tables")
@@ -165,6 +165,20 @@ if __name__ == "__main__":
             FormulaColumn(
                 "latitude",
                 formula=lambda table, row_index: formulae.get_latitude(
+                    table, row_index, postcode_to_lat_long
+                ),
+                property_of="place_id",
+            ),
+            FormulaColumn(
+                "bng_x",
+                formula=lambda table, row_index: formulae.get_bng_x(
+                    table, row_index, postcode_to_lat_long
+                ),
+                property_of="place_id",
+            ),
+            FormulaColumn(
+                "bng_y",
+                formula=lambda table, row_index: formulae.get_bng_y(
                     table, row_index, postcode_to_lat_long
                 ),
                 property_of="place_id",

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b47b171c584c7aea008d7fac33368a439cb904fc8e97ddb84fbeec565d753d32"
+            "sha256": "8030b1f26c7884458505bacae50d339f05a8964006c124b6eb7aa89e68fafa01"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,6 +16,13 @@
         ]
     },
     "default": {
+        "bng-latlon": {
+            "hashes": [
+                "sha256:2428c3949907754b9c5db8abb34ac5d1ccbc190a131678ea74c76d146095f3d3"
+            ],
+            "index": "pypi",
+            "version": "==1.1"
+        },
         "edtf": {
             "hashes": [
                 "sha256:7393c570b4838c8cbc05b0687c6ea0578039ba007c8ce125206f44f18f2dea5d",

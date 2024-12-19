@@ -180,13 +180,18 @@ RETURN {
       (recipient_type)-[:SUB_TYPE_OF*0..]->(recipient_general_type:Type)-[:SUB_TYPE_OF]->(:Type {type_name: "actor"})
       | recipient_general_type.type_name
     ][0],
+    origin_id: origin.place_id,
     origin_latitude: origin.latitude,
-    origin_longitute: origin.longitude,
+    origin_longitude: origin.longitude,
+    origin_x: origin.bng_x,
+    origin_y: origin.bng_y,
     origin_region: origin.region,
     origin_country: origin.country,
     destination_id: destination.place_id,
     destination_latitude: destination.latitude,
-    destination_longitute: destination.longitude,
+    destination_longitude: destination.longitude,
+    destination_x: destination.bng_x,
+    destination_y: destination.bng_y,
     destination_region: destination.region,
     destination_country: destination.country
 } as record

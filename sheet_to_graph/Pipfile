@@ -8,6 +8,7 @@ neo4j = "*"
 openpyxl = "*"
 pytest = "*"
 edtf = "*"
+bng-latlon = "*"
 
 [dev-packages]
 
