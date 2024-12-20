@@ -16,6 +16,7 @@ eventsUI <- function(id) {
       DTOutput(NS(id, "eventTypesGlossary"))
     ),
     hr(style=hr_style),
+
     fluidRow(
       h3("Events and Participants"),
       p("Within our data model, events can have senders and recipients (both actors), and can involve collections or objects."),
@@ -110,6 +111,50 @@ eventsUI <- function(id) {
       )
     ),
     hr(style=hr_style),
+
+    fluidRow(
+      h3("Events and Participants by Museum Type"),
+      sidebarLayout(
+        sidebarPanel(
+          selectInput(
+            NS(id, "museumsFilterField"),
+            label="Filter museums by:",
+            choices=c("No filter", field_names$name),
+            selected="Governance"
+          ),
+          uiOutput(NS(id, "subjectChoices")),
+          pickerInput(
+            NS(id, "museumsChoicesField"),
+            "Show Only:", 
+            choices=NULL,
+            selected=NULL,
+            options=pickerOptions(
+              actionsBox=TRUE, 
+              size=10,
+              selectedTextFormat="count > 3"
+            ), 
+            multiple=TRUE
+          ),
+          selectInput(
+            NS(id, "museumVsEventDimension2"),
+            label="Event/recipient:",
+            choices=c("First event", "Last known event", "First recipient", "Last known recipient"),
+            selected="First event"
+          ),
+          selectInput(
+            NS(id, "eventParticipantGranularity"),
+            label="Event/recipient granularity:",
+            choices=c("Most general", "Core categories", "Most specific"),
+            selected="Core categories"
+          ),
+        ),
+        mainPanel(
+          plotlyOutput(NS(id, "museumVsEventMatrix"), height=900)
+        )
+      )
+    ),
+    hr(style=hr_style),
+
     fluidRow(
       pickerInput(
         NS(id, "senderFilter"),
@@ -445,6 +490,107 @@ eventsServer <- function(id) {
           collection_types
         )
     })
+
+    filter_field <- reactive({
+      if (filter_field_1() == "main_subject" && specific_subject_filter() != "All") {
+        return("subject_matter")
+      }
+      return(filter_field_1())
+    })
+    filter_field_1 <- reactive({
+      req(input$museumsFilterField)
+      if (input$museumsFilterField == "No filter") {
+        return("No filter")
+      }
+      return(
+        filter(field_names, name==input$museumsFilterField)$value[1]
+      )
+    })
+    filter_field_label <- reactive({input$museumsFilterField})
+    choices <- reactive({
+      req(input$museumsChoicesField)
+      if (filter_field() != "subject_matter") {
+        return(
+          filter(
+            filter_field_choices,
+            label %in% input$museumsChoicesField
+            & filter_field_1() %in% field
+          )$value
+        )
+      } else {
+        return (
+          filter(
+            subject_filter_field_choices,
+            subject_matter %in% input$museumsChoicesField
+          )$subject_matter
+        )
+      }
+    })
+    specific_subject_filter <- reactive({
+      req(input$subjectFilterField)
+      if (input$subjectFilterField == "All") {
+        return("All")
+      } else {
+        return(
+          filter(
+            filter_field_choices,
+            label == input$subjectFilterField
+          )$value
+        )
+      }
+    })
+    observeEvent(filter_field_1(), {
+      freezeReactiveValue(input, "museumsChoicesField")
+      choices <- filter_field_choices |> filter(field==filter_field_1())
+      selected_choices <- choices |> filter(!value %in% by_default_ignore)
+      if (filter_field_1() == "main_subject") {
+        output$subjectChoices <- renderUI({
+          selectInput(
+            NS(id, "subjectFilterField"),
+            label="Filter subject:",
+            choices=c("All", choices$label),
+            selected="All"
+          )
+        })
+      } else {
+        output$subjectChoices <- renderUI({})
+      }
+      updatePickerInput(
+        inputId="museumsChoicesField",
+        choices=choices$label,
+        selected=selected_choices$label
+      ) 
+    })
+    observeEvent(specific_subject_filter(), {
+      if (specific_subject_filter() == "All") {
+        choices <- filter_field_choices |> filter(field==filter_field_1())
+        updatePickerInput(
+          inputId="museumsChoicesField",
+          choices=choices$label,
+          selected=choices$label
+        )
+      } else {
+        choices <- specific_subject_filter_field_choices |> filter(main_subject==specific_subject_filter())
+        updatePickerInput(
+          inputId="museumsChoicesField",
+          choices=choices$subject_matter,
+          selected=choices$subject_matter
+        )
+      }
+    })
+    museum_vs_event_dimension_2 <- reactive({input$museumVsEventDimension2})
+    event_participant_granularity <- reactive({input$eventParticipantGranularity})
+    output$museumVsEventMatrix <- renderPlotly({
+      museum_vs_event_matrix(
+        dispersal_events,
+        filter_field(),
+        filter_field_label(),
+        choices(),
+        museum_vs_event_dimension_2(),
+        event_participant_granularity()
+      )
+    })
+    
     output$downloadEventsTable <- downloadHandler(
       filename = function() {
         paste('dispersal-events-data-', Sys.Date(), '.csv', sep='')
@@ -572,4 +718,89 @@ event_types_hierarchy <- function() {
       title="Hierarchy of event types involved in dispersal of museum collections"
     ) +
     type_hierarchy_theme
+}
+
+museum_vs_event_matrix <- function(events, filter_field, y_label, choices, dimension_2, dimension_2_granularity) {
+  recipient <- dimension_2 %in% c("First recipient", "Last known recipient")
+  if (dimension_2 == "First event") {
+    events <- events |> filter(event_stage_in_path == 0)
+  } else if (dimension_2 == "First recipient") {
+    events <- events |>
+      filter(recipient_id != "") |>
+      group_by(collection_id) |>
+      filter(event_stage_in_path == min(event_stage_in_path)) |>
+      ungroup() |>
+      mutate(
+        recipient_type = ifelse(recipient_type=="actor", "unknown", recipient_type),
+        recipient_core_type = ifelse(is.na(recipient_core_type), recipient_type, recipient_core_type),
+        recipient_general_type = ifelse(is.na(recipient_general_type), recipient_core_type, recipient_general_type)
+      )
+  } else if (dimension_2 == "Last known event") {
+    events <- events |>
+      group_by(collection_id) |>
+      filter(event_stage_in_path == max(event_stage_in_path)) |>
+      ungroup()
+  } else if (dimension_2 == "Last known recipient") {
+    events <- events |>
+      filter(!is.na(recipient_id)) |>
+      group_by(collection_id) |>
+      filter(event_stage_in_path == max(event_stage_in_path)) |>
+      ungroup() |>
+      mutate(
+        recipient_type = ifelse(recipient_type=="actor", "unknown", recipient_type),
+        recipient_core_type = ifelse(is.na(recipient_core_type), recipient_type, recipient_core_type),
+        recipient_general_type = ifelse(is.na(recipient_general_type), recipient_core_type, recipient_general_type)
+      )
+  }
+  if (recipient && dimension_2_granularity == "Most general") {
+    x_axis <- "recipient_general_type"
+    x_axis_label <- "Recipient Type (most general)"
+  } else if (recipient && dimension_2_granularity == "Core categories") {
+    x_axis <- "recipient_core_type"
+    x_axis_label <- "Recipient Type (core category)"
+  } else if (recipient && dimension_2_granularity == "Most specific") {
+    x_axis <- "recipient_type"
+    x_axis_label <- "Recipient Type (most specific)"
+  } else if (!recipient && dimension_2_granularity == "Most general") {
+    x_axis <- "event_core_type"
+    x_axis_label <- "Event Type (core category)"
+  } else if (!recipient && dimension_2_granularity == "Core categories") {
+    x_axis <- "event_core_type"
+    x_axis_label <- "Event Type (core category)"
+  } else {
+    x_axis <- "event_type"
+    x_axis_label <- "Event Type (most specific)"
+  }
+  if (filter_field == "governance_main") {
+    filter_field <- "governance_broad"
+  } else if (filter_field == "main_subject") {
+    filter_field <- "subject_matter_broad"
+  }
+  y_axis <- paste0("initial_museum_", filter_field)
+  title <- paste(y_label, "of Initial Museum vs", dimension_2)
+  events_summary <- events |>
+    filter(.data[[y_axis]] %in% choices) |>
+    group_by(.data[[x_axis]], .data[[y_axis]]) |>
+    summarize(count=n()) |>
+    ungroup()
+  ggplot(
+    events_summary,
+    aes(
+      x=.data[[x_axis]],
+      y=factor(.data[[y_axis]], museum_attribute_ordering)
+    )
+  ) +
+    geom_tile(aes(fill=count), show.legend=FALSE) +
+    geom_text(aes(label=count)) +
+    scale_y_discrete(labels=tidy_labels) +
+    scale_fill_continuous(low="white", high="purple") +
+    labs(
+      title=title,
+      y=y_label,
+      x=x_axis_label
+    ) +
+    theme_minimal() +
+    theme(
+      axis.text.x=element_text(angle=45, hjust=1, vjust=1)
+    )
 }
