@@ -8,6 +8,7 @@ movementsUI <- function(id) {
         sidebarPanel(width=3, dispersalFiltersUI(NS(id, "dispersalFilters"))),
         mainPanel(
           plotOutput(NS(id, "movementsMap"), width="80%", height="850px"),
+          plotlyOutput(NS(id, "movementsScatter"), height="200px", width="100%"),
           tagList(
             tags$span(
               tags$strong("Display: "),
@@ -109,6 +110,17 @@ movementsServer <- function(id) {
 
     output$movementsMap <- renderPlot({
       generate_movements_map(
+        filtered_sequences(),
+        ownershipChangesStart(),
+        ownershipChangesEnd(),
+        input$`dispersalFilters-grouping`,
+        input$`dispersalFilters-showTransactionCounts`,
+        steps_or_first_last()
+      )
+    })
+
+    output$movementsScatter <- renderPlotly({
+      generate_movements_scatter(
         filtered_sequences(),
         ownershipChangesStart(),
         ownershipChangesEnd(),
@@ -307,4 +319,82 @@ generate_movements_map <- function(sequences,
       legend.position="None"
     )
   movements_plot
+}
+
+calculate_distance <- function(lat1, lon1, lat2, lon2) {
+  # Convert degrees to radians
+  radians <- function(degrees) {
+    degrees * pi / 180
+  }
+  earth_radius <- 6371
+  dlat <- radians(lat2 - lat1)
+  dlon <- radians(lon2 - lon1)
+  lat1 <- radians(lat1)
+  lat2 <- radians(lat2)
+  # Haversine formula
+  a <- sin(dlat / 2) * sin(dlat / 2) +
+    cos(lat1) * cos(lat2) * sin(dlon / 2) * sin(dlon / 2)
+  c <- 2 * atan2(sqrt(a), sqrt(1 - a))
+  # Distance in kilometers
+  distance <- earth_radius * c
+  return(distance)
+}
+
+generate_movements_scatter <- function(sequences,
+                                       start_position,
+                                       end_position,
+                                       grouping_dimension,
+                                       show_transaction_counts,
+                                       steps_or_first_last) {
+  grouping_dimension <- list(
+    "Actor Sector"="sector",
+    "Actor Type (Core Categories)"="core_type",
+    "Actor Type (Most General)"="general_type",
+    "Actor Type (Most Specific)"="type"
+  )[grouping_dimension]
+  sender_grouping_dimension <- paste0("sender_", grouping_dimension)
+  recipient_grouping_dimension <- paste0("recipient_", grouping_dimension)
+
+  jumps <- sequences |>
+    filter(
+      sender_position >= start_position,
+      recipient_position <= end_position,
+      !is.na(origin_x),
+      !is.na(destination_x)
+    ) |>
+    mutate(
+      label=paste(
+        collection_description,
+        "from:",
+        sender_name,
+        "to:",
+        recipient_name
+      ),
+      distance=calculate_distance(
+        origin_latitude,
+        origin_longitude,
+        destination_latitude,
+        destination_longitude
+      )
+    )
+
+  ggplot(
+    jumps,
+    aes(x=distance, label=label)
+  ) +
+    geom_point(
+      aes(y=""),
+      position=position_jitter(width=0, height=0.5, seed=1),
+      alpha=0.5
+    ) +
+    labs(
+      title = "Distances travelled by collections",
+      x = "Distance (km)",
+      y = ""
+    ) +
+    theme_classic() +
+    theme(
+      axis.title.y = element_text(size=0),
+      axis.text.y = element_text(size=0)
+    )
 }
