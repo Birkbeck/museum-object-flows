@@ -87,11 +87,11 @@ function(input, output, session) {
               lengthUI("length"),
             ),
             tabPanel(
-              "Dispersal: Actors",
+              "Post-closure: Actors",
               actorsUI("actors"),
             ),
             tabPanel(
-              "Dispersal: Events",
+              "Post-closure: Events",
               eventsUI("events"),
             ),
             tabPanel(
