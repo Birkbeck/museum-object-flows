@@ -18,6 +18,49 @@ eventsUI <- function(id) {
     hr(style=hr_style),
 
     fluidRow(
+      h3("Events and Participants by Museum Type"),
+      sidebarLayout(
+        sidebarPanel(
+          selectInput(
+            NS(id, "museumsFilterField"),
+            label="Filter museums by:",
+            choices=c("No filter", field_names$name),
+            selected="Governance"
+          ),
+          uiOutput(NS(id, "subjectChoices")),
+          pickerInput(
+            NS(id, "museumsChoicesField"),
+            "Show Only:", 
+            choices=NULL,
+            selected=NULL,
+            options=pickerOptions(
+              actionsBox=TRUE, 
+              size=10,
+              selectedTextFormat="count > 3"
+            ), 
+            multiple=TRUE
+          ),
+          selectInput(
+            NS(id, "museumVsEventDimension2"),
+            label="Event/recipient:",
+            choices=c("First event", "Last known event", "First recipient", "Last known recipient"),
+            selected="First event"
+          ),
+          selectInput(
+            NS(id, "eventParticipantGranularity"),
+            label="Event/recipient granularity:",
+            choices=c("Most general", "Core categories", "Most specific"),
+            selected="Core categories"
+          ),
+        ),
+        mainPanel(
+          plotlyOutput(NS(id, "museumVsEventMatrix"), height=900)
+        )
+      )
+    ),
+    hr(style=hr_style),
+
+    fluidRow(
       h3("Events and Participants"),
       p("Within our data model, events can have senders and recipients (both actors), and can involve collections or objects."),
       p("The collections or objects involved in events can be labelled with multiple types. When viewing pairings of events and collections/objects, some events are therefore counted more than once. The table only shows collection/object types which occur in more than 3 events."),
@@ -108,49 +151,6 @@ eventsUI <- function(id) {
       ),
       mainPanel(
         plotlyOutput(NS(id, "eventsMatrix"), height=900)
-      )
-    ),
-    hr(style=hr_style),
-
-    fluidRow(
-      h3("Events and Participants by Museum Type"),
-      sidebarLayout(
-        sidebarPanel(
-          selectInput(
-            NS(id, "museumsFilterField"),
-            label="Filter museums by:",
-            choices=c("No filter", field_names$name),
-            selected="Governance"
-          ),
-          uiOutput(NS(id, "subjectChoices")),
-          pickerInput(
-            NS(id, "museumsChoicesField"),
-            "Show Only:", 
-            choices=NULL,
-            selected=NULL,
-            options=pickerOptions(
-              actionsBox=TRUE, 
-              size=10,
-              selectedTextFormat="count > 3"
-            ), 
-            multiple=TRUE
-          ),
-          selectInput(
-            NS(id, "museumVsEventDimension2"),
-            label="Event/recipient:",
-            choices=c("First event", "Last known event", "First recipient", "Last known recipient"),
-            selected="First event"
-          ),
-          selectInput(
-            NS(id, "eventParticipantGranularity"),
-            label="Event/recipient granularity:",
-            choices=c("Most general", "Core categories", "Most specific"),
-            selected="Core categories"
-          ),
-        ),
-        mainPanel(
-          plotlyOutput(NS(id, "museumVsEventMatrix"), height=900)
-        )
       )
     ),
     hr(style=hr_style),
