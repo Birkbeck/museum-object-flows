@@ -50,7 +50,7 @@ class EventsPreprocessor(FilePreprocessor):
                         event_type=event_type_name
                     )[0]["default_recipient_type"]
                 except IndexError:
-                    actor_type = "actor"
+                    actor_type = "unknown"
                 actor_sector = "unknown"
                 actor_id = f"unknown_{actor_type}_{index}"
                 actor_name = f"unknown {actor_type} {index}"
@@ -60,6 +60,7 @@ class EventsPreprocessor(FilePreprocessor):
                         "actor_name": actor_name,
                         "actor_type": actor_type,
                         "actor_sector": actor_sector,
+                        "actor_quantity": "1",
                         "mm_id": "",
                         "actor_address1": "",
                         "actor_address2": "",

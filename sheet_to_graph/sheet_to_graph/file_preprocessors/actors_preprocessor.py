@@ -9,8 +9,9 @@ class ActorsPreprocessor(FilePreprocessor):
     - but invalid mm_ids cause an exception
     """
 
-    def __init__(self, museums: list):
+    def __init__(self, museums: list, events: list):
         self.museums = museums
+        self.events = events
 
     def preprocess(
         self, rows: list, header_row: int = 0, header_mapping: dict = None
@@ -19,6 +20,15 @@ class ActorsPreprocessor(FilePreprocessor):
             rows, header_row=header_row, header_mapping=header_mapping
         )
         for row in preprocessed_actor_rows:
+            row["actor_quantity"] = "1"
+            try:
+                row["actor_quantity"] = str(
+                    [e for e in self.events if e[26] == row["actor_id"]][0][25]
+                )
+            except IndexError:
+                pass
+            if row["actor_quantity"].strip() == "":
+                row["actor_quantity"] = "1"
             row["size"] = ""
             row["governance"] = ""
             row["accreditation"] = ""
@@ -32,6 +42,7 @@ class ActorsPreprocessor(FilePreprocessor):
                 "actor_name": museum["name_of_museum"],
                 "actor_type": "museum",
                 "actor_sector": self._governance_to_sector(museum["governance"]),
+                "actor_quantity": "1",
                 "mm_id": museum["museum_id"],
                 "actor_address1": museum["address_line_1"],
                 "actor_address2": museum["address_line_2"],

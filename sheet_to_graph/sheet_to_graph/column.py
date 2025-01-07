@@ -110,6 +110,8 @@ class Column:
 
     def validate(self, value) -> str:
         """Returns an error message if value fails validation and cannot be added to the column."""
+        if type(value) == int:
+            print(self.name, value)
         clean_value = value.strip()
         validation_error = self._validate(clean_value)
         if validation_error is not None:

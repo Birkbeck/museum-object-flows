@@ -1,7 +1,6 @@
 end_of_existence,definition,type_name,is_core_category,sub_type_of,change_of_ownership,change_of_custody
 False,Generic category for events,event,False,,False,False
-False,Item has been left behind (redundant category?),left,True,event,False,False
-False,Item remains in place,left-in-situ,False,left,False,False
+False,Item remains in place,left-in-situ,True,event,False,False
 False,"Item has been recorded, e.g. for details of condition and construction",recorded,True,event,False,False
 False,"Rescued, e.g. from a fire or to prevent disposal",rescued,True,event,False,False
 False,"Item rescued in some way, e.g. a sunken boat lifted from the water",salvaged,False,rescued,False,False
@@ -17,7 +16,7 @@ False,"Used as a storage facility, e.g. a rail van used as a store",used-for-sto
 False,Used for interpretation purposes,used-interpretation,False,used,False,False
 False,Used for teaching purposes,used-teaching,False,used,False,False
 False,Stored,stored,True,event,False,False
-False,Category of damage and destruction events,damaged/destroyed,True,event,False,False
+True,Category of damage and destruction events,damaged/destroyed,True,event,False,False
 True,Human remains have been buried,interred,False,damaged/destroyed,False,False
 False,Damaged deliberately,vandalised,False,damaged/destroyed,False,False
 False,Damaged accidentally,damaged,False,damaged/destroyed,False,False

@@ -262,6 +262,7 @@ if __name__ == "__main__":
                 ],
                 split_before="?",
             ),
+            OptionalColumn("actor_quantity", property_of="actor_id"),
             Column("mm_id", unique=True, optional=True, property_of="actor_id"),
             Column("actor_address1", ignore=True),
             Column("actor_address2", ignore=True),
@@ -693,7 +694,8 @@ if __name__ == "__main__":
     actors.import_from_list_of_lists(
         file_loader.get_sheet_as_list_of_lists("actors"),
         preprocessor=ActorsPreprocessor(
-            file_loader.get_sheet_as_list_of_lists("museums")
+            file_loader.get_sheet_as_list_of_lists("museums"),
+            file_loader.get_sheet_as_list_of_lists("events"),
         ),
     )
 

@@ -1,16 +1,16 @@
 unknown_instances,private_instances,public_instances,type_name,is_core_category,university_instances,sub_type_of,hybrid_instances,total_instances,third_instances
-567,974,1226,actor,False,124,,2,4995,2102
-3,0,0,unknown,False,0,actor,0,3,0
-16,0,0,no recipient,True,0,actor,0,16,0
-376,895,1225,organisation,False,124,actor,2,4724,2102
+566,979,1230,actor,False,124,,2,5005,2104
+99,0,0,unknown,False,0,actor,0,99,0
+31,0,0,no recipient,True,0,actor,0,31,0
+375,900,1229,organisation,False,124,actor,2,4734,2104
 5,19,26,storage,True,1,organisation,0,56,5
 4,17,26,storage facility,False,1,storage,0,53,5
 0,1,0,garage,False,0,storage,0,1,0
 0,1,0,religious organisation,True,0,organisation,0,1,0
 0,1,0,synagogue,False,0,religious organisation,0,1,0
-355,789,1074,museum/library/archive,True,115,organisation,0,4386,2053
+354,794,1078,museum/library/archive,True,115,organisation,0,4396,2055
 0,0,0,national museum group,False,0,museum/library/archive,0,0,0
-354,787,1023,museum,True,112,museum/library/archive,0,4325,2049
+353,792,1027,museum,True,112,museum/library/archive,0,4335,2051
 0,1,0,museum outreach,False,0,museum,0,1,0
 1,0,1,mobile museum,False,0,museum,0,3,1
 0,2,0,museum (pop up),False,0,museum,0,2,0

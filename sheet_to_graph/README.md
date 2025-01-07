@@ -31,3 +31,7 @@ Use the command `make reset-db` to wipe all nodes and relationships from the neo
 ## Downloading Data from the Database
 
 Use the command `make dump-db` to run pre-specified queries that store the contents of the database in csv files in `../data/query_results`.
+
+## Updating Mapping Museums Data
+
+After updating the Mapping Museums data in the `data` directory, update `config.json` with the new file name.
