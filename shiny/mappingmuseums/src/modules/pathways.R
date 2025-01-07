@@ -1,5 +1,8 @@
 sequences_table_choices <- c(
   "event_stage_in_path",
+  "event_date",
+  "event_date_from",
+  "event_date_to",
   "collection_id",
   "collection_status",
   "collection_description",
