@@ -756,8 +756,7 @@ filtered_sequence_data <- function(
       collection_status %in% collection_status_filter,
       event_id %in% events_with_filtered_destinations$event_id,
       event_id %in% events_with_filtered_recipients$event_id,
-      # it is necessary to add damaged/destroyed here as the core type is not end of existence
-      event_core_type %in% c(event_type_filter, "damaged/destroyed"),
+      event_core_type %in% c(event_type_filter),
     )
 
   if (steps_or_first_last == "First and last actors") {
