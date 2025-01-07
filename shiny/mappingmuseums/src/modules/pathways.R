@@ -184,14 +184,14 @@ generate_pathway_dendrogram <- function(sequences,
                                         show_transaction_counts,
                                         steps_or_first_last) {
 
-  grouping_dimension <- list(
+  grouping_dimension_name <- list(
     "Actor Sector"="sector",
     "Actor Type (Core Categories)"="core_type",
     "Actor Type (Most General)"="general_type",
     "Actor Type (Most Specific)"="type"
   )[grouping_dimension]
-  sender_grouping_dimension <- paste0("sender_", grouping_dimension)
-  recipient_grouping_dimension <- paste0("recipient_", grouping_dimension)
+  sender_grouping_dimension <- paste0("sender_", grouping_dimension_name)
+  recipient_grouping_dimension <- paste0("recipient_", grouping_dimension_name)
 
  dendrogram_data <-  sequences |>
    filter(recipient_position <= end_position)
@@ -262,15 +262,29 @@ generate_pathway_dendrogram <- function(sequences,
         )
       )
     ) |>
-    mutate(
-      name=paste(governance_broad, grouping_dimension, sep="@"),
-      label = ifelse(
-        !is.na(governance_broad), 
-        paste(gsub("_", " ", governance_broad), "Museum"),
-        grouping_dimension
-      )
-    )  |>
     filter(position >= start_position & position <= end_position)
+
+  if (grouping_dimension_name == "sector") {
+    node_counts <- node_counts |>
+      mutate(
+        name=paste(governance_broad, grouping_dimension, sep="@"),
+        label = ifelse(
+          !is.na(governance_broad), 
+          paste(gsub("_", " ", governance_broad), "museum"),
+          paste(grouping_dimension, "sector")
+        )
+      )
+  } else {
+    node_counts <- node_counts |>
+      mutate(
+        name=paste(governance_broad, grouping_dimension, sep="@"),
+        label = ifelse(
+          !is.na(governance_broad), 
+          paste(gsub("_", " ", governance_broad), "museum"),
+          grouping_dimension
+        )
+      )
+  }
 
   count_edges <- dendrogram_data |>
     select(from, to, .data[[sender_grouping_dimension]], sender_governance_broad, .data[[recipient_grouping_dimension]], recipient_governance_broad) |>
@@ -379,6 +393,8 @@ generate_pathway_dendrogram <- function(sequences,
       size=5,
       nudge_x=0.03
     ) +
+    scale_x_continuous(expand=c(0.1, 0)) +
+    scale_y_continuous(expand=c(0.1, 0)) +
     scale_size_continuous(range=c(5, 20)) +
     scale_linewidth(range=c(1,10)) +
     public_private_fill_scale +
