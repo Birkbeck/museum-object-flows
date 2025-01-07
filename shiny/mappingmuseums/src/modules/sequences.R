@@ -49,7 +49,7 @@ sequencesUI <- function(id) {
             sliderInput(
               NS(id, "stagesInOwnershipPath"),
               label="",
-              value=c(1,7),
+              value=c(1,2),
               min=1,
               max=7,
               step=1,
@@ -220,7 +220,7 @@ sequence_network <- function(sequences,
         sector = sapply(strsplit(name, "@"), `[`, 2),
         label = ifelse(
           governance != "NA", 
-          paste(governance, "Museum"), 
+          paste(governance, "museum"), 
           paste("Other", sector, "sector")
         )
       ) |> 
@@ -232,7 +232,7 @@ sequence_network <- function(sequences,
         actor_type = sapply(strsplit(name, "@"), `[`, 2),
         label = ifelse(
           governance != "NA", 
-          paste(governance, "Museum"), 
+          paste(governance, "museum"), 
           actor_type
         )
       ) |> 

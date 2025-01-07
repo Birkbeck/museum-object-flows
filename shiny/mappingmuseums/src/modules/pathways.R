@@ -77,7 +77,7 @@ pathwaysUI <- function(id) {
             sliderInput(
               NS(id, "stagesInOwnershipPath"),
               label="",
-              value=7,
+              value=2,
               min=1,
               max=7,
               step=1,

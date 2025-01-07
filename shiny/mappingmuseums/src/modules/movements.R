@@ -46,7 +46,7 @@ movementsUI <- function(id) {
             sliderInput(
               NS(id, "stagesInOwnershipPath"),
               label="",
-              value=c(1,7),
+              value=c(1,2),
               min=1,
               max=7,
               step=1,
