@@ -1,34 +1,3 @@
-sequences_table_choices <- c(
-  "event_stage_in_path",
-  "event_date",
-  "event_date_from",
-  "event_date_to",
-  "collection_id",
-  "collection_status",
-  "collection_description",
-  "collection_types",
-  "collection_size",
-  "initial_museum_governance",
-  "initial_museum_size",
-  "initial_museum_subject_matter",
-  "initial_museum_region",
-  "sender_name",
-  "event_type",
-  "recipient_name",
-  "event_is_change_of_custody",
-  "event_is_change_of_ownership",
-  "sender_position",
-  "sender_type",
-  "sender_sector",
-  "sender_governance",
-  "sender_town",
-  "recipient_position",
-  "recipient_type",
-  "recipient_sector",
-  "recipient_governance",
-  "recipient_town"
-)
-
 pathwaysUI <- function(id) {
   fluidPage(
     fluidRow(

@@ -1,3 +1,34 @@
+sequences_table_choices <- c(
+  "event_stage_in_path",
+  "event_date",
+  "event_date_from",
+  "event_date_to",
+  "collection_id",
+  "collection_status",
+  "collection_description",
+  "collection_types",
+  "collection_size",
+  "initial_museum_governance",
+  "initial_museum_size",
+  "initial_museum_subject_matter",
+  "initial_museum_region",
+  "sender_name",
+  "event_type",
+  "recipient_name",
+  "event_is_change_of_custody",
+  "event_is_change_of_ownership",
+  "sender_position",
+  "sender_type",
+  "sender_sector",
+  "sender_governance",
+  "sender_town",
+  "recipient_position",
+  "recipient_type",
+  "recipient_sector",
+  "recipient_governance",
+  "recipient_town"
+)
+
 eventsUI <- function(id) {
   fluidPage(
     fluidRow(
@@ -87,6 +118,18 @@ eventsUI <- function(id) {
           choices=c("Core categories", "Most specific"),
           selected="Core categories"
         ),
+        pickerInput(
+          NS(id, "eventStageInPath"),
+          "Stage in path of event",
+          choices=c(1,2,3,4,5,6,7),
+          selected=c(1),
+          options=pickerOptions(
+            actionsBox=TRUE,
+            size=10,
+            selectedTextFormat="count > 7"
+          ),
+          multiple=TRUE
+        ),
         p("Show only events where the collection involved originates in a museum of type:"),
         pickerInput(
             NS(id, "sizeFilter"), 
@@ -150,7 +193,7 @@ eventsUI <- function(id) {
           ),
       ),
       mainPanel(
-        plotlyOutput(NS(id, "eventsMatrix"), height=900)
+        plotlyOutput(NS(id, "eventsMatrix"), height=1200)
       )
     ),
     hr(style=hr_style),
@@ -193,6 +236,18 @@ eventsUI <- function(id) {
         multiple=TRUE
       )
     ),
+    pickerInput(
+      NS(id, "tableSelect"),
+      label="show columns:",
+      choices=sequences_table_choices,
+      selected=sequences_table_choices,
+      options = pickerOptions(
+        actionsBox = TRUE, 
+        size = 10,
+        selectedTextFormat = "count > 3"
+      ), 
+      multiple = TRUE
+    ),
     downloadButton(NS(id, "downloadEventsTable"), label="Download table as CSV"),
     DTOutput(NS(id, "eventsTable"), height=900)
   )
@@ -220,6 +275,7 @@ eventsServer <- function(id) {
     participant_type <- reactive({input$participantType})
     participant_granularity <- reactive({input$participantGranularity})
     event_granularity <- reactive({input$eventGranularity})
+    event_stage_in_path <- reactive({input$eventStageInPath})
     size_filter <- reactive({
       names(tidy_labels_size)[match(input$sizeFilter, tidy_labels_size)]
     })
@@ -350,15 +406,15 @@ eventsServer <- function(id) {
       }
     })
 
-    x_axis_type <- reactive({
+    y_axis_type <- reactive({
       if (participant_type() == "Collection/Object") {
         return("collection")
       } else {
         return(tolower(participant_type()))
       }
     })
-    x_axis_level <- reactive({
-      if (x_axis_type() == "collection") {
+    y_axis_level <- reactive({
+      if (y_axis_type() == "collection") {
         return("_type")
       }
       if (participant_granularity() == "Most general") {
@@ -377,16 +433,17 @@ eventsServer <- function(id) {
       )
     })
     output$eventsMatrix <- renderPlotly({
-      x_axis <- paste0(x_axis_type(), x_axis_level())
-      title <- paste0("Frequency of Event / ", participant_type(), " Pairs")
+      y_axis <- paste0(y_axis_type(), y_axis_level())
+      title <- paste0("Frequency of ", participant_type(), " / Event Pairs")
       events_vs_participants <- events_and_participants() |>
+        filter((event_stage_in_path+1) %in% event_stage_in_path()) |>
         filter(initial_museum_size %in% size_filter()) |>
         filter(initial_museum_governance %in% governance_filter() | initial_museum_governance_broad %in% governance_filter()) |>
         filter(initial_museum_accreditation %in% accreditation_filter()) |>
         filter(initial_museum_subject_matter_broad %in% subject_filter()) |>
         filter(initial_museum_region %in% region_filter() | initial_museum_country %in% region_filter())
       if (participant_type() == "Collection/Object") {
-        x_axis_label <- paste0(participant_type(), " Type (Wikidata Types)")
+        y_axis_label <- paste0(participant_type(), " Type (Wikidata Types)")
         events_vs_participants <- events_vs_participants |>
           mutate(
             event_type = .data[[event_column_name()]],
@@ -404,14 +461,14 @@ eventsServer <- function(id) {
           filter(sum(count) > 3) |>
           ungroup()
       } else {
-        x_axis_label <- paste0(participant_type(), " Type ", "(", participant_granularity(), ")")
+        y_axis_label <- paste0(participant_type(), " Type ", "(", participant_granularity(), ")")
         events_vs_participants <- events_vs_participants |>
           mutate(
             event_type = .data[[event_column_name()]],
             participant_type = ifelse(
               is.na(.data[[paste0(tolower(participant_type()), "_governance_broad")]]),
-              .data[[x_axis]],
-              paste0(.data[[x_axis]], " (", .data[[paste0(tolower(participant_type()), "_governance_broad")]], ")")
+              .data[[y_axis]],
+              paste0(.data[[y_axis]], " (", .data[[paste0(tolower(participant_type()), "_governance_broad")]], ")")
             )
           ) |>
           group_by(event_type, participant_type) |>
@@ -447,7 +504,7 @@ eventsServer <- function(id) {
           event_type=factor(event_type, levels=c("All events", unique_event_types)),
           participant_type=factor(participant_type, levels=c("All participants", unique_participant_types))
         )
-      ggplot(events_vs_participants, aes(y=event_type, x=participant_type, fill=count)) +
+      ggplot(events_vs_participants, aes(x=event_type, y=participant_type, fill=count)) +
         geom_tile(show.legend=FALSE) +
         geom_text(aes(label=count)) +
         geom_hline(yintercept=1.5) +
@@ -455,8 +512,8 @@ eventsServer <- function(id) {
         scale_fill_continuous(low="white", high="purple") +
         labs(
           title=title,
-          y="Event Type",
-          x=x_axis_label
+          x="Event Type",
+          y=y_axis_label
         ) +
         theme_minimal() +
         theme(
@@ -469,25 +526,21 @@ eventsServer <- function(id) {
     show_recipient_types <- reactive({input$recipientFilter})
     filtered_events_and_participants <- reactive({
       event_column_name <- event_column_name()
-      sender_column_name <- paste0("sender", x_axis_level())
-      recipient_column_name <- paste0("recipient", x_axis_level())
+      sender_column_name <- paste0("sender", y_axis_level())
+      recipient_column_name <- paste0("recipient", y_axis_level())
       events_and_participants() |>
+        filter((event_stage_in_path+1) %in% event_stage_in_path()) |>
+        filter(initial_museum_size %in% size_filter()) |>
+        filter(initial_museum_governance %in% governance_filter() | initial_museum_governance_broad %in% governance_filter()) |>
+        filter(initial_museum_accreditation %in% accreditation_filter()) |>
+        filter(initial_museum_subject_matter_broad %in% subject_filter()) |>
+        filter(initial_museum_region %in% region_filter() | initial_museum_country %in% region_filter()) |>
         filter(.data[[event_column_name]] %in% show_event_types()) |>
         filter(.data[[sender_column_name]] %in% show_sender_types()) |>
         filter(.data[[recipient_column_name]] %in% show_recipient_types()) |>
-        select(
-          initial_museum_id,
-          initial_museum_name,
-          sender_name,
-          .data[[sender_column_name]],
-          sender_governance,
-          .data[[event_column_name]],
-          recipient_name,
-          recipient_governance,
-          .data[[recipient_column_name]],
-          collection_id,
-          collection_description,
-          collection_types
+        mutate(
+          sender_position=event_stage_in_path,
+          recipient_position=event_stage_in_path + 1
         )
     })
 
@@ -591,6 +644,7 @@ eventsServer <- function(id) {
       )
     })
     
+    selected_columns <- reactive({input$tableSelect})
     output$downloadEventsTable <- downloadHandler(
       filename = function() {
         paste('dispersal-events-data-', Sys.Date(), '.csv', sep='')
@@ -601,7 +655,8 @@ eventsServer <- function(id) {
       contentType = "text/csv"
     )
     output$eventsTable <- renderDT({
-      filtered_events_and_participants()
+      filtered_events_and_participants() |>
+        select(all_of(selected_columns()))
     }, options=list(pageLength=100))
   })
 }
