@@ -322,6 +322,14 @@ def get_recipient_id(table, row_index, actors, event_types):
 
 
 def get_sender_id(table, row_index, actors, event_types):
+    def row_is_transfer_event(row):
+        event_type = event_types.filter(type_name=row["event_type_name"])[0]
+        return (
+            event_type["change_of_ownership"]
+            or event_type["change_of_custody"]
+            or event_type["end_of_existence"]
+        )
+
     event = table[row_index]
     # if event has no type, then it has no sender
     if event["event_type_name"] == "":
@@ -338,6 +346,7 @@ def get_sender_id(table, row_index, actors, event_types):
                 r["collection_id"] == event["collection_id"]
                 or r["collection_id"] == event["coll_subset_of"]
             )
+            and row_is_transfer_event(r)
             and r["actor_recipient_id"] != ""
         ][-1]["actor_recipient_id"]
     # no previous event had a recipient, the sender is the museum

@@ -37,7 +37,10 @@ class EventsPreprocessor(FilePreprocessor):
             event_type_name = row["event_type"].split("?")[0].strip()
             if event_type_name == "":
                 continue
-            event_type = self.event_types.filter(type_name=event_type_name)[0]
+            try:
+                event_type = self.event_types.filter(type_name=event_type_name)[0]
+            except IndexError as e:
+                raise e
             if row["actor_recipient_id"] == "" and any(
                 [
                     event_type["change_of_ownership"],

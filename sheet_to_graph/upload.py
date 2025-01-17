@@ -802,4 +802,6 @@ CREATE (sender)<-[:HAS_SENDER]-(sold_at_auction)-[:HAS_ENABLER]->(auction_house)
         ],
         credentials_file_name=credentials_file_name,
     )
-    sheet_to_graph.translate_and_upload(output_spreadsheet_name="output.xlsx")
+    sheet_to_graph.translate_and_upload(
+        output_spreadsheet_name="output.xlsx", stop_if_validation_fails=True
+    )

@@ -1,9 +1,11 @@
 *.DS_Store
 .Rhistory
 *~*
-data/ONSPD*
 *__pycache__*
 *.Rproj*
+
+data/ONSPD*
+data/dispersal-sheet-2*
 
 sheet_to_graph/credentials.json
 sheet_to_graph/output.xlsx
