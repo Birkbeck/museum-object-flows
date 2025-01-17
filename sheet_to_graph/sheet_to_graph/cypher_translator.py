@@ -86,7 +86,7 @@ class CypherTranslator:
             if column.relation_from is not None or column.relation_to is not None:
                 relationships[column.name] = {}
                 relationships[column.name]["type_labels"] = [column.type_label]
-                relationships[column.name]["properties"] = []
+                relationships[column.name]["properties"] = {}
             if column.relation_from is not None:
                 # if column is a "relation from" column, from node is in relation_from
                 relationships[column.name]["from_type"] = table.columns[
@@ -121,14 +121,14 @@ class CypherTranslator:
                 continue
             if column.type_label_of is not None:
                 type_label = row[column.name]
-                relation_id = row[column.type_label_of]
+                relation_id = column.type_label_of
                 try:
                     relationships[relation_id]["type_labels"].append(type_label)
                 except KeyError:
                     pass
             if column.property_of is not None:
                 property_value = row[column.name]
-                relation_id = row[column.property_of]
+                relation_id = column.property_of
                 try:
                     relationships[relation_id]["properties"][
                         column.name
@@ -152,14 +152,13 @@ class CypherTranslator:
                 or to_value is None
             ):
                 continue
-            # property_assignments = ", ".join(
-            #    [f'{k}: "{v}"' for k, v in relation_details["properties"].items()]
-            # )
+            property_assignments = ", ".join(
+                [f'{k}: "{v}"' for k, v in relation_details["properties"].items()]
+            )
             cypher_query = (
                 f'MATCH (from:{from_type} {{{from_key}: "{from_value}"}})'
                 + " WITH from"
                 + f' MATCH (to:{to_type} {{{to_key}: "{to_value}"}})'
-                + f" MERGE (from)-[:{relation_type}]->(to)"
-                # + f" ON CREATE SET {property_assignments}"
+                + f" MERGE (from)-[:{relation_type} {{{property_assignments}}}]->(to)"
             )
             output_file.write(cypher_query + "\n")

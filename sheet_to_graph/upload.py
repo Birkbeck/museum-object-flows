@@ -526,7 +526,7 @@ if __name__ == "__main__":
                     EnumColumn(
                         "event_type_uncertainty",
                         enums.uncertainty_values,
-                        property_of="event_type_name",
+                        property_of="event_type_id",
                     ),
                 ],
                 split_before="?",
