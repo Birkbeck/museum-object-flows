@@ -154,6 +154,7 @@ RETURN {
     sender_town: sender_location.village_town_city,
     sender_county: sender_location.county,
     sender_postcode: sender_location.postcode,
+    sender_quantity: sender.actor_quantity,
     sender_sector: sender.actor_sector_name,
     sender_type: sender_type.type_name,
     sender_core_type: [
@@ -171,6 +172,7 @@ RETURN {
     recipient_town: recipient_location.village_town_city,
     recipient_county: recipient_location.county,
     recipient_postcode: recipient_location.postcode,
+    recipient_quantity: recipient.actor_quantity,
     recipient_sector: recipient.actor_sector_name,
     recipient_type: recipient_type.type_name,
     recipient_core_type: [

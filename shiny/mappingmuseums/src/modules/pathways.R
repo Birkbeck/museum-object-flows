@@ -197,9 +197,17 @@ generate_pathway_dendrogram <- function(sequences,
       grouping_dimension=.data[[sender_grouping_dimension]],
       position=sender_position
     ) |>
-    select(sender_name, id, governance_broad, grouping_dimension, position) |>
+    select(sender_id, sender_quantity, id, governance_broad, grouping_dimension, position) |>
+    distinct() |>
+    mutate(
+      sender_count=ifelse(sender_quantity=="many",2,as.numeric(sender_quantity))
+    ) |>
     group_by(id, governance_broad, grouping_dimension, position) |>
-    summarize(from_count = n_distinct(sender_name)) |>
+    summarize(
+      from_count=sum(sender_count),
+      from_count_suffix=ifelse("many" %in% sender_quantity, "+", ""),
+      from_count_label=paste0(from_count, from_count_suffix)
+    ) |>
     ungroup()
 
   to_nodes_counts <- dendrogram_data |>
@@ -209,9 +217,17 @@ generate_pathway_dendrogram <- function(sequences,
       grouping_dimension=.data[[recipient_grouping_dimension]],
       position=recipient_position,
     ) |>
-    select(recipient_name, id, governance_broad, grouping_dimension, position) |>
+    select(recipient_id, recipient_quantity, id, governance_broad, grouping_dimension, position) |>
+    distinct() |>
+    mutate(
+      recipient_count=ifelse(recipient_quantity=="many",2,as.numeric(recipient_quantity))
+    ) |>
     group_by(id, governance_broad, grouping_dimension, position) |>
-    summarize(to_count = n_distinct(recipient_name)) |>
+    summarize(
+      to_count=sum(recipient_count),
+      to_count_suffix=ifelse("many" %in% recipient_quantity, "+", ""),
+      to_count_label=paste0(to_count, to_count_suffix)
+    ) |>
     ungroup()
 
   node_counts <- from_nodes_counts |>
@@ -227,6 +243,19 @@ generate_pathway_dendrogram <- function(sequences,
             from_count > to_count,
             from_count,
             to_count
+          )
+        )
+      ),
+      count_label = ifelse(
+        is.na(to_count),
+        from_count_label,
+        ifelse(
+          is.na(from_count), 
+          to_count_label,
+          ifelse(
+            from_count > to_count,
+            from_count_label,
+            to_count_label
           )
         )
       )
@@ -354,7 +383,7 @@ generate_pathway_dendrogram <- function(sequences,
       alpha=0.9
     ) +
     geom_text(
-      aes(label=count)
+      aes(label=count_label)
     ) +
     geom_text(
       aes(label=label),

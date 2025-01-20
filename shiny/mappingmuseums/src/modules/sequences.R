@@ -165,11 +165,19 @@ sequence_network <- function(sequences,
       id=from,
       governance_broad=sender_governance_broad,
       grouping_dimension=.data[[sender_grouping_dimension]],
-      position=sender_position,
+      position=sender_position
     ) |>
-    select(sender_name, id, governance_broad, grouping_dimension, position) |>
+    select(sender_id, sender_quantity, id, governance_broad, grouping_dimension, position) |>
+    distinct() |>
+    mutate(
+      sender_count=ifelse(sender_quantity=="many",2,as.numeric(sender_quantity))
+    ) |>
     group_by(id, governance_broad, grouping_dimension, position) |>
-    summarize(from_count = n_distinct(sender_name)) |>
+    summarize(
+      from_count=sum(sender_count),
+      from_count_suffix=ifelse("many" %in% sender_quantity, "+", ""),
+      from_count_label=paste0(from_count, from_count_suffix)
+    ) |>
     ungroup()
 
   to_nodes_counts <- sequences |>
@@ -179,9 +187,17 @@ sequence_network <- function(sequences,
       grouping_dimension=.data[[recipient_grouping_dimension]],
       position=recipient_position,
     ) |>
-    select(recipient_name, id, governance_broad, grouping_dimension, position) |>
+    select(recipient_id, recipient_quantity, id, governance_broad, grouping_dimension, position) |>
+    distinct() |>
+    mutate(
+      recipient_count=ifelse(recipient_quantity=="many",2,as.numeric(recipient_quantity))
+    ) |>
     group_by(id, governance_broad, grouping_dimension, position) |>
-    summarize(to_count = n_distinct(recipient_name)) |>
+    summarize(
+      to_count=sum(recipient_count),
+      to_count_suffix=ifelse("many" %in% recipient_quantity, "+", ""),
+      to_count_label=paste0(to_count, to_count_suffix)
+    ) |>
     ungroup()
 
   node_counts <- from_nodes_counts |>
@@ -199,11 +215,22 @@ sequence_network <- function(sequences,
             to_count
           )
         )
-      )
+      ),
+      count_label = ifelse(
+        is.na(to_count),
+        from_count_label,
+        ifelse(
+          is.na(from_count), 
+          to_count_label,
+          ifelse(
+            from_count > to_count,
+            from_count_label,
+            to_count_label
+          )
+        )
+      ),
+      name = paste(governance_broad, grouping_dimension, sep="@")
     ) |>
-    mutate(
-      name=paste(governance_broad, grouping_dimension, sep="@"),
-    )  |>
     filter(position >= start_position & position <= end_position)
 
   name_mapping <- node_counts |>
@@ -389,7 +416,7 @@ sequence_network <- function(sequences,
       colour="black",
       alpha=0.9
     ) +
-    geom_text(aes(label=count)) +
+    geom_text(aes(label=count_label)) +
     coord_flip() +
     scale_x_continuous(breaks=name_mapping$name_numeric, labels=str_replace_all(name_mapping$label, "_", " ")) +
     scale_y_continuous(breaks=start_position:end_position) +
