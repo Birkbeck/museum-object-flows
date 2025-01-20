@@ -245,7 +245,7 @@ causesUI <- function(id) {
         ),
       ),
       mainPanel(
-        uiOutput(NS(id, "mainPlot"), height="1000px", width="100%"),
+        uiOutput(NS(id, "mainPlot"), height="1200px", width="100%"),
         uiOutput(NS(id, "mainplotExplanation"))
       )
     ),
@@ -408,7 +408,7 @@ causesServer <- function(id) {
       )
     })
     hierarchy_layout <- reactive({
-      closure_causes_hierarchy_layout(closure_causes_type_counts())
+      closure_causes_hierarchy_layout(closure_causes_type_counts(), reason_level(), reason_filter())
     })
     summary_table <- reactive({
       closure_causes_summary_table(
@@ -463,8 +463,8 @@ causesServer <- function(id) {
     output$mainPlot <- renderUI({
       if (mainPlot() == "reasonsHierarchy") {
         renderPlot(
-          closure_type_hierarchy(hierarchy_layout()),
-          height=1000
+          closure_type_hierarchy(hierarchy_layout(), reason_level()),
+          height=1200
         )
       } else if (mainPlot() == "reasonsBarChart") {
         ggplotly(
@@ -779,7 +779,9 @@ closure_causes_over_time <- function(causes_over_time_table, reason_level) {
     theme_minimal()
 }
 
-closure_causes_hierarchy_layout <- function(closure_causes) {
+closure_causes_hierarchy_layout <- function(closure_causes, reason_level, reason_filter) {
+  closure_causes <- closure_causes |>
+    filter(cause_super_type %in% reason_filter)
   causes_1 <- closure_causes |>
     group_by(cause_super_type) |>
     summarize(frequency = sum(frequency)) |>
@@ -814,10 +816,66 @@ closure_causes_hierarchy_layout <- function(closure_causes) {
       label = paste0(label, " (", frequency, ")")
     ) |>
     select(from, to, label)
-  causes_tree <- rbind(causes_1, causes_2) |>
-    rbind(causes_3) |>
-    filter(to != "") |>
-    filter(!is.na(from))
+  super_types_with_types <- closure_causes |>
+    ungroup() |>
+    filter(!grepl("- other", cause_type)) |>
+    select(cause_super_type) |>
+    distinct()
+  types_with_causes <- closure_causes |>
+    ungroup() |>
+    filter(!grepl("- other", cause)) |>
+    select(cause_type) |>
+    distinct()
+  counter <- 1
+  for (i in 1:nrow(super_types_with_types)) {
+    new_row_1 <- data.frame(
+      from=super_types_with_types$cause_super_type[i],
+      to=as.character(counter),
+      label=""
+    )
+    new_row_2 <- data.frame(
+      from=super_types_with_types$cause_super_type[i],
+      to=paste("z", as.character(counter)),
+      label=""
+    )
+    counter <- counter + 1
+    causes_2 <- causes_2 |>
+      rbind(new_row_1) |>
+      rbind(new_row_2)
+  }
+  for (i in 1:nrow(types_with_causes)) {
+    new_row_1 <- data.frame(
+      from=types_with_causes$cause_type[i],
+      to=as.character(counter),
+      label=""
+    )
+    new_row_2 <- data.frame(
+      from=types_with_causes$cause_type[i],
+      to=paste("z", as.character(counter)),
+      label=""
+    )
+    counter <- counter + 1
+    causes_3 <- causes_3 |>
+      rbind(new_row_1) |>
+      rbind(new_row_2)
+  }
+  if(reason_level == "cause_super_type") {
+    causes_tree <- causes_1 |>
+      filter(to != "") |>
+      filter(!is.na(from)) |>
+      arrange(from, to)
+  } else if(reason_level == "cause_type") {
+    causes_tree <- rbind(causes_1, causes_2) |>
+      filter(to != "") |>
+      filter(!is.na(from)) |>
+      arrange(from, to)
+  } else {
+    causes_tree <- rbind(causes_1, causes_2) |>
+      rbind(causes_3) |>
+      filter(to != "") |>
+      filter(!is.na(from)) |>
+      arrange(from, to)
+  }
   cause_instance_labels <- causes_tree |>
     mutate(name=to) |>
     select(name, label)
@@ -831,7 +889,7 @@ closure_causes_hierarchy_layout <- function(closure_causes) {
   layout |> left_join(cause_instance_labels, by="name")
 }
 
-closure_type_hierarchy <- function(closure_causes_hierarchy_layout) {
+closure_type_hierarchy <- function(closure_causes_hierarchy_layout, reason_level) {
   type_hierarchy_theme <- theme(
     panel.background = element_rect(fill="white"),
     plot.margin = unit(c(1, 1, 1, 1), "cm"),
@@ -844,14 +902,19 @@ closure_type_hierarchy <- function(closure_causes_hierarchy_layout) {
   )
   max_distance <- max(closure_causes_hierarchy_layout$distance_to_root)
   ggraph(closure_causes_hierarchy_layout) + 
-    geom_edge_diagonal(colour="lightgrey") +
+    geom_edge_diagonal(
+      aes(colour=ifelse(label=="", "dummy", "normal")),
+      show.legend=FALSE
+    ) +
     geom_node_point(
+      data=closure_causes_hierarchy_layout |> filter(label!=""),
       alpha=0.7,
-      size=2
+      size=2,
+      show.legend=FALSE
     ) +
     geom_node_text(
       aes(label=label),
-      size=5,
+      size=ifelse(reason_level=="cause", 4, 5),
       angle=0,
       vjust="center",
       hjust="left",
@@ -859,6 +922,9 @@ closure_type_hierarchy <- function(closure_causes_hierarchy_layout) {
     ) +
     coord_flip() +
     scale_y_continuous(limits=c(-max_distance, 1)) +
+    scale_edge_colour_manual(
+      values=c("dummy"="white", "normal"="lightgrey")
+    ) +
     labs(
       title="Hierarchy of types of reason for museum closure"
     ) +
