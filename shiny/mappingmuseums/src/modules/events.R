@@ -666,29 +666,61 @@ eventsServer <- function(id) {
 }
 
 event_types_hierarchy <- function() {
+  # add dummy types to use as spaces between groups
+  counter <- 1
+  types_with_sub_types <- event_types |>
+    filter(!is.na(sub_type_of)) |>
+    select(type_name=sub_type_of) |>
+    distinct()
+  for (i in 1:nrow(types_with_sub_types)) {
+    new_row_1 <- data.frame(
+      type_name = as.character(counter),
+      sub_type_of = types_with_sub_types$type_name[i],
+      is_core_category = FALSE,
+      change_of_ownership = FALSE,
+      change_of_custody = FALSE,
+      end_of_existence = FALSE,
+      definition = "dummy"
+    )
+    new_row_2 <- data.frame(
+      type_name = paste("z", as.character(counter)),
+      sub_type_of = types_with_sub_types$type_name[i],
+      is_core_category = FALSE,
+      change_of_ownership = FALSE,
+      change_of_custody = FALSE,
+      end_of_existence = FALSE,
+      definition = "dummy"
+    )
+    counter <- counter + 1
+    event_types <- event_types |>
+      rbind(new_row_1) |>
+      rbind(new_row_2)
+  }
+ 
   ownership_transfers <- event_types |>
-    clean_names() |>
     filter(change_of_ownership == "TRUE") |>
     select(type_name)
   custody_transfers <- event_types |>
-   clean_names() |>
    filter(change_of_custody == "TRUE") |>
    select(type_name)
   ends_of_existence <- event_types |>
-   clean_names() |>
    filter(end_of_existence == "TRUE") |>
    select(type_name)
   core_types <- event_types |>
-    clean_names() |>
     filter(is_core_category == "TRUE") |>
     select(type_name)
-  
+  dummy_types <- event_types |>
+    filter(definition=="dummy") |>
+    select(type_name)
+ 
   event_edges <- event_types |>
-    filter(sub_type_of != "" & type_name != "closure") |>
+    arrange(sub_type_of, type_name) |>
+    filter(sub_type_of != "") |>
     select(
       from=sub_type_of,
       to=type_name
-    )
+    ) |>
+    mutate(is_to_dummy = to %in% dummy_types$type_name)
   
   graph <- graph_from_data_frame(event_edges)
   V(graph)$distance_to_root <- distances(graph, v=V(graph), to=which(V(graph)$name == "event"))
@@ -738,16 +770,22 @@ event_types_hierarchy <- function() {
       )
     )
   )
+  layout$is_dummy <- layout$name %in% dummy_types$type_name
 
   ggraph(layout) + 
-    geom_edge_diagonal(colour="lightgrey") +
+    geom_edge_diagonal(
+      aes(colour = ifelse(is_to_dummy, "dummy", "normal")),
+      show.legend=FALSE
+    ) +
     geom_node_point(
+      data=layout |> filter(!is_dummy),
       aes(fill=transfer_type, colour=is_core_category),
       shape=21,
       size=4,
       stroke=2
     ) +
     geom_node_text(
+      data=layout |> filter(!is_dummy),
       aes(label=name),
       size=5,
       angle=0,
@@ -772,6 +810,9 @@ event_types_hierarchy <- function() {
       values=c("TRUE"="black", "FALSE"="lightgrey"),
       labels=c("TRUE"="core categories", "FALSE"="non-core categories"),
       name=""
+    ) +
+    scale_edge_colour_manual(
+      values=c("dummy"="white", "normal"="lightgrey")
     ) +
     labs(
       title="Hierarchy of event types involved in dispersal of museum collections"
