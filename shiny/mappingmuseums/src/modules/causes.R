@@ -501,7 +501,7 @@ causesServer <- function(id) {
       )
     })
     output$reasonsLineChartSmall <- renderPlot({
-      closure_causes_over_time(over_time_table(), reason_level())
+      closure_causes_over_time_small(over_time_table(), reason_level())
     })
 
     output$closureCausesTable <- renderDT({
@@ -704,7 +704,11 @@ closure_causes_bar_chart_small <- function(summary_table, reason_level) {
       y="",
       x="Number of museums"
     ) +
-    theme_minimal()
+    scale_y_discrete(labels = function(labels) sapply(labels, shorten_cause_labels)) +
+    theme_minimal()+
+    theme(
+      axis.text.y = element_text(size=6),
+    )
 }
 
 closure_causes_heatmap <- function(summary_table, reason_level, reason_level_name, museum_grouping, museum_grouping_name) {
@@ -741,8 +745,8 @@ closure_causes_heatmap_small <- function(summary_table, reason_level, reason_lev
     )
   ) +
     geom_tile(show.legend=FALSE) +
-    geom_text(aes(label=frequency)) +
     scale_x_discrete(labels=short_labels) +
+    scale_y_discrete(labels = function(labels) sapply(labels, shorten_cause_labels)) +
     scale_fill_continuous(low="white", high="purple") +
     labs(
       title=paste0("Reasons vs ", museum_grouping_name),
@@ -751,6 +755,7 @@ closure_causes_heatmap_small <- function(summary_table, reason_level, reason_lev
     ) +
     theme_minimal() +
     theme(
+      axis.text.y = element_text(size=6),
       axis.text.x = element_text(angle=45, hjust=1, vjust=1)
     )
 }
@@ -766,6 +771,30 @@ closure_causes_over_time <- function(causes_over_time_table, reason_level) {
       data=causes_over_time_table |> filter(period_of_closure=="2010-2014"),
       position=position_jitter(width=1, height=1, seed=1),
       aes(label=.data[[reason_level]], colour=.data[[reason_level]])
+    ) +
+    guides(
+      colour="none"
+    ) +
+    labs(
+      title="Changing Reasons for Museum Closure Over Time",
+      x="Year of Closure",
+      y="Number of museum closures where reason is cited",
+      colour="Reason for closure"
+    ) +
+    theme_minimal()
+}
+
+closure_causes_over_time_small <- function(causes_over_time_table, reason_level) {
+  ggplot(
+    causes_over_time_table, 
+    aes(x=period_of_closure, y=count, colour=.data[[reason_level]])
+  ) +
+    geom_line(alpha=0.7, aes(group=.data[[reason_level]])) +
+    geom_point() +
+    geom_text(
+      data=causes_over_time_table |> filter(period_of_closure=="2010-2014"),
+      position=position_jitter(width=1, height=1, seed=1),
+      aes(label=sapply(.data[[reason_level]], shorten_cause_labels), colour=.data[[reason_level]])
     ) +
     guides(
       colour="none"
@@ -952,3 +981,13 @@ closure_type_hierarchy_small <- function(closure_causes_hierarchy_layout) {
     ) +
     type_hierarchy_theme
 }
+
+shorten_cause_labels <- function(label) {
+  split_label <- strsplit(label, " - ")[[1]]
+    if (length(split_label) > 1) {
+      paste(substr(split_label[1], 1, 7), substr(split_label[length(split_label)], 1, 7), sep = " ... ")
+    } else {
+      substr(label, 1, 7)
+    }
+  }
+
