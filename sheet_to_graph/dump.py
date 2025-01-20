@@ -58,22 +58,22 @@ RETURN {
 
 
 dispersal_events_query = """
-MATCH (initial_museum:Actor)<-[:CONCERNS]-(super_event:SuperEvent)<-[:SUB_EVENT_OF]-(event:Event)-[:INSTANCE_OF]->(event_type:Type)
-WITH initial_museum, super_event, event, event_type
+MATCH (initial_museum:Actor)<-[:CONCERNS]-(super_event:SuperEvent)<-[:SUB_EVENT_OF]-(event:Event)-[event_is_instance_of:INSTANCE_OF]->(event_type:Type)
+WITH initial_museum, super_event, event, event_is_instance_of, event_type
 OPTIONAL MATCH (event)-[:INVOLVES]->(collection:CollectionOrObject)
-WITH initial_museum, super_event, event, event_type, collection
+WITH initial_museum, super_event, event, event_is_instance_of, event_type, collection
 OPTIONAL MATCH (event)-[:HAS_SENDER]->(sender:Actor)-[:INSTANCE_OF]->(sender_type:Type)
-WITH initial_museum, super_event, event, event_type, collection, sender, sender_type
+WITH initial_museum, super_event, event, event_is_instance_of, event_type, collection, sender, sender_type
 OPTIONAL MATCH (event)-[:HAS_RECIPIENT]->(recipient:Actor)-[:INSTANCE_OF]->(recipient_type:Type)
-WITH initial_museum, super_event, event, event_type, collection, sender, sender_type, recipient, recipient_type
+WITH initial_museum, super_event, event, event_is_instance_of, event_type, collection, sender, sender_type, recipient, recipient_type
 OPTIONAL MATCH (event)-[:HAS_ORIGIN]->(origin:Place)
-WITH initial_museum, super_event, event, event_type, collection, sender, sender_type, recipient, recipient_type, origin
+WITH initial_museum, super_event, event, event_is_instance_of, event_type, collection, sender, sender_type, recipient, recipient_type, origin
 OPTIONAL MATCH (event)-[:HAS_DESTINATION]->(destination:Place)
-WITH initial_museum, super_event, event, event_type, collection, sender, sender_type, recipient, recipient_type, origin, destination
+WITH initial_museum, super_event, event, event_is_instance_of, event_type, collection, sender, sender_type, recipient, recipient_type, origin, destination
 OPTIONAL MATCH (sender)-[:HAS_LOCATION]->(sender_location:Place)
-WITH initial_museum, super_event, event, event_type, collection, sender, sender_type, recipient, recipient_type, origin, destination, sender_location
+WITH initial_museum, super_event, event, event_is_instance_of, event_type, collection, sender, sender_type, recipient, recipient_type, origin, destination, sender_location
 OPTIONAL MATCH (recipient)-[:HAS_LOCATION]->(recipient_location:Place)
-WITH initial_museum, super_event, event, event_type, collection, sender, sender_type, recipient, recipient_type, origin, destination, sender_location, recipient_location
+WITH initial_museum, super_event, event, event_is_instance_of, event_type, collection, sender, sender_type, recipient, recipient_type, origin, destination, sender_location, recipient_location
 OPTIONAL MATCH (initial_museum)-[:HAS_LOCATION]->(initial_museum_location:Place)
 RETURN {
     initial_museum_id: initial_museum.mm_id,
@@ -116,6 +116,7 @@ RETURN {
       (event_type)-[:SUB_TYPE_OF*0..]->(event_core_type:Type {is_core_category: TRUE})
       | event_core_type.type_name
     ][0],
+    event_type_uncertainty: event_is_instance_of.event_type_uncertainty,
     event_date: event.event_date,
     event_date_from: event.event_date_from,
     event_date_to: event.event_date_to,

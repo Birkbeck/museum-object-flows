@@ -14,6 +14,8 @@ sequences_table_choices <- c(
   "initial_museum_region",
   "sender_name",
   "event_type",
+  "event_core_type",
+  "event_type_uncertainty",
   "recipient_name",
   "event_is_change_of_custody",
   "event_is_change_of_ownership",

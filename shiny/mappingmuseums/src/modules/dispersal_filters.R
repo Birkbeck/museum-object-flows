@@ -84,6 +84,33 @@ dispersalFiltersUI <- function(id) {
         multiple=TRUE
       )  
     ),
+
+    tagList(
+      tags$span(
+        tags$strong("Show events with uncertainty level: "),
+        tags$i(
+          class = "fa fa-info-circle", # Font Awesome info icon
+          style = "color: #007bff; cursor: pointer;", # Style for visibility
+          `data-toggle` = "popover", # Bootstrap popover attribute
+          `data-placement` = "right", # Position above the icon
+          title = "Show events with uncertainty level",
+          `data-content` = "<p>Filter for events with certain or uncertain types.</p><p><strong>Certain: </strong>Events where the type of event is certain.</p><p><strong>?+: </strong>Events where the type of event is highly likely.</p><p><strong?: </strong>Events where the type of event is probable.</p><p><strong>?-: Events where the type of event is possible.</p>"
+        )
+      ),
+      tags$script(popover_js),
+      pickerInput(
+        NS(id, "eventTypeUncertaintyFilter"), 
+        "", 
+        choices=c("certain", "?+", "?", "?-"),
+        selected=c("certain", "?+", "?", "?-"),
+        options=pickerOptions(
+          actionsBox=TRUE, 
+          size=10,
+          selectedTextFormat="count > 3"
+        ), 
+        multiple=TRUE
+      )  
+    ),
     
     tagList(
       tags$span(
@@ -372,6 +399,7 @@ dispersalFiltersServer <- function(id, stepsOrFirstLast) {
     transaction_type_filter <- reactive({input$transactionTypeFilter})
 
     event_type_filter <- reactive({input$eventTypeFilter})
+    event_type_uncertainty_filter <- reactive({input$eventTypeUncertaintyFilter})
     collection_status_filter <- reactive({
       filter(
         collection_status_labels,
@@ -545,6 +573,7 @@ dispersalFiltersServer <- function(id, stepsOrFirstLast) {
         all_sequences(),
         input$grouping,
         event_type_filter(),
+        event_type_uncertainty_filter(),
         collection_status_filter(),
         initial_museum_ids(),
         sequence_end(),
@@ -604,6 +633,7 @@ filtered_sequence_data <- function(
     sequential_events,
     grouping_dimension,
     event_type_filter,
+    event_type_uncertainty_filter,
     collection_status_filter,
     initial_museum_ids,
     show_ending_points,
@@ -757,6 +787,7 @@ filtered_sequence_data <- function(
       event_id %in% events_with_filtered_destinations$event_id,
       event_id %in% events_with_filtered_recipients$event_id,
       event_core_type %in% c(event_type_filter),
+      event_type_uncertainty %in% c(event_type_uncertainty_filter),
     )
 
   if (steps_or_first_last == "First and last actors") {
