@@ -11,7 +11,7 @@ pathwaysUI <- function(id) {
       sidebarLayout(
         sidebarPanel(width=3, dispersalFiltersUI(NS(id, "dispersalFilters"))),
         mainPanel(
-          plotOutput(NS(id, "pathwaysNetwork"), width="80%", height="850px"),
+          plotlyOutput(NS(id, "pathwaysNetwork"), width="80%", height="850px"),
           tagList(
             tags$span(
               tags$strong("Display: "),
@@ -110,7 +110,7 @@ pathwaysServer <- function(id) {
       ownershipChangesEnd(debouncedStagesInOwnershipPath())
     })
 
-    output$pathwaysNetwork <- renderPlot({
+    output$pathwaysNetwork <- renderPlotly({
       generate_pathway_dendrogram(
         filtered_sequences(),
         ownershipChangesStart(),
@@ -375,6 +375,7 @@ generate_pathway_dendrogram <- function(sequences,
     ) +
     geom_point(
       aes(
+        label=label,
         fill=grouping_dimension_and_governance_to_sector(governance_broad, grouping_dimension),
         size=count
       ),
@@ -386,10 +387,8 @@ generate_pathway_dendrogram <- function(sequences,
       aes(label=count_label)
     ) +
     geom_text(
-      aes(label=label),
-      hjust="left",
+      aes(y=y-0.06,label=label),
       size=5,
-      nudge_x=0.03
     ) +
     scale_x_continuous(expand=c(0.1, 0)) +
     scale_y_continuous(expand=c(0.1, 0)) +
@@ -420,6 +419,12 @@ generate_pathway_dendrogram <- function(sequences,
       )
   }
   
-  transaction_pathways_plot
+  transaction_pathways_plot |>
+    ggplotly(tooltip=c("label", "count")) |>
+    layout(
+      showlegend=FALSE,
+      xaxis=list(title="", zeroline=FALSE, showticklabels=FALSE),
+      yaxis=list(title="", zeroline=FALSE, showticklabels=FALSE)
+    ) 
 
 }
