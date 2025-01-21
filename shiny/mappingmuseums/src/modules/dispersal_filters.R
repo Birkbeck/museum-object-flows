@@ -795,19 +795,26 @@ filtered_sequence_data <- function(
       group_by(collection_id) |>
       filter(recipient_position==max(recipient_position)) |>
       mutate(
+        sender_id=initial_museum_id,
         sender_name=initial_museum_name,
         sender_type=initial_museum_type,
         sender_core_type=initial_museum_core_type,
         sender_general_type=initial_museum_general_type,
         sender_sector=initial_museum_sector,
+        sender_size=initial_museum_size,
         sender_governance=initial_museum_governance,
         sender_governance_broad=initial_museum_governance_broad,
+        sender_subject_matter=initial_museum_subject_matter,
+        sender_subject_matter_broad=initial_museum_subject_matter_broad,
+        sender_accreditation=initial_museum_accreditation,
         sender_town=initial_museum_town,
         sender_position=1,
+        sender_quantity=1,
         recipient_position=2,
         from=paste(initial_museum_governance_broad, .data[[initial_museum_grouping_dimension]], sender_position, sep="@"),
         to=paste(recipient_governance_broad, .data[[recipient_grouping_dimension]], recipient_position, sep="@")
-      )
+      ) |>
+      ungroup()
     }
   sequential_events    
 }
