@@ -1,7 +1,40 @@
-museums <- read_csv("data/all_museums_data.csv") |>
+dispersal_events_csv <- "data/query_results/dispersal_events.csv"
+dispersal_events <- read_csv(dispersal_events_csv)
+
+closure_reasons <- dispersal_events |>
+    select(
+      museum_id=initial_museum_id,
+      museum_name=initial_museum_name,
+      cause=super_event_cause_types,
+      super_causes=super_event_causes
+    ) |>
+    distinct() |>
+    separate_rows(cause, sep = "; ") |>
+    separate_wider_delim(
+      cause,
+      " - ",
+      names=c("closure_reason_top_level", "closure_reason_mid_level", "closure_reason_low_level"),
+      too_few="align_start"
+    ) |>
+    mutate(
+      closure_reason_mid_level = ifelse(
+        is.na(closure_reason_mid_level),
+        paste(closure_reason_top_level, "-", "other"),
+        paste(closure_reason_top_level, "-", closure_reason_mid_level)
+      ),
+      closure_reason_low_level = ifelse(
+        is.na(closure_reason_low_level),
+        paste(closure_reason_mid_level, "-", "other"),
+        paste(closure_reason_mid_level, "-", closure_reason_low_level)
+      )
+    )
+
+closure_outcomes <- read_csv("data/closure_outcomes.csv")
+museums_including_crown_dependencies <- read_csv("data/all_museums_data.csv") |>
+  left_join(closure_outcomes, by="museum_id")
+museums <- museums_including_crown_dependencies |>
   filter(!nation %in% c("Channel Islands", "Isle of Man")) |>
   mutate(`No filter`="All")
-museums_including_crown_dependencies <- read_csv("data/all_museums_data.csv")
 
 regions <- read_csv("data/regions.csv") |>
   mutate(group=paste(L1, L2, L3))
@@ -11,9 +44,6 @@ actor_types <- read_csv(actor_types_csv)
  
 event_types_csv <- "data/query_results/event_types.csv"
 event_types <- read_csv(event_types_csv)
-
-dispersal_events_csv <- "data/query_results/dispersal_events.csv"
-dispersal_events <- read_csv(dispersal_events_csv)
 
 explanations <- read_csv("explanations.csv")
 

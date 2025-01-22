@@ -1,0 +1,447 @@
+---
+title: "Closure Scenarios"
+author: "George Alexander Wright"
+date: "2025-01-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(DT)
+library(ggplot2)
+library(tidyverse)
+
+museums <- read_csv("data/mapping-museums-2025-01-07.csv")
+
+governance_ordering <- c("Unknown", "Private", "Independent", "University", "Other_Government", "Local_Authority", "National")
+outcome_ordering <- c("mostly left", "mostly kept", "mostly stored", "mostly moved", "mostly returned", "mostly transferred", "mostly sold", "mixed")
+recipients_ordering <- c("mostly NA", "mostly civic organisation", "mostly museum/library/archive", "mostly museum", "mostly trader", "mostly individual", "mostly unknown", "mixed")
+
+heatmap_theme <- theme_minimal() +
+  theme(
+    legend.position="non",
+    plot.title = element_text(size=18),
+    axis.title = element_text(size=16),
+    axis.text = element_text(size=12),
+    axis.text.x = element_text(angle=30, hjust=1)
+  )
+```
+
+## Characterizing Closures by Events and Collections
+
+Each museum's closure can be characterized according to the amount of its collection involved in different types of event.
+
+The table below shows only first events (where the museum is the sender) and the collection sizes involved in each event type.
+
+N.B. because only the first event is shown, moved;displayed or transferred;stored are here shown as moved or transferred.
+
+```{r events-collection-descriptions, echo=FALSE}
+closure_outcomes_descriptive <- read_csv("data/query_results/dispersal_events.csv") |>
+  filter(event_stage_in_path == 0) |>
+  select(initial_museum_id, initial_museum_name, event_core_type, collection_size) |>
+  pivot_wider(names_from=event_core_type, values_from=collection_size)
+
+datatable(closure_outcomes_descriptive)
+```
+
+The table below shows the same table as above, but with collection size descriptors replaced with numerical values (all=100, most=80, half=50, some=25, few=5).
+
+```{r events-collections-sizes, echo=FALSE}
+closure_outcomes <- read_csv("data/query_results/dispersal_events.csv") |>
+  filter(event_stage_in_path == 0) |>
+  select(event_id, initial_museum_id, initial_museum_name, event_core_type, collection_size) |>
+  mutate(
+    collection_size=recode(
+      collection_size,
+      "all"=100,
+      "most"=80,
+      "half"=50,
+      "some"=25,
+      "few"=5
+    )
+  ) |>
+  pivot_wider(names_from=event_core_type, values_from=collection_size) |>
+  select(-event_id) |>
+  group_by(initial_museum_id, initial_museum_name) |>
+  summarize(
+    across(everything(), sum, na.rm=TRUE)
+  ) |>
+  ungroup()
+  
+datatable(closure_outcomes)
+
+closure_outcomes <- closure_outcomes |>
+  filter(!initial_museum_id %in% c("mm.domus.SE513"))
+```
+
+### clustering with k-means
+
+Firepower! The Royal Artillery Museum is removed from subsequent analysis
+
+```{r k-means, echo=FALSE}
+numerical_data <- closure_outcomes |>
+  select(-initial_museum_id, -initial_museum_name)
+
+set.seed(123)
+
+wss <- sapply(1:12, function(k) {
+  kmeans(numerical_data, centers = k, nstart = 25)$tot.withinss
+})
+
+# plot(1:12, wss, type = "b", pch = 19, frame = FALSE,
+#      xlab = "Number of clusters K",
+#      ylab = "Total within-clusters sum of squares")
+```
+
+Using 8 clusters:
+
+```{r k-8-clusters, echo=FALSE}
+kmeans_result <- kmeans(numerical_data, centers = 8, nstart = 25)
+
+centroids <- as.data.frame(kmeans_result$centers)
+centroids$cluster <- rownames(centroids)
+centroids <- centroids |>
+  pivot_longer(cols = -cluster, names_to = "dimension", values_to = "value") |>
+  mutate(value=round(value, 0))
+
+ggplot(centroids, aes(x=cluster, y=dimension)) +
+  geom_tile(aes(fill=value)) +
+  geom_text(aes(label=value)) +
+  scale_fill_continuous(low="white", high="violet") +
+  labs(
+    title="Attributes of Cluster Centroids",
+    subtitle="Average proportion of collection involved in each event type",
+    x="Cluster number",
+    y="Event type"
+  ) +
+  heatmap_theme +
+  theme(
+    axis.text.x = element_text(angle=0)
+  )
+```
+
+- Cluster 1: mixed
+- Cluster 2: mostly moved
+- Cluster 3: mostly stored
+- Cluster 4: mostly sold
+- Cluster 5: mostly left
+- Cluster 6: mostly returned
+- Cluster 7: mostly transferred
+- Cluster 8: mostly kept
+
+```{r k-8-cluster-labels, echo=FALSE}
+closure_outcomes <- closure_outcomes |>
+  mutate(
+    cluster = kmeans_result$cluster,
+    cluster_label = case_when(
+      cluster == 1 ~ "mixed",
+      cluster == 2 ~ "mostly moved",
+      cluster == 3 ~ "mostly stored",
+      cluster == 4 ~ "mostly sold",
+      cluster == 5 ~ "mostly left",
+      cluster == 6 ~ "mostly returned",
+      cluster == 7 ~ "mostly transferred",
+      cluster == 8 ~ "mostly kept",
+      TRUE ~ "unknown" # Optional, handles unexpected cluster values
+    )
+  )
+
+datatable(closure_outcomes |> select(initial_museum_id, initial_museum_name, cluster, cluster_label))
+```
+
+```{r closure-outcomes-bars, echo=FALSE}
+closure_outcomes_summary <- closure_outcomes |>
+  group_by(cluster_label) |>
+  summarize(count = n()) |>
+  ungroup()
+
+ggplot(closure_outcomes_summary, aes(x=count, y=reorder(cluster_label, count))) +
+  geom_col(fill="violet") +
+  geom_text(aes(label=count), hjust="left") +
+  labs(
+    title="Frequency of Outcomes",
+    y="Outcome Type",
+    x="Frequency (number of museum closures)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size=18),
+    axis.title = element_text(size=16),
+    axis.text = element_text(size=12)
+  )
+```
+
+## Outcome vs governance
+```{r clusters-vs-governance, echo=FALSE}
+closure_outcomes <- closure_outcomes |>
+  mutate(museum_id=initial_museum_id) |>
+  left_join(museums, by="museum_id")
+
+clusters_vs_governance <- closure_outcomes |>
+  group_by(cluster_label, governance_main) |>
+  summarize(count=n())
+
+contingency_table <- xtabs(count ~ cluster_label + governance_main, data = clusters_vs_governance)
+fisher_test <- fisher.test(contingency_table, simulate.p.value = TRUE, B = 10000)
+print(fisher_test)
+
+ggplot(clusters_vs_governance, aes(x=factor(cluster_label, outcome_ordering), y=factor(governance_main, governance_ordering))) +
+  geom_tile(aes(fill=count)) +
+  geom_text(aes(label=count)) +
+  scale_fill_continuous(low="white", high="violet") +
+  labs(
+    title = "Closure outcomes by museum governance",
+    x = "Outcome",
+    y = "Museum governance"
+  ) +
+  heatmap_theme
+```
+
+## Outcome vs size
+```{r clusters-vs-size, echo=FALSE}
+clusters_vs_size <- closure_outcomes |>
+  group_by(cluster_label, size) |>
+  summarize(count=n())
+
+contingency_table <- xtabs(count ~ cluster_label + size, data = clusters_vs_size)
+fisher_test <- fisher.test(contingency_table, simulate.p.value = TRUE, B = 10000)
+print(fisher_test)
+
+ggplot(clusters_vs_size, aes(x=factor(cluster_label, outcome_ordering), y=size)) +
+  geom_tile(aes(fill=count)) +
+  geom_text(aes(label=count)) +
+  scale_fill_continuous(low="white", high="violet") +
+  labs(
+    title = "Closure outcomes by museum size",
+    x = "Outcome",
+    y = "Museum size"
+  ) +
+  heatmap_theme
+```
+
+## Outcome vs subject matter
+```{r clusters-vs-subject, echo=FALSE, fig.height=8}
+clusters_vs_subject <- closure_outcomes |>
+  group_by(cluster_label, main_subject) |>
+  summarize(count=n())
+
+contingency_table <- xtabs(count ~ cluster_label + main_subject, data = clusters_vs_subject)
+fisher_test <- fisher.test(contingency_table, simulate.p.value = TRUE, B = 10000)
+print(fisher_test)
+
+ggplot(clusters_vs_subject, aes(x=factor(cluster_label, outcome_ordering), y=main_subject)) +
+  geom_tile(aes(fill=count)) +
+  geom_text(aes(label=count)) +
+  scale_fill_continuous(low="white", high="violet") +
+  labs(
+    title = "Closure outcomes by museum subject",
+    x = "Outcome",
+    y = "Museum subject matter"
+  ) +
+  heatmap_theme
+```
+
+## Characterizing Closures by Recipients of Collections
+
+Each museum's closure can be characterized according to the amount of its collection involved in different types of event.
+
+The table below shows only first events (where the museum is the sender) and the collection sizes involved in each event type.
+
+N.B. because only the first event is shown, moved;displayed or transferred;stored are here shown as moved or transferred.
+
+```{r collection-recipients-descriptions, echo=FALSE}
+closure_recipients_descriptive <- read_csv("data/query_results/dispersal_events.csv") |>
+  filter(event_stage_in_path == 0) |>
+  mutate(
+    recipient_core_type=ifelse(
+      is.na(recipient_core_type),
+      recipient_type,
+      recipient_core_type
+    )
+  ) |>
+  select(initial_museum_id, initial_museum_name, recipient_core_type, collection_size) |>
+  pivot_wider(names_from=recipient_core_type, values_from=collection_size)
+
+datatable(closure_recipients_descriptive)
+```
+
+The table below shows the same table as above, but with collection size descriptors replaced with numerical values (all=100, most=80, half=50, some=25, few=5).
+
+```{r collection-recipients-sizes, echo=FALSE}
+closure_recipients <- read_csv("data/query_results/dispersal_events.csv") |>
+  filter(event_stage_in_path == 0) |>
+  mutate(
+    recipient_core_type=ifelse(
+      is.na(recipient_core_type),
+      recipient_type,
+      recipient_core_type
+    )
+  ) |>
+  select(event_id, initial_museum_id, initial_museum_name, recipient_core_type, collection_size) |>
+  mutate(
+    collection_size=recode(
+      collection_size,
+      "all"=100,
+      "most"=80,
+      "half"=50,
+      "some"=25,
+      "few"=5
+    )
+  ) |>
+  pivot_wider(names_from=recipient_core_type, values_from=collection_size) |>
+  select(-event_id) |>
+  group_by(initial_museum_id, initial_museum_name) |>
+  summarize(
+    across(everything(), sum, na.rm=TRUE)
+  ) |>
+  ungroup()
+  
+datatable(closure_recipients)
+
+closure_recipients <- closure_recipients |>
+  filter(!initial_museum_id %in% c("mm.domus.SE513"))
+```
+
+### clustering with k-means
+
+Firepower! The Royal Artillery Museum is removed from subsequent analysis
+
+```{r k-means-recipients, echo=FALSE}
+numerical_data <- closure_recipients |>
+  select(-initial_museum_id, -initial_museum_name)
+
+set.seed(123)
+
+wss <- sapply(1:12, function(k) {
+  kmeans(numerical_data, centers = k, nstart = 25)$tot.withinss
+})
+
+# plot(1:12, wss, type = "b", pch = 19, frame = FALSE,
+#     xlab = "Number of clusters K",
+#    ylab = "Total within-clusters sum of squares")
+```
+
+Using 8 clusters:
+
+```{r k-8-clusters-recipients, echo=FALSE}
+kmeans_result <- kmeans(numerical_data, centers = 8, nstart = 25)
+
+centroids <- as.data.frame(kmeans_result$centers)
+centroids$cluster <- rownames(centroids)
+centroids <- centroids |>
+  pivot_longer(cols = -cluster, names_to = "dimension", values_to = "value") |>
+  mutate(value=round(value, 0))
+
+ggplot(centroids, aes(x=cluster, y=dimension)) +
+  geom_tile(aes(fill=value)) +
+  geom_text(aes(label=value)) +
+  scale_fill_continuous(low="white", high="violet") +
+  labs(
+    title="Attributes of Cluster Centroids",
+    subtitle="Average proportion of collection received by each actor type",
+    x="Cluster number",
+    y="Recipient actor type"
+  ) +
+  heatmap_theme +
+  theme(
+    axis.text.x = element_text(angle=0)
+  )
+```
+
+- Cluster 1: mostly trader
+- Cluster 2: mostly NA
+- Cluster 3: mostly unknown
+- Cluster 4: mostly individual
+- Cluster 5: mostly museum/library/archive
+- Cluster 6: mostly civic organisation
+- Cluster 7: mixed
+- Cluster 8: mostly museum
+
+```{r k-8-cluster-labels-recipients, echo=FALSE}
+closure_recipients <- closure_recipients |>
+  mutate(
+    cluster = kmeans_result$cluster,
+    cluster_label = case_when(
+      cluster == 1 ~ "mostly trader",
+      cluster == 2 ~ "mostly NA",
+      cluster == 3 ~ "mostly unknown",
+      cluster == 4 ~ "mostly individual",
+      cluster == 5 ~ "mostly museum/library/archive",
+      cluster == 6 ~ "mostly civic organisation",
+      cluster == 7 ~ "mixed",
+      cluster == 8 ~ "mostly museum",
+      TRUE ~ "unknown" # Optional, handles unexpected cluster values
+    )
+  )
+
+closure_outcomes <- closure_outcomes |>
+  left_join(
+    closure_recipients |>
+      select(
+        museum_id=initial_museum_id,
+        recipients_cluster=cluster,
+        recipients_cluster_label=cluster_label
+      ),
+    by="museum_id"
+  )
+
+datatable(closure_outcomes |> select(initial_museum_id, initial_museum_name, cluster_label, recipients_cluster_label))
+```
+
+```{r closure-recipients-bars, echo=FALSE}
+closure_recipients_summary <- closure_recipients |>
+  group_by(cluster_label) |>
+  summarize(count = n()) |>
+  ungroup()
+
+ggplot(closure_recipients_summary, aes(x=count, y=reorder(cluster_label, count))) +
+  geom_col(fill="violet") +
+  geom_text(aes(label=count), hjust="left") +
+  labs(
+    title="Frequency of Outcomes",
+    y="Outcome Type",
+    x="Frequency (number of museum closures)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size=18),
+    axis.title = element_text(size=16),
+    axis.text = element_text(size=12)
+  )
+```
+
+```{r recipients-vs-events, echo=FALSE}
+recipients_events_summary <- closure_outcomes |>
+  group_by(cluster_label, recipients_cluster_label) |>
+  summarize(count = n())
+
+contingency_table <- xtabs(count ~ cluster_label + recipients_cluster_label, data = recipients_events_summary)
+fisher_test <- fisher.test(contingency_table, simulate.p.value = TRUE, B = 10000)
+print(fisher_test)
+
+ggplot(
+  recipients_events_summary,
+  aes(
+    x=factor(recipients_cluster_label, recipients_ordering),
+    y=factor(cluster_label, rev(outcome_ordering))
+  )
+) +
+  geom_tile(aes(fill=count)) +
+  geom_text(aes(label=count)) +
+  scale_fill_continuous(low="white", high="violet") +
+  labs(
+    title = "Closure outcomes by event and recipient",
+    x = "Main recipient type",
+    y = "Main event type"
+  ) +
+  heatmap_theme
+```
+
+```{r save-outcomes-table, echo=FALSE}
+closure_outcomes <- closure_outcomes |>
+  select(
+    museum_id=initial_museum_id,
+    outcome_main_event=cluster_label,
+    outcome_main_recipient=recipients_cluster_label
+  )
+write_csv(closure_outcomes, "closure_outcomes.csv")
+```

@@ -917,7 +917,37 @@ short_labels <- c(
   "War_and_conflict-Other"="Other",
   "Mixed-Bygones"="Bygones",
   "Mixed-Encyclopaedic"="Encyclopaedic",
-  "Mixed-Other"="Other"
+  "Mixed-Other"="Other",
+  # recipient outcome
+  "mostly NA"="mostly NA",
+  "mostly civic organisation"="mostly civic organisation",
+  "mostly museum/library/archive"="mostly museum/library/archive",
+  "mostly museum"="mostly museum",
+  "mostly trader"="mostly trader",
+  "mostly individual"="mostly individual",
+  "mostly unknown"="mostly unknown",
+  # event outcome
+  "mostly left"="mostly left",
+  "mostly kept"="mostly kept",
+  "mostly stored"="mostly stored",
+  "mostly moved"="mostly moved",
+  "mostly returned"="mostly returned",
+  "mostly transferred"="mostly transferred",
+  "mostly sold"="mostly sold",
+  "mixed"="mixed",
+  # reason for closure
+  "other"="other",
+  "financial"="financial",
+  "low visitor numbers"="low visitors",
+  "loss of premises"="loss premises",
+  "destruction"="destruction",
+  "collections"="collections",
+  "building"="building",
+  "strategic closure"="strategic",
+  "restructure of host organisation"="restructure of host",
+  "dispute"="dispute",
+  "life events"="life events",
+  "staff"="staff"
 )
 
 very_short_labels <- c(
@@ -1089,7 +1119,37 @@ very_short_labels <- c(
   "War_and_conflict-Other"="Other",
   "Mixed-Bygones"="Bygones",
   "Mixed-Encyclopaedic"="Encyc.",
-  "Mixed-Other"="Other"
+  "Mixed-Other"="Other",
+  # recipient outcome
+  "mostly NA"="mostly NA",
+  "mostly civic organisation"="mostly civic",
+  "mostly museum/library/archive"="mostly m/l/a",
+  "mostly museum"="mostly museum",
+  "mostly trader"="mostly trader",
+  "mostly individual"="mostly indiv",
+  "mostly unknown"="mostly unk",
+  # event outcome
+  "mostly left"="mostly left",
+  "mostly kept"="mostly kept",
+  "mostly stored"="mostly stored",
+  "mostly moved"="mostly moved",
+  "mostly returned"="mostly return",
+  "mostly transferred"="mostly transf",
+  "mostly sold"="mostly sold",
+  "mixed"="mixed",
+  # reason for closure
+  "other"="other",
+  "financial"="financial",
+  "low visitor numbers"="low visitors",
+  "loss of premises"="loss premises",
+  "destruction"="destruction",
+  "collections"="collections",
+  "building"="building",
+  "strategic closure"="strategic",
+  "restructure of host organisation"="restructure of host",
+  "dispute"="dispute",
+  "life events"="life events",
+  "staff"="staff"
 )
 
 museum_attribute_ordering <- c(
@@ -1260,7 +1320,37 @@ museum_attribute_ordering <- c(
   "Archaeology-Prehistory",
   "Archaeology-Medieval",
   "Archaeology-Greek_and_Egyptian",
-  "Archaeology"
+  "Archaeology",
+  # recipient outcome
+  "mostly NA",
+  "mostly civic organisation",
+  "mostly museum/library/archive",
+  "mostly museum",
+  "mostly trader",
+  "mostly individual",
+  "mostly unknown",
+  # event outcome
+  "mostly left",
+  "mostly kept",
+  "mostly stored",
+  "mostly moved",
+  "mostly returned",
+  "mostly transferred",
+  "mostly sold",
+  "mixed",
+  # reason for closure
+  "other",
+  "financial",
+  "low visitor numbers",
+  "loss of premises",
+  "destruction",
+  "collections",
+  "building",
+  "strategic closure",
+  "restructure of host organisation",
+  "dispute",
+  "life events",
+  "staff"
 )
 
 collection_status_labels <- data.frame(

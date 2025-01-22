@@ -26,6 +26,7 @@ source("src/modules/causes.R")
 source("src/modules/length.R")
 source("src/modules/actors.R")
 source("src/modules/events.R")
+source("src/modules/outcomes.R")
 source("src/modules/pathways.R")
 source("src/modules/sequences.R")
 source("src/modules/movements.R")
@@ -95,6 +96,10 @@ function(input, output, session) {
               eventsUI("events"),
             ),
             tabPanel(
+              "Outcomes of Closure",
+              outcomesUI("outcomes"),
+            ),
+            tabPanel(
               "Dispersal: Pathways",
               pathwaysUI("pathways"),
             ),
@@ -144,6 +149,7 @@ function(input, output, session) {
       lengthServer("length")
       actorsServer("actors")
       eventsServer("events")
+      outcomesServer("outcomes")
       pathwaysServer("pathways")
       sequencesServer("sequences")
       movementsServer("movements")
