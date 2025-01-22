@@ -809,7 +809,7 @@ filtered_sequence_data <- function(
         sender_accreditation=initial_museum_accreditation,
         sender_town=initial_museum_town,
         sender_position=1,
-        sender_quantity=1,
+        sender_quantity="1",
         recipient_position=2,
         from=paste(initial_museum_governance_broad, .data[[initial_museum_grouping_dimension]], sender_position, sep="@"),
         to=paste(recipient_governance_broad, .data[[recipient_grouping_dimension]], recipient_position, sep="@")

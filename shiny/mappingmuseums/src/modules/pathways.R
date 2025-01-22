@@ -163,7 +163,27 @@ generate_pathway_dendrogram <- function(sequences,
   recipient_grouping_dimension <- paste0("recipient_", grouping_dimension_name)
 
  dendrogram_data <-  sequences |>
-   filter(recipient_position <= end_position)
+   filter(recipient_position <= end_position) |>
+   select(
+     event_id,
+     event_stage_in_path,
+     previous_shown_event,
+     from,
+     to,
+     sender_id,
+     recipient_id,
+     sender_governance_broad,
+     recipient_governance_broad,
+     .data[[sender_grouping_dimension]],
+     .data[[recipient_grouping_dimension]],
+     sender_position,
+     recipient_position,
+     sender_quantity,
+     recipient_quantity,
+     collection_estimated_size,
+     collection_estimated_size_max,
+     collection_estimated_size_min
+   )
 
   build_chains <- function(data) {
     # give stages in each type of path a unique id
@@ -183,11 +203,45 @@ generate_pathway_dendrogram <- function(sequences,
         data$full_to[i] <- paste(data$full_to[prev_index], "->", data$to[i])
       }
     }
-    data |> select(-from, -to) %>% rename(from = full_from, to = full_to)
+    data |>
+      select(-from, -to) |>
+      rename(from = full_from, to = full_to)
   }
 
   if (steps_or_first_last == "Steps in path") {
     dendrogram_data <- build_chains(dendrogram_data)
+  } else {
+    dendrogram_data <- dendrogram_data |>
+      mutate(
+        to = paste(from, "->", to)
+      )
+  }
+
+  initial_senders <- dendrogram_data |>
+    filter(event_stage_in_path == 1) |>
+    select(sender_governance_broad) |>
+    distinct()
+  if(nrow(initial_senders) > 1) {
+    dummy_rows <- dendrogram_data |>
+      filter(event_stage_in_path == 1) |>
+      mutate(
+        event_id = "",
+        event_stage_in_path = 0,
+        previous_shown_event = "",
+        to = from,
+        from = "",
+        recipient_id = sender_id,
+        sender_id = "",
+        recipient_governance_broad = sender_governance_broad,
+        sender_governance_broad = "dummy",
+        !!sym(recipient_grouping_dimension) := .data[[sender_grouping_dimension]],
+        !!sym(sender_grouping_dimension) := "",
+        recipient_position = sender_position,
+        sender_position = 0,
+        recipient_quantity = sender_quantity,
+        sender_quantity = "1",
+      )
+    dendrogram_data <- bind_rows(dendrogram_data, dummy_rows)
   }
 
   from_nodes_counts <- dendrogram_data |>
