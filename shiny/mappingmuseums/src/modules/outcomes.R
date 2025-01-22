@@ -637,10 +637,7 @@ closure_outcomes_bar_chart_small <- function(summary_table, outcome_type) {
       y="",
       x="Number of museums"
     ) +
-    theme_minimal()+
-    theme(
-      axis.text.y = element_text(size=6),
-    )
+    theme_minimal()
 }
 
 closure_outcomes_heatmap <- function(summary_table, outcome_type, outcome_type_name, museum_grouping, museum_grouping_name) {
@@ -677,6 +674,7 @@ closure_outcomes_heatmap_small <- function(summary_table, outcome_type, outcome_
     )
   ) +
     geom_tile(show.legend=FALSE) +
+    geom_text(aes(label=frequency)) +
     scale_x_discrete(labels=short_labels) +
     scale_fill_continuous(low="white", high="violet") +
     labs(
@@ -686,7 +684,6 @@ closure_outcomes_heatmap_small <- function(summary_table, outcome_type, outcome_
     ) +
     theme_minimal() +
     theme(
-      axis.text.y = element_text(size=6),
       axis.text.x = element_text(angle=45, hjust=1, vjust=1)
     )
 }
