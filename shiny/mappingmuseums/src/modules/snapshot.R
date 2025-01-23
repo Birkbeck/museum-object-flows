@@ -414,7 +414,7 @@ museum_map <- function(museums, dimension, show_only_choices, year_or_range, sta
   } else {
     period <- paste0(start, "-", end)
   }
-  ggplot(
+  map <- ggplot(
     museums |>
       filter(.data[[dimension]] %in% show_only_choices) |>
       filter(year_closed_2 > start & year_opened_1 < end)
@@ -435,6 +435,8 @@ museum_map <- function(museums, dimension, show_only_choices, year_or_range, sta
       panel.grid.minor = element_blank(),
       axis.text = element_text(colour="white")
     )
+
+    map |> ggplotly(tooltip=c("label", "colour"))
 }
 
 museum_map_small <- function(museums, dimension, show_only_choices, year_or_range, start, end) {
@@ -480,13 +482,14 @@ snapshot_heatmap <- function(museums, dimension, dimension2, show_only_choices, 
   }
   museums_in_time_period <- museums |>
     group_by(.data[[dimension]], .data[[dimension2]]) |>
-    museums_in_time_period(start, end)
-  ggplot(
+    museums_in_time_period(start, end) |>
+    arrange(.data[[dimension]], .data[[dimension2]])
+  heatmap <- ggplot(
     museums_in_time_period |>
       filter(.data[[dimension]] %in% show_only_choices),
     aes(
-      x=fct_rev(factor(.data[[dimension2]], museum_attribute_ordering)),
-      y=factor(.data[[dimension]], museum_attribute_ordering),
+      x=.data[[dimension2]],
+      y=.data[[dimension]],
       fill=.data[[metric]]
     )
   ) +
@@ -523,8 +526,8 @@ snapshot_heatmap_small <- function(museums, dimension, dimension2, show_only_cho
     museums_in_time_period |>
       filter(.data[[dimension]] %in% show_only_choices),
     aes(
-      x=fct_rev(factor(.data[[dimension2]], museum_attribute_ordering)),
-      y=factor(.data[[dimension]], museum_attribute_ordering),
+      x=.data[[dimension2]],
+      y=.data[[dimension]],
       fill=.data[[metric]]
     )
   ) +

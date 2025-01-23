@@ -711,12 +711,14 @@ openings_vs_closures_scatter <- function(data, dimension, show_only_choices) {
   if (dimension == "No filter") {
     show_only_choices <- c("All")
   }
+  data <- data |>
+    mutate(`total openings and closures`=turnover)
   ggplot(data |> filter(.data[[dimension]] %in% show_only_choices), aes(x=closure_rate, y=opening_rate)) +
     annotate("text", x=3, y=2, size=6, label="Stasis", alpha=0.5) +
     annotate("text", x=3, y=77, size=6, label="Growth", alpha=0.5) +
     annotate("text", x=75, y=2, size=6, label="Decline", alpha=0.5) +
     annotate("text", x=75, y=77, size=6, label="Churn", alpha=0.5) +
-    geom_point(aes(colour=.data[[dimension]], size=turnover)) +
+    geom_point(aes(colour=.data[[dimension]], size=`total openings and closures`)) +
     geom_abline(colour="grey") +
     geom_text(aes(label=tidy_labels[.data[[dimension]]])) +
     scale_x_continuous(expand=c(0,1), limits=c(0,80)) +
@@ -777,11 +779,12 @@ bar_chart <- function(data, dimension, measure, title, y_label, x_label, show_on
     fill_scale <- scale_fill_manual(values=c("TRUE"="#6666FF", "FALSE"="#FF6666"))
   }
   
-  ggplot(
+  bar_chart <- ggplot(
     data |> filter(.data[[dimension]] %in% show_only_choices),
     aes(
       x=.data[[measure]],
-      y=factor(.data[[dimension]], museum_attribute_ordering),
+      y=.data[[dimension]],
+      label=.data[[dimension]],
       fill=.data[[measure]] > 0
     )
   ) +
@@ -800,6 +803,8 @@ bar_chart <- function(data, dimension, measure, title, y_label, x_label, show_on
       x = x_label
     ) +
     theme_minimal()
+
+  bar_chart |> ggplotly(tooltip=c("label", "x"))
 }
 
 bar_chart_small <- function(data, dimension, measure, title, x_label, show_only_choices) {
@@ -850,7 +855,7 @@ bar_chart_small <- function(data, dimension, measure, title, x_label, show_only_
     data,
     aes(
       x=.data[[measure]],
-      y=factor(.data[[dimension]], museum_attribute_ordering),
+      y=.data[[dimension]],
       fill=.data[[measure]] > 0
     )
   ) +
@@ -893,11 +898,12 @@ two_measure_bar_chart <- function(data, dimension, measures, title, y_label, x_l
       values_to="count"
     )
   fill_scale <- scale_fill_manual(values=fill_values)
-  ggplot(
+  bar_chart <- ggplot(
     data,
     aes(
       x=count,
-      y=factor(.data[[dimension]], museum_attribute_ordering),
+      y=.data[[dimension]],
+      label=.data[[dimension]],
       fill=label
     )
   ) +
@@ -927,6 +933,7 @@ two_measure_bar_chart <- function(data, dimension, measures, title, y_label, x_l
     theme(
       legend.position="bottom"
     )
+  bar_chart |> ggplotly(tooltip=c("label", "x", "fill"))
 }
 
 two_measure_bar_chart_small <- function(data, dimension, measures, title, fill_labels, fill_values, show_only_choices) {
@@ -949,7 +956,7 @@ two_measure_bar_chart_small <- function(data, dimension, measures, title, fill_l
     data,
     aes(
       x=count,
-      y=factor(.data[[dimension]], museum_attribute_ordering),
+      y=.data[[dimension]],
       fill=label
     )
   ) +
@@ -990,7 +997,7 @@ changes_map <- function(museums, dimension, measure, show_only_choices, start, e
       filter(.data[[dimension]] %in% show_only_choices) |>
       filter(year_closed_2 > start & year_closed_1 < end)
   }
-  ggplot(data) +
+  map <- ggplot(data) +
     geom_polygon(data=regions, aes(x=x, y=y, group=group), linewidth=0.1, label=NA, colour="black", fill=NA) +
     geom_point(aes(label=name_of_museum, x=bng_x, y=bng_y, colour=.data[[dimension]]), size=0.5) +
     scale_colour_manual(values=museum_attribute_colours, labels=tidy_labels) +
@@ -1007,6 +1014,8 @@ changes_map <- function(museums, dimension, measure, show_only_choices, start, e
       panel.grid.minor = element_blank(),
       axis.text = element_text(colour="white")
     )
+
+  map |> ggplotly(tooltip=c("label", "colour"))
 }
 
 changes_map_small <- function(museums, dimension, measure, show_only_choices, start, end) {
@@ -1058,11 +1067,11 @@ heatmap <- function(museums, dimension, dimension2, measure, title, y_label, x_l
   } else {
     fill_scale <- scale_fill_gradient2(low="red", mid="white", high="blue", midpoint=0)
   }
-  ggplot(
+  heatmap <- ggplot(
     data,
     aes(
-      x=fct_rev(factor(.data[[dimension2]], museum_attribute_ordering)),
-      y=factor(.data[[dimension]], museum_attribute_ordering),
+      x=.data[[dimension2]],
+      y=.data[[dimension]],
       fill=fill_metric
     )
   ) +
@@ -1082,6 +1091,8 @@ heatmap <- function(museums, dimension, dimension2, measure, title, y_label, x_l
       axis.text.y=element_text(size=11),
       axis.text.x=element_text(size=11, angle=45, vjust=1, hjust=1)
     )
+
+  heatmap |> ggplotly(tooltip=c("x", "y", "fill"))
 }
 
 heatmap_small <- function(museums, dimension, dimension2, measure, title, show_only_choices) {
@@ -1096,8 +1107,8 @@ heatmap_small <- function(museums, dimension, dimension2, measure, title, show_o
     museums |>
       filter(.data[[dimension]] %in% show_only_choices),
     aes(
-      x=fct_rev(factor(.data[[dimension2]], museum_attribute_ordering)),
-      y=factor(.data[[dimension]], museum_attribute_ordering),
+      x=.data[[dimension2]],
+      y=.data[[dimension]],
       fill=.data[[measure]]
     )
   ) +

@@ -34,7 +34,11 @@ museums_including_crown_dependencies <- read_csv("data/all_museums_data.csv") |>
   left_join(closure_outcomes, by="museum_id")
 museums <- museums_including_crown_dependencies |>
   filter(!nation %in% c("Channel Islands", "Isle of Man")) |>
-  mutate(`No filter`="All")
+  mutate(`No filter`="All") |>
+  mutate(
+    governance_main=factor(governance_main, museum_attribute_ordering),
+    region=factor(region, museum_attribute_ordering)
+  )
 
 regions <- read_csv("data/regions.csv") |>
   mutate(group=paste(L1, L2, L3))
