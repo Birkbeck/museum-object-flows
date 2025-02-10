@@ -325,8 +325,8 @@ snapshotServer <- function(id) {
           year_or_range(),
           period_start(),
           period_end(),
-          input$filterField,
-          input$dimension2
+          input$dimension2,
+          input$filterField
         )
       }
     })
