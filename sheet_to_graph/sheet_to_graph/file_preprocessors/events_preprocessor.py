@@ -40,7 +40,7 @@ class EventsPreprocessor(FilePreprocessor):
             try:
                 event_type = self.event_types.filter(type_name=event_type_name)[0]
             except IndexError as e:
-                raise e
+                raise Exception(f"{event_type_name} not in event types sheet")
             if row["actor_recipient_id"] == "" and any(
                 [
                     event_type["change_of_ownership"],
