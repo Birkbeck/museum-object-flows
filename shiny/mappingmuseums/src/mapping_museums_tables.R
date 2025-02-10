@@ -53,6 +53,12 @@ museums_in_time_period_raw_figures <- function(museums, start_year, end_year) {
       yearly_openings = openings / years_in_period,
       turnover = openings + closures,
       turnover_pc = turnover / average_total * 100
+    ) |>
+    ungroup() |>
+    mutate(
+      period_total_pc = period_total / sum(period_total) * 100,
+      start_total_pc = start_total / sum(start_total) * 100,
+      end_total_pc = end_total / sum(end_total) * 100
     )
 }
 
@@ -64,8 +70,11 @@ museums_in_time_period <- function(museums, start_year, end_year) {
     museums_in_time_period_raw_figures(start_year, end_year) |>
     mutate(
       period_total = round(period_total, 0),
+      period_total_pc = round(period_total_pc, 1),
       start_total = round(start_total, 0),
+      start_total_pc = round(start_total_pc, 1),
       end_total = round(end_total, 0),
+      end_total_pc = round(end_total_pc, 1),
       closures = round(closures, 0),
       openings = round(openings, 0),
       change = round(change, 0),
@@ -88,7 +97,40 @@ get_open_and_close_data <- function(data, dimension, start_year, end_year) {
 get_2_way_open_and_close_data <- function(data, dimension1, dimension2, start_year, end_year) {
   data |>
     group_by(.data[[dimension1]], .data[[dimension2]]) |>
-    museums_in_time_period(start_year, end_year)
+    museums_in_time_period_raw_figures(start_year, end_year) |>
+    group_by(.data[[dimension1]]) |>
+    mutate(
+      period_total_pc_x = round(period_total / sum(period_total) * 100, 1),
+      start_total_pc_x = round(start_total / sum(start_total) * 100, 1),
+      end_total_pc_x = round(end_total / sum(end_total) * 100, 1)
+    ) |>
+    ungroup() |>
+    group_by(.data[[dimension2]]) |>
+    mutate(
+      period_total_pc_y = round(period_total / sum(period_total) * 100, 1),
+      start_total_pc_y = round(start_total / sum(start_total) * 100, 1),
+      end_total_pc_y = round(end_total / sum(end_total) * 100, 1)
+    ) |>
+    ungroup() |>
+    mutate(
+      period_total = round(period_total, 0),
+      period_total_pc = round(period_total_pc, 1),
+      start_total = round(start_total, 0),
+      start_total_pc = round(start_total_pc, 1),
+      end_total = round(end_total, 0),
+      end_total_pc = round(end_total_pc, 1),
+      closures = round(closures, 0),
+      openings = round(openings, 0),
+      change = round(change, 0),
+      change_pc = round(change_pc, 1),
+      closure_rate = round(closure_rate, 1),
+      opening_rate = round(opening_rate, 1),
+      yearly_closures = round(yearly_closures, 1),
+      yearly_openings = round(yearly_openings, 1),
+      turnover = round(turnover, 0),
+      turnover_pc = round(turnover_pc, 1)
+    ) |>
+    select(-average_total)
 }
 
 get_museums_in_time_period <- function(museums, start_year, end_year) {

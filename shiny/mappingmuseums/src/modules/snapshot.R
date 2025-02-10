@@ -51,7 +51,8 @@ snapshotUI <- function(id) {
       ),
       mainPanel(
         plotlyOutput(NS(id, "mainPlot"), height="720px", width="720px"),
-        uiOutput(NS(id, "mainplotExplanation"))
+        uiOutput(NS(id, "mainPlotOptions")),
+        uiOutput(NS(id, "mainPlotExplanation"))
       )
     ),
     hr(style=hr_style),
@@ -129,12 +130,7 @@ snapshotServer <- function(id) {
       }
       return(input$yearRange[2])
     })
-    metric <- reactive({
-      if(year_or_range() == "Single year") {
-        return("end_total")
-      }
-      return("period_total")
-    })
+    
     observeEvent(year_or_range(), {
       freezeReactiveValue(input, "yearRange")
       if (year_or_range() == "Single year") {
@@ -295,6 +291,49 @@ snapshotServer <- function(id) {
         return(paste(x_label, "by", y_label()))
       }
     })
+
+    output$mainPlotOptions <- renderUI({
+      if(mainPlot() == "museumCounts") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of museums" = "",
+            "Show percentage of museums" = "_pc"
+          )
+        )
+      } else if(mainPlot() == "museumHeatmap") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of museums" = "",
+            "Show percentage of museums" = "_pc",
+            "Show rowwise percentages" = "_pc_x",
+            "Show columnwise percentages" = "_pc_y"
+          )
+        )
+      }
+    })
+
+    count_or_percentage <- reactive({
+      if (is.na(input$countOrPercentage)) {
+        return("")
+      }
+      return(input$countOrPercentage)
+    })
+
+    basic_metric <- reactive({
+      if(year_or_range() == "Single year") {
+        return("end_total")
+      } else {
+        return("period_total")
+      }
+    })
+
+    metric <- reactive({
+      paste0(basic_metric(), count_or_percentage())
+    })
     
     output$mainPlot <- renderPlotly({
       if (mainPlot() == "museumMap") {
@@ -321,6 +360,7 @@ snapshotServer <- function(id) {
           museums,
           filter_field(),
           filter_field_2(),
+          metric(),
           choices(),
           year_or_range(),
           period_start(),
@@ -330,7 +370,7 @@ snapshotServer <- function(id) {
         )
       }
     })
-    output$mainplotExplanation <- renderUI({
+    output$mainPlotExplanation <- renderUI({
       explanation_text <- filter(explanations, main_plot==mainPlot())$explanation
       p(explanation_text)
     })
@@ -349,7 +389,7 @@ snapshotServer <- function(id) {
       bar_chart_small(
         snapshot_data(),
         filter_field(),
-        metric(),
+        basic_metric(),
         ifelse(
           year_or_range() == "Single year",
           paste("Museums in the UK", input$year[1]),
@@ -365,6 +405,7 @@ snapshotServer <- function(id) {
           museums,
           filter_field(),
           filter_field_2(),
+          basic_metric(),
           choices(),
           "Range of years",
           period_start(),
@@ -472,17 +513,13 @@ museum_map_small <- function(museums, dimension, show_only_choices, year_or_rang
     )
 }
 
-snapshot_heatmap <- function(museums, dimension, dimension2, show_only_choices, year_or_range, start, end, x_label, y_label) {
+snapshot_heatmap <- function(museums, dimension, dimension2, metric, show_only_choices, year_or_range, start, end, x_label, y_label) {
   if (year_or_range == "Single year") {
     period <- end 
-    metric <- "end_total"
   } else {
     period <- paste0(start, "-", end)
-    metric <- "period_total"
   }
-  museums_in_time_period <- museums |>
-    group_by(.data[[dimension]], .data[[dimension2]]) |>
-    museums_in_time_period(start, end) |>
+  museums_in_time_period <- get_2_way_open_and_close_data(museums, dimension, dimension2, start, end) |>
     arrange(.data[[dimension]], .data[[dimension2]])
   heatmap <- ggplot(
     museums_in_time_period |>
@@ -511,13 +548,11 @@ snapshot_heatmap <- function(museums, dimension, dimension2, show_only_choices, 
   }
 
 
-snapshot_heatmap_small <- function(museums, dimension, dimension2, show_only_choices, year_or_range, start, end, x_label, y_label) {
+snapshot_heatmap_small <- function(museums, dimension, dimension2, metric, show_only_choices, year_or_range, start, end, x_label, y_label) {
   if (year_or_range == "Single year") {
     period <- end 
-    metric <- "end_total"
   } else {
     period <- paste0(start, "-", end)
-    metric <- "period_total"
   }
   museums_in_time_period <- museums |>
     group_by(.data[[dimension]], .data[[dimension2]]) |>
