@@ -245,8 +245,9 @@ causesUI <- function(id) {
         ),
       ),
       mainPanel(
-        uiOutput(NS(id, "mainPlot"), height="1200px", width="100%"),
-        uiOutput(NS(id, "mainplotExplanation"))
+        div(uiOutput(NS(id, "mainPlot")), style = "height: 1200px; width: 100%;"),
+        div(uiOutput(NS(id, "mainPlotOptions"))),
+        div(uiOutput(NS(id, "mainPlotExplanation")), style = "margin-top: 20px;")
       )
     ),
     hr(style=hr_style),
@@ -460,6 +461,47 @@ causesServer <- function(id) {
     observeEvent(input$reasonsBarChart, { mainPlot("reasonsBarChart") })
     observeEvent(input$reasonsHeatmap, { mainPlot("reasonsHeatmap") })
     observeEvent(input$reasonsLineChart, { mainPlot("reasonsLineChart") })
+
+    output$mainPlotOptions <- renderUI({
+      if(mainPlot() == "reasonsBarChart") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of closures" = "frequency",
+            "Show percentage of closures" = "percentage"
+          )
+        )
+      } else if(mainPlot() == "reasonsHeatmap") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of closures" = "frequency",
+            "Show percentage of closures" = "percentage",
+            "Show rowwise percentages" = "percentage_y",
+            "Show columnwise percentages" = "percentage_x"
+          )
+        )
+      } else if(mainPlot() == "reasonsLineChart") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of closures" = "count",
+            "Show percentage of closures" = "percentage"
+          )
+        )
+      }
+    })
+
+    count_or_percentage <- reactive({
+      if (is.na(input$countOrPercentage)) {
+        return("")
+      }
+      return(input$countOrPercentage)
+    })
+
     output$mainPlot <- renderUI({
       if (mainPlot() == "reasonsHierarchy") {
         renderPlot(
@@ -468,25 +510,30 @@ causesServer <- function(id) {
         )
       } else if (mainPlot() == "reasonsBarChart") {
         ggplotly(
-          closure_causes_bar_chart(summary_table(), reason_level(), reason_level_name()),
-          height=1000
+          closure_causes_bar_chart(summary_table(), count_or_percentage(), reason_level(), reason_level_name()),
+          height=1200
         ) |>
           renderPlotly()
       } else if (mainPlot() == "reasonsHeatmap") {
         ggplotly(
           closure_causes_heatmap(
-            two_way_summary_table(), reason_level(), reason_level_name(), museum_grouping(), museum_grouping_name()
+            two_way_summary_table(), count_or_percentage(), reason_level(), reason_level_name(), museum_grouping(), museum_grouping_name()
           ),
-          height=1000
+          height=1200
         ) |>
           renderPlotly()
       } else if (mainPlot() == "reasonsLineChart") {
         ggplotly(
-          closure_causes_over_time(over_time_table(), reason_level()),
-          height=1000
+          closure_causes_over_time(over_time_table(), count_or_percentage(), reason_level()),
+          height=1200
         ) |>
           renderPlotly()
       }
+    })
+    print(explanations$main_plot)
+    output$mainPlotExplanation <- renderUI({
+      explanation_text <- filter(explanations, main_plot==mainPlot())$explanation
+      p(explanation_text)
     })
 
     output$reasonsHierarchySmall <- renderPlot({
@@ -589,6 +636,10 @@ closure_causes_summary_table <- function(closure_causes,
                                          subject_filter,
                                          specific_subject_filter,
                                          region_filter) {
+  number_of_closed_museums <- closure_causes |>
+    select(museum_id) |>
+    distinct() |>
+    nrow()
   causes <- closure_causes |>
     filter(!is.na(cause_super_type)) |>
     left_join(museums_table, by="museum_id") |>
@@ -601,7 +652,10 @@ closure_causes_summary_table <- function(closure_causes,
     filter(region %in% region_filter | nation %in% region_filter) |>
     filter(!is.na(cause_super_type)) |>
     group_by(.data[[reason_level]]) |>
-    summarize(frequency=n()) |>
+    summarize(
+      frequency=n(),
+      percentage=round(frequency / number_of_closed_museums * 100, 1)
+    ) |>
     ungroup()
 }
 
@@ -616,6 +670,16 @@ closure_causes_two_way_summary_table <- function(closure_causes,
                                                  subject_filter,
                                                  specific_subject_filter,
                                                  region_filter) {
+  number_of_closed_museums <- closure_causes |>
+    select(museum_id) |>
+    distinct() |>
+    nrow()
+  number_of_closed_museums_by_type <- closure_causes |>
+    select(museum_id) |>
+    distinct() |>
+    left_join(museums_table, by="museum_id") |>
+    group_by(.data[[museum_grouping]]) |>
+    summarize(number_of_closures=n())
   causes <- closure_causes |>
     filter(!is.na(cause_super_type)) |>
     left_join(museums_table, by="museum_id") |>
@@ -627,7 +691,21 @@ closure_causes_two_way_summary_table <- function(closure_causes,
     filter(subject_matter %in% specific_subject_filter) |>
     filter(region %in% region_filter | nation %in% region_filter) |>
     group_by(.data[[museum_grouping]], .data[[reason_level]]) |>
-    summarize(frequency=n()) |>
+    summarize(
+      frequency=n(),
+      percentage=round(frequency / number_of_closed_museums * 100, 1)
+    ) |>
+    ungroup() |>
+    left_join(number_of_closed_museums_by_type, by=museum_grouping) |>
+    group_by(.data[[museum_grouping]]) |>
+    mutate(
+      percentage_x=round(frequency / number_of_closures * 100, 1)
+    ) |>
+    ungroup() |>
+    group_by(.data[[reason_level]]) |>
+    mutate(
+      percentage_y=round(frequency / sum(frequency) * 100, 1)
+    ) |>
     ungroup()
 }
 
@@ -641,6 +719,39 @@ closure_causes_over_time_table <- function(closure_causes,
                                            subject_filter,
                                            specific_subject_filter,
                                            region_filter) {
+  number_of_closures_by_time_period <- closure_causes |>
+    select(museum_id) |>
+    distinct() |>
+    left_join(museums_table, by="museum_id") |>
+    rowwise() |>
+    mutate(
+      year_closed = mean(c(year_closed_1, year_closed_2)),
+      period_of_closure = ifelse(
+        year_closed > 1999 & year_closed < 2005,
+        "2000-2004",
+        ifelse(
+          year_closed < 2010,
+          "2005-2009",
+          ifelse(
+            year_closed < 2015,
+            "2010-2014",
+            ifelse(
+              year_closed < 2020,
+              "2015-2019",
+              "2020-2024"
+            )
+          )
+        )
+      ),
+      period_of_closure = factor(
+        period_of_closure, 
+        levels = c("2000-2004", "2005-2009", "2010-2014", "2015-2019", "2020-2024"),
+        ordered = TRUE
+      )
+    ) |>
+    group_by(period_of_closure) |>
+    summarize(number_of_closures_in_period=n()) |>
+    ungroup()
   causes_over_time_table <- closure_causes |>
     left_join(museums_table, by="museum_id") |>
     filter(cause_super_type %in% reason_filter) |>
@@ -679,18 +790,29 @@ closure_causes_over_time_table <- function(closure_causes,
         ordered = TRUE
       )
     ) |>
+    left_join(number_of_closures_by_time_period, by="period_of_closure") |>
     group_by(.data[[reason_level]], period_of_closure) |>
-    summarize(count=n())
+    summarize(
+      count=n(),
+      percentage=round(count / number_of_closures_in_period * 100, 1)
+    ) |>
+    ungroup() |>
+    distinct()
 }
         
-closure_causes_bar_chart <- function(summary_table, reason_level, reason_level_name) {
-  ggplot(summary_table, aes(x=frequency, y=reorder(.data[[reason_level]], frequency))) +
+closure_causes_bar_chart <- function(summary_table, count_or_percentage, reason_level, reason_level_name) {
+  if (count_or_percentage == "frequency") {
+    x_title <- "Number of museum closures where reason is cited"
+  } else {
+    x_title <- "Percentage of museum closures where reason is cited"
+  }
+  ggplot(summary_table, aes(x=.data[[count_or_percentage]], y=reorder(.data[[reason_level]], .data[[count_or_percentage]]))) +
     geom_col(fill="purple") +
-    geom_text(aes(label=frequency), hjust="left", nudge_x=1, size=3) +
+    geom_text(aes(label=.data[[count_or_percentage]]), hjust="left", nudge_x=1, size=3) +
     labs(
       title="Types of Reasons for Museum Closure, 2000-2024",
       y=reason_level_name,
-      x="Number of museum closures where reason is cited"
+      x=x_title
     ) +
     theme_minimal()
 }
@@ -711,17 +833,17 @@ closure_causes_bar_chart_small <- function(summary_table, reason_level) {
     )
 }
 
-closure_causes_heatmap <- function(summary_table, reason_level, reason_level_name, museum_grouping, museum_grouping_name) {
+closure_causes_heatmap <- function(summary_table, count_or_percentage, reason_level, reason_level_name, museum_grouping, museum_grouping_name) {
   ggplot(
     summary_table,
     aes(
       x=fct_rev(factor(.data[[museum_grouping]], museum_attribute_ordering)),
       y=.data[[reason_level]],
-      fill=frequency
+      fill=.data[[count_or_percentage]]
     )
   ) +
     geom_tile(show.legend=FALSE) +
-    geom_text(aes(label=frequency)) +
+    geom_text(aes(label=.data[[count_or_percentage]])) +
     scale_x_discrete(labels=short_labels) +
     scale_fill_continuous(low="white", high="purple") +
     labs(
@@ -760,10 +882,16 @@ closure_causes_heatmap_small <- function(summary_table, reason_level, reason_lev
     )
 }
 
-closure_causes_over_time <- function(causes_over_time_table, reason_level) {
+closure_causes_over_time <- function(causes_over_time_table, count_or_percentage, reason_level) {
+  print(causes_over_time_table)
+  if (count_or_percentage == "count") {
+    y_title <- "Number of museum closures where reason is cited"
+  } else {
+    y_title <- "Percentage of closures where reason is cited"
+  }
   ggplot(
     causes_over_time_table, 
-    aes(x=period_of_closure, y=count, colour=.data[[reason_level]])
+    aes(x=period_of_closure, y=.data[[count_or_percentage]], colour=.data[[reason_level]])
   ) +
     geom_line(alpha=0.7, aes(group=.data[[reason_level]])) +
     geom_point() +
@@ -778,7 +906,7 @@ closure_causes_over_time <- function(causes_over_time_table, reason_level) {
     labs(
       title="Changing Reasons for Museum Closure Over Time",
       x="Year of Closure",
-      y="Number of museum closures where reason is cited",
+      y=y_title,
       colour="Reason for closure"
     ) +
     theme_minimal()
