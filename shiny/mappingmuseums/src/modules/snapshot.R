@@ -282,16 +282,6 @@ snapshotServer <- function(id) {
     observeEvent(input$museumCounts, { mainPlot("museumCounts") })
     observeEvent(input$museumHeatmap, { mainPlot("museumHeatmap") })
     
-    x_label <- "Number of Museums"
-    y_label <- reactive({input$filterField})
-    title <- reactive({
-      if (filter_field_1() == "No filter") {
-        return(x_label)
-      } else {
-        return(paste(x_label, "by", y_label()))
-      }
-    })
-
     output$mainPlotOptions <- renderUI({
       if(mainPlot() == "museumCounts") {
         radioButtons(
@@ -331,6 +321,22 @@ snapshotServer <- function(id) {
       }
     })
 
+    x_label <- reactive({
+      if (count_or_percentage() == "") {
+        "Number of Museums"
+      } else {
+        "Percentage of Museums"
+      }
+    })
+    y_label <- reactive({input$filterField})
+    title <- reactive({
+      if (filter_field_1() == "No filter") {
+        return(x_label())
+      } else {
+        return(paste(x_label(), "by", y_label()))
+      }
+    })
+
     metric <- reactive({
       paste0(basic_metric(), count_or_percentage())
     })
@@ -352,7 +358,7 @@ snapshotServer <- function(id) {
           metric(),
           title(),
           y_label(),
-          x_label,
+          x_label(),
           choices()
         )
       } else if(mainPlot() == "museumHeatmap") {

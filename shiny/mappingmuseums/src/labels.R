@@ -21,9 +21,9 @@ tidy_labels_governance <- c(
   "Independent-English_Heritage"="English Heritage",
   "Independent-Historic_Environment_Scotland"="Historic Environment Scot.",
   "University"="University",
-  "National"="National",
+  "Other_Government"="Other Government",
   "Local_Authority"="Local Authority",
-  "Other_Government"="Other Government"
+  "National"="National"
 )
 governance_labels <- data.frame(
   internal_label=c(
@@ -36,9 +36,9 @@ governance_labels <- data.frame(
     "Independent-English_Heritage",
     "Independent-Historic_Environment_Scotland",
     "University",
-    "National",
+    "Other_Government",
     "Local_Authority",
-    "Other_Government"
+    "National"
   ),
   tidy_label=c(
     "Unknown",
@@ -50,9 +50,9 @@ governance_labels <- data.frame(
     "English Heritage",
     "Historic Environment Scot.",
     "University",
-    "National",
+    "Other Government",
     "Local Authority",
-    "Other Government"
+    "National"
   ),
   default_filter=c(
     FALSE,
@@ -69,7 +69,6 @@ governance_labels <- data.frame(
     FALSE
   )
 )
-    
 
 governance_choices <- setNames(names(tidy_labels_governance), tidy_labels_governance)
 governance_to_sector <- c(
@@ -82,9 +81,9 @@ governance_to_sector <- c(
   "Independent-English_Heritage"="third",
   "Independent-Historic_Environment_Scotland"="third",
   "University"="university",
-  "National"="public",
+  "Other_Government"="public",
   "Local_Authority"="public",
-  "Other_Government"="public"
+  "National"="public"
 )
 
 tidy_labels_country_region <- c(
@@ -766,9 +765,9 @@ short_labels <- c(
   "Independent-English_Heritage"="Eng Heritage",
   "Independent-Historic_Environment_Scotland"="Hist Env S",
   "University"="University",
-  "National"="National",
-  "Local_Authority"="Local Auth",
   "Other_Government"="Other Gov",
+  "Local_Authority"="Local Auth",
+  "National"="National",
   # country / region
   "Isle of Man"="Isl. Man",
   "Channel Islands"="Ch. Isl.",
@@ -970,9 +969,9 @@ very_short_labels <- c(
   "Independent-English_Heritage"="EH",
   "Independent-Historic_Environment_Scotland"="HES",
   "University"="Uni",
-  "National"="Nat",
-  "Local_Authority"="LocA",
   "Other_Government"="OGov",
+  "Local_Authority"="LocA",
+  "National"="Nat",
   # country / region
   "Isle of Man"="IoM",
   "Channel Islands"="CI",

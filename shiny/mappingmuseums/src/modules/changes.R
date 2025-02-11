@@ -48,7 +48,8 @@ changesUI <- function(id) {
           ),
         mainPanel(
           plotlyOutput(NS(id, "mainPlot"), height="720px", width="720px"),
-          uiOutput(NS(id, "mainplotExplanation"))
+        uiOutput(NS(id, "mainPlotOptions")),
+          uiOutput(NS(id, "mainPlotExplanation"))
         )
       ),
       ),
@@ -220,9 +221,17 @@ changesServer <- function(id) {
     small_chart_size <- 300
     x_labels <- reactive({c(
       "start_total"=paste("Open Museums at start of", input$year_range[1]),
+      "start_total_pc"=paste("Percentage of museums at start of", input$year_range[1]),
+      "start_total_pc_x"=paste("Percentage of museums at start of", input$year_range[1]),
+      "start_total_pc_y"=paste("Percentage of museums at start of", input$year_range[1]),
       "end_total"=paste("Open Museums at end of", input$year_range[2]),
+      "end_total_pc"=paste("Percentage of museums at end of", input$year_range[2]),
+      "end_total_pc_x"=paste("Percentage of museums at end of", input$year_range[2]),
+      "end_total_pc_y"=paste("Percentage of museums at end of", input$year_range[2]),
       "openings"=paste0("New Museum Openings ", input$year_range[1], "-", input$year_range[2]),
+      "openings_rate"=paste0("Openings per 100 Existing Museums ", input$year_range[1], "-", input$year_range[2]),
       "closures"=paste0("Museum Closures ", input$year_range[1], "-", input$year_range[2]),
+      "closures_rate"=paste0("Closures per 100 Museums ", input$year_range[1], "-", input$year_range[2]),
       "change"=paste0("Change in Museum Numbers ", input$year_range[1], "-", input$year_range[2]),
       "change_pc"=paste0("Percentage Change in Museums ", input$year_range[1], "-", input$year_range[2])
     )})
@@ -373,6 +382,115 @@ changesServer <- function(id) {
         )
       }
     })
+
+    output$mainPlotOptions <- renderUI({
+      if(currentMainPlot() == "timeSeriesLine") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of museums" = "total",
+            "Show change in museum numbers" = "change",
+            "Show percentage change in museums" = "percentage_change"
+          )
+        )
+      } else if(currentMainPlot() == "openingRateLine") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of openings" = "opening_count",
+            "Show openings rate" = "opening_rate"
+          )
+        )
+      } else if(currentMainPlot() == "closureRateLine") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of closures" = "closure_count",
+            "Show closure rate" = "closure_rate"
+          )
+        )
+      } else if(currentMainPlot() == "openingsClosures") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of openings/closures" = "",
+            "Show openings/closure rate" = "_rate"
+          )
+        )
+      } else if(currentMainPlot() == "startEnd") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of museums" = "",
+            "Show percentage of museums" = "_pc"
+          )
+        )
+      } else if(currentMainPlot() == "openings.2Way") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of openings" = "",
+            "Show openings rate" = "_rate"
+          )
+        )
+      } else if(currentMainPlot() == "closures.2Way") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of closures" = "",
+            "Show closure rate" = "_rate"
+          )
+        )
+      } else if(currentMainPlot() == "start_total.2Way") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of museums" = "",
+            "Show percentage of museums" = "_pc",
+            "Show rowwise percentages" = "_pc_x",
+            "Show columnwise percentages" = "_pc_y"
+          )
+        )
+      } else if(currentMainPlot() == "end_total.2Way") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of museums" = "",
+            "Show percentage of museums" = "_pc",
+            "Show rowwise percentages" = "_pc_x",
+            "Show columnwise percentages" = "_pc_y"
+          )
+        )
+      }
+    })
+
+    count_or_percentage <- reactive({
+      if(!currentMainPlot() %in% c(
+        "timeSeriesLine",
+        "openingRateLine",
+        "closureRateLine",
+        "openingsClosures",
+        "startEnd",
+        "openings.2Way",
+        "closures.2Way",
+        "start_total.2Way",
+        "end_total.2Way"
+      )) {
+        return("")
+      } else if (is.na(input$countOrPercentage)) {
+        return("")
+      }
+      return(input$countOrPercentage)
+    })
     
     output$mainPlot <- renderPlotly({
       if (currentMainPlot() == "openingsVsClosuresScatter") {
@@ -382,70 +500,115 @@ changesServer <- function(id) {
           choices()
         )
       } else if (currentMainPlot() == "timeSeriesLine") {
+        if (count_or_percentage() == "total") {
+          title <- "Number of Museums over Time"
+          y_title <- "Number of Museums"
+        } else if (count_or_percentage() == "change") {
+          title <- "Annual Change in Museum Numbers"
+          y_title <- "Number of Museums"
+        } else {
+          title <- "Annual Percentage Change in Museum Numbers"
+          y_title <- "Percentage Change"
+        }
         time_series_line(
           cumulative_counts_by_dimension(museums, filter_field()),
           filter_field(),
-          "total",
-          "Number of Museums over Time",
-          "Number of Museums",
+          count_or_percentage(),
+          title,
+          y_title,
           choices(),
           input$year_range[1],
           input$year_range[2]
         )
       } else if (currentMainPlot() == "openingRateLine") {
+        if (count_or_percentage() == "opening_count") {
+          title <- "Annual Museum Openings"
+          y_title <- "Number of New Museums"
+        } else {
+          title <- "Annual Rate of Museum Openings"
+          y_title <- "Openings per 100 Existing Museums"
+        }
         time_series_line(
           cumulative_counts_by_dimension(museums, filter_field()),
           filter_field(),
-          "opening_count",
-          "Number of Museum Openings over Time",
-          "Number of Openings",
+          count_or_percentage(),
+          title,
+          y_title,
           choices(),
           input$year_range[1],
           input$year_range[2]
         )
       } else if (currentMainPlot() == "closureRateLine") {
+        if (count_or_percentage() == "closure_count") {
+          title <- "Annual Museum Closures"
+          y_title <- "Number of Closures"
+        } else {
+          title <- "Annual Rate of Museum Closures"
+          y_title <- "Closures per 100 Museums"
+        }
         time_series_line(
           cumulative_counts_by_dimension(museums, filter_field()),
           filter_field(),
-          "closure_count",
-          "Number of Museum Closures over Time",
-          "Number of Closures",
+          count_or_percentage(),
+          title,
+          y_title,
           choices(),
           input$year_range[1],
           input$year_range[2]
         )
       } else if (currentMainPlot() == "openingsClosures") {
+        if (count_or_percentage()=="_rate") {
+          measures <- c("openings per 100 museums", "closures per 100 museums")
+          x_title <- "Rate of openings/closures"
+        } else {
+          measures <- c("openings", "closures")
+          x_title <- "Number of openings/closures"
+        }
         two_measure_bar_chart(
           openings_and_closures_data(),
           filter_field(),
-          c("openings", "closures"),
+          measures,
           paste0("Openings vs Closures ", input$year_range[1], "-", input$year_range[2]),
           input$filterField,
-          "Number of openings/closures",
-          c("openings"="openings", "closures"="closures"),
-          c("start_total"="#DDDDDD", "end_total"="#555555", "openings"="#6666FF", "closures"="#FF6666"),
+          x_title,
+          c("openings"="openings", "closures"="closures", "openings_rate"="openings per 100 museums", "closures_rate"="closures per 100 museums"),
+          c("openings"="#6666FF", "closures"="#FF6666", "openings per 100 museums"="#6666FF", "closures per 100 museums"="#FF6666"),
           choices()
         )
       } else if (currentMainPlot() == "startEnd") {
+        if (count_or_percentage()=="_pc") {
+          measures <- c(
+            paste("percentage of museums in", input$year_range[2]),
+            paste("percentage of museums in", input$year_range[1])
+          )
+          x_title <- "Percentage of open museums"
+        } else {
+          measures <- c(
+            paste("open museums in", input$year_range[2]),
+            paste("open museums in", input$year_range[1])
+          )
+          x_title <- "Number of open museums"
+        }
         two_measure_bar_chart(
           openings_and_closures_data(),
           filter_field(),
-          c(
-            paste("open museums in", input$year_range[2]),
-            paste("open museums in", input$year_range[1])
-          ),
+          measures,
           paste0("Open Museums in ", input$year_range[1], " vs in ", input$year_range[2]),
           input$filterField,
-          "Number of open museums",
+          x_title,
           c(
             "start_total"=paste("open museums in", input$year_range[1]),
-            "end_total"=paste("open museums in", input$year_range[2])
+            "end_total"=paste("open museums in", input$year_range[2]),
+            "start_total_pc"=paste("percentage of museums in", input$year_range[1]),
+            "end_total_pc"=paste("percentage of museums in", input$year_range[2])
           ),
           setNames(
-            c("#DDDDDD", "#555555"),
+            c("#DDDDDD", "#555555", "#DDDDDD", "#555555"),
             c(
               paste("open museums in", input$year_range[1]),
-              paste("open museums in", input$year_range[2])
+              paste("open museums in", input$year_range[2]),
+              paste("percentage of museums in", input$year_range[1]),
+              paste("percentage of museums in", input$year_range[2])
             )
           ),
           choices()
@@ -470,6 +633,7 @@ changesServer <- function(id) {
         )
       } else if (grepl("2Way", currentMainPlot(), fixed=TRUE)) {
         measure <- strsplit(currentMainPlot(), ".", fixed=TRUE)[[1]][1]
+        measure <- paste0(measure, count_or_percentage())
         title <- paste(x_labels()[measure])
         y_label <- input$filterField
         x_label <- input$filterField2
@@ -498,7 +662,7 @@ changesServer <- function(id) {
         )
       }
     })
-    output$mainplotExplanation <- renderUI({
+    output$mainPlotExplanation <- renderUI({
       explanation_text <- filter(explanations, main_plot==currentMainPlot())$explanation
       p(explanation_text)
     })
@@ -1060,9 +1224,9 @@ heatmap <- function(museums, dimension, dimension2, measure, title, y_label, x_l
         .data[[measure]]
       )
     )
-  if (measure %in% c("openings", "start_total", "end_total")) {
+  if (measure %in% c("openings", "openings_rate", "start_total", "end_total", "start_total_pc", "end_total_pc")) {
     fill_scale <- scale_fill_gradient(low="white", high="blue")
-  } else if (measure %in% c("closures")) {
+  } else if (measure %in% c("closures", "closures_rate")) {
     fill_scale <- scale_fill_gradient(low="white", high="red")
   } else {
     fill_scale <- scale_fill_gradient2(low="red", mid="white", high="blue", midpoint=0)
@@ -1166,7 +1330,11 @@ cumulative_counts_by_dimension <- function(df, dimension) {
     mutate(
       cumulative_opening = cumsum(opening_count),
       cumulative_closure = cumsum(closure_count),
-      total = cumulative_opening - cumulative_closure
+      total = cumulative_opening - cumulative_closure,
+      opening_rate = opening_count / lag(total, default = 1) * 100,
+      closure_rate = closure_count / lag(total, default = 1) * 100,
+      change = total - lag(total, default = 0),
+      percentage_change = ifelse(lag(total, default = 0) == 0, NA, (change / lag(total, default = 0)) * 100)
     )
   return(combined)
 }
@@ -1179,12 +1347,13 @@ time_series_line <- function(data, dimension, measure, title, y_label, show_only
     data |> filter(.data[[dimension]] %in% show_only_choices) |> filter(year>=start_year & year <= end_year),
     aes(x=year, y=.data[[measure]], colour=.data[[dimension]])
   ) + 
+    geom_hline(yintercept=0, colour="black") +
     geom_line(alpha=0.6 , size=1) +
     geom_text(
       data=data |> filter(.data[[dimension]] %in% show_only_choices) |> filter(year==floor(mean(c(start_year, end_year)))),
       aes(y=.data[[measure]]*1.1, label=tidy_labels[.data[[dimension]]])
     ) +
-    scale_y_continuous(limits=function(x){c(0, max(x))}) +
+    scale_y_continuous(limits=function(x){c(min(0, min(x)), max(x))}) +
     scale_colour_manual(values=museum_attribute_colours) +
     labs(
       title=title,
