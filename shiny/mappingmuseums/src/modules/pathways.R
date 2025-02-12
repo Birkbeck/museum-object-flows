@@ -110,12 +110,29 @@ pathwaysServer <- function(id) {
       ownershipChangesEnd(debouncedStagesInOwnershipPath())
     })
 
+    museum_grouping <- reactive({
+      if (input$`dispersalFilters-groupingMuseums` == "All museums") {
+        return("all")
+      } else if (input$`dispersalFilters-groupingMuseums` == "Size") {
+        return("size")
+      } else if (input$`dispersalFilters-groupingMuseums` == "Governance") {
+        return("governance_broad")
+      } else if (input$`dispersalFilters-groupingMuseums` == "Accreditation") {
+        return("accreditation")
+      } else if (input$`dispersalFilters-groupingMuseums` == "Subject Matter") {
+        return("subject_matter_broad")
+      } else if (input$`dispersalFilters-groupingMuseums` == "Country/Region") {
+        return("region")
+      }
+    })
+
     output$pathwaysNetwork <- renderPlotly({
       generate_pathway_dendrogram(
         filtered_sequences(),
         ownershipChangesStart(),
         ownershipChangesEnd(),
         input$`dispersalFilters-grouping`,
+        museum_grouping(),
         input$`dispersalFilters-showTransactionCounts`,
         steps_or_first_last()
       )
@@ -150,6 +167,7 @@ generate_pathway_dendrogram <- function(sequences,
                                         start_position,
                                         end_position,
                                         grouping_dimension,
+                                        museum_grouping_dimension,
                                         show_transaction_counts,
                                         steps_or_first_last) {
 
@@ -162,7 +180,11 @@ generate_pathway_dendrogram <- function(sequences,
   sender_grouping_dimension <- paste0("sender_", grouping_dimension_name)
   recipient_grouping_dimension <- paste0("recipient_", grouping_dimension_name)
 
+  sender_museum_grouping_dimension <- paste0("sender_", museum_grouping_dimension)
+  recipient_museum_grouping_dimension <- paste0("recipient_", museum_grouping_dimension)
+
  dendrogram_data <-  sequences |>
+   mutate(initial_museum_all="all", sender_all="all", recipient_all="all") |>
    filter(recipient_position <= end_position) |>
    select(
      event_id,
@@ -172,8 +194,8 @@ generate_pathway_dendrogram <- function(sequences,
      to,
      sender_id,
      recipient_id,
-     sender_governance_broad,
-     recipient_governance_broad,
+     .data[[sender_museum_grouping_dimension]],
+     .data[[recipient_museum_grouping_dimension]],
      .data[[sender_grouping_dimension]],
      .data[[recipient_grouping_dimension]],
      sender_position,
@@ -219,7 +241,7 @@ generate_pathway_dendrogram <- function(sequences,
 
   initial_senders <- dendrogram_data |>
     filter(event_stage_in_path == 1) |>
-    select(sender_governance_broad) |>
+    select(.data[[sender_museum_grouping_dimension]]) |>
     distinct()
   if(nrow(initial_senders) > 1) {
     dummy_rows <- dendrogram_data |>
@@ -232,8 +254,8 @@ generate_pathway_dendrogram <- function(sequences,
         from = "",
         recipient_id = sender_id,
         sender_id = "",
-        recipient_governance_broad = sender_governance_broad,
-        sender_governance_broad = "dummy",
+        !!sym(recipient_museum_grouping_dimension) := .data[[sender_museum_grouping_dimension]],
+        !!sym(sender_museum_grouping_dimension) := "dummy",
         !!sym(recipient_grouping_dimension) := .data[[sender_grouping_dimension]],
         !!sym(sender_grouping_dimension) := "",
         recipient_position = sender_position,
@@ -247,16 +269,16 @@ generate_pathway_dendrogram <- function(sequences,
   from_nodes_counts <- dendrogram_data |>
     mutate(
       id=from,
-      governance_broad=sender_governance_broad,
+      museum_grouping_dimension=.data[[sender_museum_grouping_dimension]],
       grouping_dimension=.data[[sender_grouping_dimension]],
       position=sender_position
     ) |>
-    select(sender_id, sender_quantity, id, governance_broad, grouping_dimension, position) |>
+    select(sender_id, sender_quantity, id, museum_grouping_dimension, grouping_dimension, position) |>
     distinct() |>
     mutate(
       sender_count=ifelse(sender_quantity=="many",2,as.numeric(sender_quantity))
     ) |>
-    group_by(id, governance_broad, grouping_dimension, position) |>
+    group_by(id, museum_grouping_dimension, grouping_dimension, position) |>
     summarize(
       from_count=sum(sender_count),
       from_count_suffix=ifelse("many" %in% sender_quantity, "+", ""),
@@ -267,16 +289,16 @@ generate_pathway_dendrogram <- function(sequences,
   to_nodes_counts <- dendrogram_data |>
     mutate(
       id=to,
-      governance_broad=recipient_governance_broad,
+      museum_grouping_dimension=.data[[recipient_museum_grouping_dimension]],
       grouping_dimension=.data[[recipient_grouping_dimension]],
       position=recipient_position,
     ) |>
-    select(recipient_id, recipient_quantity, id, governance_broad, grouping_dimension, position) |>
+    select(recipient_id, recipient_quantity, id, museum_grouping_dimension, grouping_dimension, position) |>
     distinct() |>
     mutate(
       recipient_count=ifelse(recipient_quantity=="many",2,as.numeric(recipient_quantity))
     ) |>
-    group_by(id, governance_broad, grouping_dimension, position) |>
+    group_by(id, museum_grouping_dimension, grouping_dimension, position) |>
     summarize(
       to_count=sum(recipient_count),
       to_count_suffix=ifelse("many" %in% recipient_quantity, "+", ""),
@@ -285,7 +307,7 @@ generate_pathway_dendrogram <- function(sequences,
     ungroup()
 
   node_counts <- from_nodes_counts |>
-    full_join(to_nodes_counts, by=c("id", "governance_broad", "grouping_dimension", "position")) |>
+    full_join(to_nodes_counts, by=c("id", "museum_grouping_dimension", "grouping_dimension", "position")) |>
     mutate(
       count = ifelse(
         is.na(to_count),
@@ -319,28 +341,28 @@ generate_pathway_dendrogram <- function(sequences,
   if (grouping_dimension_name == "sector") {
     node_counts <- node_counts |>
       mutate(
-        name=paste(governance_broad, grouping_dimension, sep="@"),
+        name=paste(museum_grouping_dimension, grouping_dimension, sep="@"),
         label = ifelse(
-          !is.na(governance_broad), 
-          paste(gsub("_", " ", governance_broad), "museum"),
+          !is.na(museum_grouping_dimension), 
+          paste(gsub("_", " ", museum_grouping_dimension), "museum"),
           paste(grouping_dimension, "sector")
         )
       )
   } else {
     node_counts <- node_counts |>
       mutate(
-        name=paste(governance_broad, grouping_dimension, sep="@"),
+        name=paste(museum_grouping_dimension, grouping_dimension, sep="@"),
         label = ifelse(
-          !is.na(governance_broad), 
-          paste(gsub("_", " ", governance_broad), "museum"),
+          !is.na(museum_grouping_dimension), 
+          paste(gsub("_", " ", museum_grouping_dimension), "museum"),
           grouping_dimension
         )
       )
   }
 
   count_edges <- dendrogram_data |>
-    select(from, to, .data[[sender_grouping_dimension]], sender_governance_broad, .data[[recipient_grouping_dimension]], recipient_governance_broad) |>
-    group_by(from, to, .data[[sender_grouping_dimension]], sender_governance_broad, .data[[recipient_grouping_dimension]], recipient_governance_broad) |>
+    select(from, to, .data[[sender_grouping_dimension]], .data[[sender_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], .data[[recipient_museum_grouping_dimension]]) |>
+    group_by(from, to, .data[[sender_grouping_dimension]], .data[[sender_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], .data[[recipient_museum_grouping_dimension]]) |>
     summarize(count = n()) |>
     ungroup() |>
     mutate(
@@ -350,8 +372,8 @@ generate_pathway_dendrogram <- function(sequences,
     mutate(
       collection_estimated_size = ifelse(is.na(collection_estimated_size), 1, collection_estimated_size)
     ) |>
-    select(from, to, .data[[sender_grouping_dimension]], sender_governance_broad, .data[[recipient_grouping_dimension]], recipient_governance_broad, collection_estimated_size) |>
-    group_by(from, to, .data[[sender_grouping_dimension]], sender_governance_broad, .data[[recipient_grouping_dimension]], recipient_governance_broad) |>
+    select(from, to, .data[[sender_grouping_dimension]], .data[[sender_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], .data[[recipient_museum_grouping_dimension]], collection_estimated_size) |>
+    group_by(from, to, .data[[sender_grouping_dimension]], .data[[sender_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], .data[[recipient_museum_grouping_dimension]]) |>
     summarize(count = sum(collection_estimated_size)) |>
     ungroup() |>
     mutate(
@@ -361,8 +383,8 @@ generate_pathway_dendrogram <- function(sequences,
     mutate(
       collection_estimated_size = ifelse(is.na(collection_estimated_size_max), 1, collection_estimated_size_max)
     ) |>
-    select(from, to, .data[[sender_grouping_dimension]], sender_governance_broad, .data[[recipient_grouping_dimension]], recipient_governance_broad, collection_estimated_size) |>
-    group_by(from, to, .data[[sender_grouping_dimension]], sender_governance_broad, .data[[recipient_grouping_dimension]], recipient_governance_broad) |>
+    select(from, to, .data[[sender_grouping_dimension]], .data[[sender_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], .data[[recipient_museum_grouping_dimension]], collection_estimated_size) |>
+    group_by(from, to, .data[[sender_grouping_dimension]], .data[[sender_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], .data[[recipient_museum_grouping_dimension]]) |>
     summarize(count = sum(collection_estimated_size)) |>
     ungroup() |>
     mutate(
@@ -372,8 +394,8 @@ generate_pathway_dendrogram <- function(sequences,
     mutate(
       collection_estimated_size = ifelse(is.na(collection_estimated_size_min), 1, collection_estimated_size_min)
     ) |>
-    select(from, to, .data[[sender_grouping_dimension]], sender_governance_broad, .data[[recipient_grouping_dimension]], recipient_governance_broad, collection_estimated_size) |>
-    group_by(from, to, .data[[sender_grouping_dimension]], sender_governance_broad, .data[[recipient_grouping_dimension]], recipient_governance_broad) |>
+    select(from, to, .data[[sender_grouping_dimension]], .data[[sender_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], .data[[recipient_museum_grouping_dimension]], collection_estimated_size) |>
+    group_by(from, to, .data[[sender_grouping_dimension]], .data[[sender_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], .data[[recipient_museum_grouping_dimension]]) |>
     summarize(count = sum(collection_estimated_size)) |>
     ungroup() |>
     mutate(
@@ -422,7 +444,7 @@ generate_pathway_dendrogram <- function(sequences,
         xend=xend,
         yend=yend,
         linewidth=count,
-        colour=grouping_dimension_and_governance_to_sector(sender_governance_broad, .data[[sender_grouping_dimension]])
+        colour=grouping_dimension_and_governance_to_sector(.data[[sender_museum_grouping_dimension]], .data[[sender_grouping_dimension]])
       ),
       alpha=0.1,
       arrow=arrow(ends="last", length=unit(0.2, "inches"))
@@ -430,7 +452,7 @@ generate_pathway_dendrogram <- function(sequences,
     geom_point(
       aes(
         label=label,
-        fill=grouping_dimension_and_governance_to_sector(governance_broad, grouping_dimension),
+        fill=grouping_dimension_and_governance_to_sector(museum_grouping_dimension, grouping_dimension),
         size=count
       ),
       pch=21,

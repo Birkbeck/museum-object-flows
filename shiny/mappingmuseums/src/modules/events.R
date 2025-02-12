@@ -11,6 +11,7 @@ sequences_table_choices <- c(
   "initial_museum_governance",
   "initial_museum_size",
   "initial_museum_subject_matter",
+  "initial_museum_subject_matter_broad",
   "initial_museum_region",
   "sender_name",
   "event_type",
@@ -24,12 +25,20 @@ sequences_table_choices <- c(
   "sender_type",
   "sender_sector",
   "sender_governance",
+  "sender_size",
+  "sender_subject_matter_broad",
+  "sender_accreditation",
+  "sender_region",
   "sender_town",
   "recipient_position",
   "recipient_quantity",
   "recipient_type",
   "recipient_sector",
   "recipient_governance",
+  "recipient_size",
+  "recipient_subject_matter_broad",
+  "recipient_accreditation",
+  "recipient_region",
   "recipient_town"
 )
 
