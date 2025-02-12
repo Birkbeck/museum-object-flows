@@ -805,6 +805,11 @@ closure_causes_bar_chart <- function(summary_table, count_or_percentage, reason_
   } else {
     x_title <- "Percentage of museum closures where reason is cited"
   }
+  if (reason_level == "cause_super_type") {
+    use_theme <- standard_bars_theme
+  } else {
+    use_theme <- theme_minimal()
+  }
   ggplot(summary_table, aes(x=.data[[count_or_percentage]], y=reorder(.data[[reason_level]], .data[[count_or_percentage]]))) +
     geom_col(fill="purple") +
     geom_text(aes(label=.data[[count_or_percentage]]), hjust="left", nudge_x=1, size=3) +
@@ -813,7 +818,7 @@ closure_causes_bar_chart <- function(summary_table, count_or_percentage, reason_
       y=reason_level_name,
       x=x_title
     ) +
-    theme_minimal()
+    use_theme
 }
 
 closure_causes_bar_chart_small <- function(summary_table, reason_level) {
@@ -833,6 +838,11 @@ closure_causes_bar_chart_small <- function(summary_table, reason_level) {
 }
 
 closure_causes_heatmap <- function(summary_table, count_or_percentage, reason_level, reason_level_name, museum_grouping, museum_grouping_name) {
+  if (reason_level == "cause_super_type") {
+    use_theme <- standard_bars_theme
+  } else {
+    use_theme <- theme_minimal()
+  }
   ggplot(
     summary_table,
     aes(
@@ -850,7 +860,7 @@ closure_causes_heatmap <- function(summary_table, count_or_percentage, reason_le
       y=reason_level_name,
       x=museum_grouping_name
     ) +
-    theme_minimal() +
+    use_theme +
     theme(
       axis.text.x = element_text(angle=45, hjust=1, vjust=1)
     )
@@ -907,7 +917,7 @@ closure_causes_over_time <- function(causes_over_time_table, count_or_percentage
       y=y_title,
       colour="Reason for closure"
     ) +
-    theme_minimal()
+    standard_bars_theme
 }
 
 closure_causes_over_time_small <- function(causes_over_time_table, reason_level) {

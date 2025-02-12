@@ -538,7 +538,7 @@ eventsServer <- function(id) {
           x="Event Type",
           y=y_axis_label
         ) +
-        theme_minimal() +
+        standard_bars_theme +
         theme(
           axis.text.x=element_text(angle=45, hjust=1, vjust=1)
         )
@@ -953,7 +953,7 @@ museum_vs_event_matrix <- function(events, count_or_percentage, filter_field, y_
       y=y_label,
       x=x_axis_label
     ) +
-    theme_minimal() +
+    standard_bars_theme +
     theme(
       axis.text.x=element_text(angle=45, hjust=1, vjust=1)
     )

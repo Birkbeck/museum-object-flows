@@ -626,7 +626,7 @@ closure_outcomes_bar_chart <- function(summary_table, outcome_type, outcome_type
       y=outcome_type_name,
       x="Number of museum closures with outcome"
     ) +
-    theme_minimal()
+    standard_bars_theme
 }
 
 closure_outcomes_bar_chart_small <- function(summary_table, outcome_type) {
@@ -659,7 +659,7 @@ closure_outcomes_heatmap <- function(summary_table, outcome_type, outcome_type_n
       y=outcome_type_name,
       x=museum_grouping_name
     ) +
-    theme_minimal() +
+    standard_bars_theme +
     theme(
       axis.text.x = element_text(angle=45, hjust=1, vjust=1)
     )
@@ -710,7 +710,7 @@ closure_outcomes_over_time <- function(outcomes_over_time_table, outcome_type) {
       y="Number of museum closures with outcome",
       colour="Outcome of closure"
     ) +
-    theme_minimal()
+    standard_bars_theme
 }
 
 closure_outcomes_over_time_small <- function(outcomes_over_time_table, outcome_type) {

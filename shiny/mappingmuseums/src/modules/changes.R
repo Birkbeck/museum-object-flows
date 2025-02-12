@@ -898,7 +898,7 @@ openings_vs_closures_scatter <- function(data, dimension, show_only_choices) {
       colour="none",
       size=guide_legend(title="Total Openings and Closures")
     ) +
-    theme_minimal() +
+    standard_bars_theme +
     theme(
       legend.position = "right"
     )
@@ -959,14 +959,14 @@ bar_chart <- function(data, dimension, measure, title, y_label, x_label, show_on
     geom_text(
       aes(label=.data[[measure]]),
       position=position_dodge(),
-      size=3
+      size=6,
     ) +
     labs(
       title = title,
       y = y_label,
       x = x_label
     ) +
-    theme_minimal()
+  standard_bars_theme
 
   bar_chart |> ggplotly(tooltip=c("label", "x"))
 }
@@ -1093,7 +1093,7 @@ two_measure_bar_chart <- function(data, dimension, measures, title, y_label, x_l
       x = x_label,
       fill = ""
     ) +
-    theme_minimal() +
+  standard_bars_theme +
     theme(
       legend.position="bottom"
     )
@@ -1171,9 +1171,8 @@ changes_map <- function(museums, dimension, measure, show_only_choices, start, e
       x = "",
       y = "",
     ) +
-    theme_minimal() +
+    standard_bars_theme +
     theme(
-      plot.title = element_text(size=14),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
       axis.text = element_text(colour="white")
@@ -1249,12 +1248,10 @@ heatmap <- function(museums, dimension, dimension2, measure, title, y_label, x_l
       x=x_label,
       y=y_label
     ) +
-    theme_minimal() +
-    theme(
-      plot.title=element_text(size=14),
-      axis.text.y=element_text(size=11),
-      axis.text.x=element_text(size=11, angle=45, vjust=1, hjust=1)
-    )
+  standard_bars_theme +
+  theme(
+    axis.text.x=element_text(angle=45, vjust=0.5, hjust=1)
+  )
 
   heatmap |> ggplotly(tooltip=c("x", "y", "fill"))
 }
@@ -1363,7 +1360,7 @@ time_series_line <- function(data, dimension, measure, title, y_label, show_only
     guides(
       colour="none"
     ) +
-    theme_minimal() +
+    standard_bars_theme +
     theme(
       legend.position = "None"
     )

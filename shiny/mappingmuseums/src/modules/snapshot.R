@@ -475,9 +475,8 @@ museum_map <- function(museums, dimension, show_only_choices, year_or_range, sta
       x = "",
       y = "",
     ) +
-    theme_minimal() +
+    standard_bars_theme +
     theme(
-      plot.title = element_text(size=14),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
       axis.text = element_text(colour="white")
@@ -537,7 +536,7 @@ snapshot_heatmap <- function(museums, dimension, dimension2, metric, show_only_c
     )
   ) +
     geom_tile(show.legend=FALSE) +
-    geom_text(aes(label=.data[[metric]])) +
+    geom_text(aes(label=.data[[metric]]), size=6) +
     scale_x_discrete(labels=short_labels) +
     scale_y_discrete(labels=short_labels) +
     scale_fill_continuous(low="white", high="purple") +
@@ -546,7 +545,7 @@ snapshot_heatmap <- function(museums, dimension, dimension2, metric, show_only_c
       x=x_label,
       y=y_label,
     ) +
-    theme_minimal() +
+    standard_bars_theme +
     theme(
       legend.position="Non",
       axis.text.x=element_text(angle=45, vjust=0.5, hjust=1)

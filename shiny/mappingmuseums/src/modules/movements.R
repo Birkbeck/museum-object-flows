@@ -434,7 +434,7 @@ generate_movements_scatter <- function(sequences,
       y = "Distance (km)",
       x = paste0("Origin museum (", grouping_title, ")")
     ) +
-    theme_classic()
+    standard_bars_theme
 
   ggplotly(p, tooltip=c("label", "y")) |>
     layout(showlegend=FALSE)
