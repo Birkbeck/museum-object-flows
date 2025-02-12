@@ -253,7 +253,8 @@ outcomesUI <- function(id) {
       ),
       mainPanel(
         uiOutput(NS(id, "mainPlot"), height="1200px", width="100%"),
-        uiOutput(NS(id, "mainplotExplanation"))
+        uiOutput(NS(id, "mainPlotOptions")),
+        uiOutput(NS(id, "mainPlotExplanation"))
       )
     ),
     hr(style=hr_style),
