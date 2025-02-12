@@ -530,7 +530,6 @@ causesServer <- function(id) {
           renderPlotly()
       }
     })
-    print(explanations$main_plot)
     output$mainPlotExplanation <- renderUI({
       explanation_text <- filter(explanations, main_plot==mainPlot())$explanation
       p(explanation_text)
@@ -883,7 +882,6 @@ closure_causes_heatmap_small <- function(summary_table, reason_level, reason_lev
 }
 
 closure_causes_over_time <- function(causes_over_time_table, count_or_percentage, reason_level) {
-  print(causes_over_time_table)
   if (count_or_percentage == "count") {
     y_title <- "Number of museum closures where reason is cited"
   } else {
