@@ -89,7 +89,17 @@ eventsUI <- function(id) {
           ),
         ),
         mainPanel(
-          plotlyOutput(NS(id, "museumVsEventMatrix"), height=900)
+          plotlyOutput(NS(id, "museumVsEventMatrix"), height=900),
+          radioButtons(
+            inputId = NS(id, "museumVsEventCountOrPercentage"),
+            label = "",
+            choices = list(
+              "Show number of events" = "count",
+              "Show percentage of events" = "percentage",
+              "Show rowwise percentage of museums" = "percentage_y",
+              "Show columnwise percentage of events" = "percentage_x"
+            )
+          )
         )
       )
     ),
@@ -627,7 +637,7 @@ eventsServer <- function(id) {
           selected=choices$label
         )
       } else {
-        choices <- specific_subject_filter_field_choices |> filter(main_subject==specific_subject_filter())
+        choices <- subject_filter_field_choices |> filter(main_subject==specific_subject_filter())
         updatePickerInput(
           inputId="museumsChoicesField",
           choices=choices$subject_matter,
@@ -637,9 +647,11 @@ eventsServer <- function(id) {
     })
     museum_vs_event_dimension_2 <- reactive({input$museumVsEventDimension2})
     event_participant_granularity <- reactive({input$eventParticipantGranularity})
+    museum_vs_event_count_or_percentage <- reactive({input$museumVsEventCountOrPercentage})
     output$museumVsEventMatrix <- renderPlotly({
       museum_vs_event_matrix(
         dispersal_events,
+        museum_vs_event_count_or_percentage(),
         filter_field(),
         filter_field_label(),
         choices(),
@@ -820,7 +832,7 @@ event_types_hierarchy <- function() {
     type_hierarchy_theme
 }
 
-museum_vs_event_matrix <- function(events, filter_field, y_label, choices, dimension_2, dimension_2_granularity) {
+museum_vs_event_matrix <- function(events, count_or_percentage, filter_field, y_label, choices, dimension_2, dimension_2_granularity) {
   recipient <- dimension_2 %in% c("First recipient", "Last known recipient")
   if (dimension_2 == "First event") {
     events <- events |> filter(event_stage_in_path == 0)
@@ -878,11 +890,44 @@ museum_vs_event_matrix <- function(events, filter_field, y_label, choices, dimen
   }
   y_axis <- paste0("initial_museum_", filter_field)
   title <- paste(y_label, "of Initial Museum vs", dimension_2)
-  events_summary <- events |>
-    filter(.data[[y_axis]] %in% choices) |>
-    group_by(.data[[x_axis]], .data[[y_axis]]) |>
-    summarize(count=n()) |>
+  number_of_museums_by_type <- events |>
+    select(initial_museum_id, .data[[y_axis]]) |>
+    distinct() |>
+    group_by(.data[[y_axis]]) |>
+    summarize(
+      number_of_museums_with_type=n()
+    ) |>
     ungroup()
+  number_of_museums_by_event_type <- events |>
+    select(initial_museum_id, .data[[x_axis]], .data[[y_axis]]) |>
+    distinct() |>
+    group_by(.data[[x_axis]], .data[[y_axis]]) |>
+    summarize(
+      number_of_museums_with_event_type=n()
+    ) |>
+    ungroup()
+  events_summary <- events |>
+    group_by(.data[[x_axis]], .data[[y_axis]]) |>
+    summarize(
+      count=n()
+    ) |>
+    ungroup() |>
+    mutate(
+      percentage=round(count / sum(count) * 100, 1)
+    ) |>
+    group_by(.data[[x_axis]]) |>
+    mutate(
+      percentage_x=round(count / sum(count) * 100, 1)
+    ) |>
+    ungroup() |>
+    left_join(number_of_museums_by_type, by=y_axis) |>
+    left_join(number_of_museums_by_event_type, by=c(x_axis, y_axis)) |>
+    group_by(.data[[x_axis]], .data[[y_axis]]) |>
+    mutate(
+      percentage_y=round(number_of_museums_with_event_type / number_of_museums_with_type * 100, 1)
+    ) |>
+    ungroup() |>
+    filter(.data[[y_axis]] %in% choices)
   ggplot(
     events_summary,
     aes(
@@ -890,8 +935,8 @@ museum_vs_event_matrix <- function(events, filter_field, y_label, choices, dimen
       y=factor(.data[[y_axis]], museum_attribute_ordering)
     )
   ) +
-    geom_tile(aes(fill=count), show.legend=FALSE) +
-    geom_text(aes(label=count)) +
+    geom_tile(aes(fill=.data[[count_or_percentage]]), show.legend=FALSE) +
+    geom_text(aes(label=.data[[count_or_percentage]])) +
     scale_y_discrete(labels=tidy_labels) +
     scale_fill_continuous(low="white", high="purple") +
     labs(
