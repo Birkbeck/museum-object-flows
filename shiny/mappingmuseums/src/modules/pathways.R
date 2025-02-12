@@ -457,7 +457,7 @@ generate_pathway_dendrogram <- function(sequences,
       ),
       pch=21,
       colour="black",
-      alpha=0.9
+      alpha=0.7
     ) +
     geom_text(
       aes(label=count_label)

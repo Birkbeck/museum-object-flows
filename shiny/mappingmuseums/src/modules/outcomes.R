@@ -620,7 +620,7 @@ closure_outcomes_over_time_table <- function(museums_table,
 closure_outcomes_bar_chart <- function(summary_table, outcome_type, outcome_type_name) {
   ggplot(summary_table, aes(x=frequency, y=reorder(.data[[outcome_type]], frequency))) +
     geom_col(fill="violet") +
-    geom_text(aes(label=frequency), hjust="left", nudge_x=1, size=3) +
+    geom_text(aes(label=frequency), hjust="left", nudge_x=1, size=6) +
     labs(
       title="Outcomes of Museum Closure, 2000-2024",
       y=outcome_type_name,
@@ -651,7 +651,7 @@ closure_outcomes_heatmap <- function(summary_table, outcome_type, outcome_type_n
     )
   ) +
     geom_tile(show.legend=FALSE) +
-    geom_text(aes(label=frequency)) +
+    geom_text(aes(label=frequency), size=6) +
     scale_x_discrete(labels=short_labels) +
     scale_fill_continuous(low="white", high="violet") +
     labs(
@@ -699,7 +699,8 @@ closure_outcomes_over_time <- function(outcomes_over_time_table, outcome_type) {
     geom_text(
       data=outcomes_over_time_table |> filter(period_of_closure=="2010-2014"),
       position=position_jitter(width=1, height=1, seed=1),
-      aes(label=.data[[outcome_type]], colour=.data[[outcome_type]])
+      aes(label=.data[[outcome_type]], colour=.data[[outcome_type]]),
+      size=6
     ) +
     guides(
       colour="none"

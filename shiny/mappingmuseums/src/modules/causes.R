@@ -811,8 +811,8 @@ closure_causes_bar_chart <- function(summary_table, count_or_percentage, reason_
     use_theme <- theme_minimal()
   }
   ggplot(summary_table, aes(x=.data[[count_or_percentage]], y=reorder(.data[[reason_level]], .data[[count_or_percentage]]))) +
-    geom_col(fill="purple") +
-    geom_text(aes(label=.data[[count_or_percentage]]), hjust="left", nudge_x=1, size=3) +
+    geom_col(fill="purple", alpha=0.7) +
+    geom_text(aes(label=.data[[count_or_percentage]]), hjust="left", nudge_x=1, size=5) +
     labs(
       title="Types of Reasons for Museum Closure, 2000-2024",
       y=reason_level_name,
@@ -852,7 +852,7 @@ closure_causes_heatmap <- function(summary_table, count_or_percentage, reason_le
     )
   ) +
     geom_tile(show.legend=FALSE) +
-    geom_text(aes(label=.data[[count_or_percentage]])) +
+    geom_text(aes(label=.data[[count_or_percentage]]), size=5) +
     scale_x_discrete(labels=short_labels) +
     scale_fill_continuous(low="white", high="purple") +
     labs(

@@ -529,7 +529,7 @@ eventsServer <- function(id) {
         )
       ggplot(events_vs_participants, aes(x=event_type, y=participant_type, fill=count)) +
         geom_tile(show.legend=FALSE) +
-        geom_text(aes(label=count)) +
+        geom_text(aes(label=count), size=5) +
         geom_hline(yintercept=1.5) +
         geom_vline(xintercept=1.5) +
         scale_fill_continuous(low="white", high="purple") +
@@ -945,7 +945,7 @@ museum_vs_event_matrix <- function(events, count_or_percentage, filter_field, y_
     )
   ) +
     geom_tile(aes(fill=.data[[count_or_percentage]]), show.legend=FALSE) +
-    geom_text(aes(label=.data[[count_or_percentage]])) +
+    geom_text(aes(label=.data[[count_or_percentage]]), size=5) +
     scale_y_discrete(labels=tidy_labels) +
     scale_fill_continuous(low="white", high="purple") +
     labs(

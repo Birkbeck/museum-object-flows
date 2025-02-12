@@ -47,7 +47,7 @@ changesUI <- function(id) {
           ),
           ),
         mainPanel(
-          plotlyOutput(NS(id, "mainPlot"), height="720px", width="720px"),
+          plotlyOutput(NS(id, "mainPlot"), height="720px", width="100%"),
         uiOutput(NS(id, "mainPlotOptions")),
           uiOutput(NS(id, "mainPlotExplanation"))
         )
@@ -882,13 +882,14 @@ openings_vs_closures_scatter <- function(data, dimension, show_only_choices) {
     annotate("text", x=3, y=77, size=6, label="Growth", alpha=0.5) +
     annotate("text", x=75, y=2, size=6, label="Decline", alpha=0.5) +
     annotate("text", x=75, y=77, size=6, label="Churn", alpha=0.5) +
-    geom_point(aes(colour=.data[[dimension]], size=`total openings and closures`)) +
+    geom_point(aes(colour=.data[[dimension]], size=`total openings and closures`), alpha=0.7) +
     geom_abline(colour="grey") +
-    geom_text(aes(label=tidy_labels[.data[[dimension]]])) +
+    geom_text(aes(label=tidy_labels[.data[[dimension]]]), size=6, nudge_y=3) +
     scale_x_continuous(expand=c(0,1), limits=c(0,80)) +
     scale_y_continuous(expand=c(0,1), limits=c(0,80)) +
     scale_size_continuous(limits=c(1, 2000), range=c(2, 40), breaks=c(1, 5, 10, 50, 100, 500, 1000), labels=c("1", "5", "10", "50", "100", "500", "1000")) +
     scale_colour_manual(values=museum_attribute_colours) +
+    coord_fixed() +
     labs(
       title = "Opening vs Closure Rates",
       x = "Closures per hundred museums",
@@ -952,7 +953,7 @@ bar_chart <- function(data, dimension, measure, title, y_label, x_label, show_on
       fill=.data[[measure]] > 0
     )
   ) +
-    geom_bar(position="dodge", stat="identity", show.legend=FALSE) +
+    geom_bar(position="dodge", stat="identity", show.legend=FALSE, alpha=0.7) +
     scale_y_discrete(labels=tidy_labels) +
     fill_scale +
     guides(fill=FALSE) +
@@ -1071,7 +1072,7 @@ two_measure_bar_chart <- function(data, dimension, measures, title, y_label, x_l
       fill=label
     )
   ) +
-    geom_bar(position="dodge", stat="identity") +
+    geom_bar(position="dodge", stat="identity", alpha=0.7) +
     scale_y_discrete(labels=tidy_labels) +
     fill_scale +
     guides(fill=guide_legend(reverse=TRUE)) +
@@ -1079,13 +1080,13 @@ two_measure_bar_chart <- function(data, dimension, measures, title, y_label, x_l
       data=data |> filter(label==measures[1]),
       aes(label=count),
       nudge_y=0.25,
-      size=3
+      size=6
     ) +
     geom_text(
       data=data |> filter(label==measures[2]),
       aes(label=count),
       nudge_y=-0.25,
-      size=3
+      size=6
     ) +
     labs(
       title = title,
@@ -1239,7 +1240,7 @@ heatmap <- function(museums, dimension, dimension2, measure, title, y_label, x_l
     )
   ) +
     geom_tile(alpha=0.7, show.legend=FALSE) +
-    geom_text(aes(label=.data[[measure]]), size=4) +
+    geom_text(aes(label=.data[[measure]]), size=6) +
     scale_x_discrete(labels=short_labels) +
     scale_y_discrete(labels=short_labels) +
     fill_scale +
@@ -1348,7 +1349,8 @@ time_series_line <- function(data, dimension, measure, title, y_label, show_only
     geom_line(alpha=0.6 , size=1) +
     geom_text(
       data=data |> filter(.data[[dimension]] %in% show_only_choices) |> filter(year==floor(mean(c(start_year, end_year)))),
-      aes(y=.data[[measure]]*1.1, label=tidy_labels[.data[[dimension]]])
+      aes(y=.data[[measure]]*1.1, label=tidy_labels[.data[[dimension]]]),
+      size=6
     ) +
     scale_y_continuous(limits=function(x){c(min(0, min(x)), max(x))}) +
     scale_colour_manual(values=museum_attribute_colours) +

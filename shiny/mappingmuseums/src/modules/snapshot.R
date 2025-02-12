@@ -50,7 +50,7 @@ snapshotUI <- function(id) {
         ),
       ),
       mainPanel(
-        plotlyOutput(NS(id, "mainPlot"), height="720px", width="720px"),
+        plotlyOutput(NS(id, "mainPlot"), height="720px", width="100%"),
         uiOutput(NS(id, "mainPlotOptions")),
         uiOutput(NS(id, "mainPlotExplanation"))
       )

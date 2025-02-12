@@ -345,11 +345,13 @@ generate_movements_map <- function(sequences,
     labs(
       title="Pathways Taken by Museum Collections"
     ) +
-    network_theme +
+    standard_bars_theme +
     theme(
-      axis.title=element_text(size=0),
-      axis.text=element_text(size=0),
-      legend.position="None"
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.text = element_text(colour="white"),
+      axis.title = element_text(colour="white"),
+      legend.position = "non"
     )
   movements_plot
 }
