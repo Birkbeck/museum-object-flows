@@ -8,7 +8,6 @@ movementsUI <- function(id) {
         sidebarPanel(width=3, dispersalFiltersUI(NS(id, "dispersalFilters"))),
         mainPanel(
           plotOutput(NS(id, "movementsMap"), width="80%", height="850px"),
-          plotlyOutput(NS(id, "movementsScatter"), height="200px", width="100%"),
           tagList(
             tags$span(
               tags$strong("Display: "),
@@ -54,7 +53,21 @@ movementsUI <- function(id) {
               width="50%"
             )
           ),
-          img(src='actor-sector-key.png', align="left", width="150px")
+          #img(src='actor-sector-key.png', align="left", width="150px"),
+          plotlyOutput(NS(id, "movementsScatter"), height="600px", width="100%"),
+          radioButtons(
+            NS(id, "pointsOrBoxplot"),
+            label="",
+            choices=c("Show collections as points", "Summarize collection movements with boxplots"),
+            selected="Show collections as points",
+            inline=TRUE
+          ),
+          selectInput(
+            NS(id, "scatterGroup"),
+            label="Group collections by origin museum:",
+            choices=c("All museums", field_names$name),
+            selected="Governance"
+          )
         )
       ),
     ),
@@ -119,14 +132,34 @@ movementsServer <- function(id) {
       )
     })
 
+    show_boxplot <- reactive({
+      input$pointsOrBoxplot == "Summarize collection movements with boxplots"
+    })
+    scatter_grouping <- reactive({
+      if (input$scatterGroup == "All museums") {
+        return("all")
+      } else if (input$scatterGroup == "Size") {
+        return("initial_museum_size")
+      } else if (input$scatterGroup == "Governance") {
+        return("initial_museum_governance_broad")
+      } else if (input$scatterGroup == "Accreditation") {
+        return("initial_museum_accreditation")
+      } else if (input$scatterGroup == "Subject Matter") {
+        return("initial_museum_subject_matter_broad")
+      } else if (input$scatterGroup == "Country/Region") {
+        return("initial_museum_region")
+      }
+    })
     output$movementsScatter <- renderPlotly({
       generate_movements_scatter(
         filtered_sequences(),
         ownershipChangesStart(),
         ownershipChangesEnd(),
-        input$`dispersalFilters-grouping`,
+        scatter_grouping(),
+        input$scatterGroup,
         input$`dispersalFilters-showTransactionCounts`,
-        steps_or_first_last()
+        steps_or_first_last(),
+        show_boxplot()
       )
     })
 
@@ -344,17 +377,10 @@ generate_movements_scatter <- function(sequences,
                                        start_position,
                                        end_position,
                                        grouping_dimension,
+                                       grouping_title,
                                        show_transaction_counts,
-                                       steps_or_first_last) {
-  grouping_dimension <- list(
-    "Actor Sector"="sector",
-    "Actor Type (Core Categories)"="core_type",
-    "Actor Type (Most General)"="general_type",
-    "Actor Type (Most Specific)"="type"
-  )[grouping_dimension]
-  sender_grouping_dimension <- paste0("sender_", grouping_dimension)
-  recipient_grouping_dimension <- paste0("recipient_", grouping_dimension)
-
+                                       steps_or_first_last,
+                                       show_boxplot) {
   jumps <- sequences |>
     filter(
       sender_position >= start_position,
@@ -363,8 +389,9 @@ generate_movements_scatter <- function(sequences,
       !is.na(destination_x)
     ) |>
     mutate(
+      all="All",
       label=paste(
-        collection_description,
+        ifelse(is.na(collection_description), "", collection_description),
         "from:",
         sender_name,
         "to:",
@@ -376,25 +403,39 @@ generate_movements_scatter <- function(sequences,
         destination_latitude,
         destination_longitude
       )
-    )
+    ) |>
+    arrange(.data[[grouping_dimension]])
 
-  ggplot(
+  max_distance <- 850
+
+  p <- ggplot(
     jumps,
-    aes(x=distance, label=label)
-  ) +
-    geom_point(
-      aes(y=""),
-      position=position_jitter(width=0, height=0.5, seed=1),
-      alpha=0.5
-    ) +
+    aes(y=distance, x=factor(.data[[grouping_dimension]], museum_attribute_ordering), label=label)
+  )
+
+  if (show_boxplot) {
+    p <- p +
+      geom_boxplot(aes(fill=.data[[grouping_dimension]]), alpha=0.5)
+  } else {
+    p <- p + 
+      geom_jitter(
+        #position=position_jitter(width=0, height=1, seed=1),
+        alpha=0.1
+      )
+  }
+
+  p <- p +
+    scale_x_discrete(labels=tidy_labels) +
+    scale_y_continuous(limits=c(0, max_distance)) +
+    scale_fill_manual(values=museum_attribute_colours) +
+    coord_flip() +
     labs(
       title = "Distances travelled by collections",
-      x = "Distance (km)",
-      y = ""
+      y = "Distance (km)",
+      x = paste0("Origin museum (", grouping_title, ")")
     ) +
-    theme_classic() +
-    theme(
-      axis.title.y = element_text(size=0),
-      axis.text.y = element_text(size=0)
-    )
+    theme_classic()
+
+  ggplotly(p, tooltip=c("label", "y")) |>
+    layout(showlegend=FALSE)
 }
