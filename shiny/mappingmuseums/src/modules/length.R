@@ -70,9 +70,9 @@ lengthServer <- function(id) {
       mutate(
         name=paste0(initial_museum_name, " (", initial_museum_id, ")")
       ) |>
-      distinct() |>
       arrange(name) |>
-      select(name, museum_id=initial_museum_id)
+      select(name, museum_id=initial_museum_id) |>
+      distinct()
     updateVirtualSelect(
       inputId="lengthOfClosureMuseum",
       choices=museums_list$name,
@@ -154,6 +154,7 @@ get_event_dates_table <- function() {
       year2 = ifelse(is.na(year2), year1, year2),
       year = (year1 + year2) / 2,
     ) |>
+    filter(year > 1000) |>
     select(
       museum,
       museum_id,
@@ -225,7 +226,7 @@ becm_events_timeline <- function(closure_events, museum_choice) {
       x="Year of Event",
       y="Museum"
     ) +
-    theme_minimal()
+    standard_bars_theme
 }
 
 all_museums_timeline <- function(closure_events) {
@@ -234,7 +235,11 @@ all_museums_timeline <- function(closure_events) {
     distinct() |>
     arrange(year)
   ggplot(closure_events, aes(x=year, y=fct_rev(factor(museum, museum_ordering$museum)))) +
-    geom_point(data=closure_events |> filter(event_level=="sub"), colour="blue", position=position_jitter(width=0, height=0.2, seed=1)) +
+    geom_point(
+      data=closure_events |> filter(event_level=="sub"),
+      colour="blue",
+      position=position_jitter(width=0, height=0.2, seed=1)
+    ) +
     geom_point(data=closure_events |> filter(event_level=="super"), colour="red") +
     labs(
       x="Year of Event",
@@ -276,16 +281,7 @@ timelines_summary <- function(closure_events) {
       y=""
     ) +
     scale_fill_continuous(low="white", high="purple") +
-    theme_minimal() +
-    theme(
-      plot.title = element_text(size=22),
-      axis.title = element_text(size=18),
-      axis.text.x = element_text(size=12),
-      axis.text.y = element_text(size=0),
-      legend.position="non",
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank()
-    )
+    standard_bars_theme
 }
   
 longest_timelines <- function(closure_events) {
@@ -332,7 +328,7 @@ longest_timelines <- function(closure_events) {
       x="Year of Event",
       y="Museum"
     ) +
-    theme_minimal()
+    standard_bars_theme
 }
 
 earliest_first_event_timelines <- function(closure_events) {
@@ -380,7 +376,7 @@ earliest_first_event_timelines <- function(closure_events) {
       x="Year of Event",
       y="Museum"
     ) +
-    theme_minimal()
+    standard_bars_theme
 }
 
 latest_first_event_timelines <- function(closure_events) {
@@ -427,5 +423,5 @@ latest_first_event_timelines <- function(closure_events) {
       x="Year of Event",
       y="Museum"
     ) +
-    theme_minimal()
+    standard_bars_theme
 }
