@@ -256,6 +256,7 @@ generate_pathway_dendrogram <- function(sequences,
         from = "",
         recipient_id = sender_id,
         sender_id = "",
+        recipient_sector = sender_sector,
         !!sym(recipient_museum_grouping_dimension) := .data[[sender_museum_grouping_dimension]],
         !!sym(sender_museum_grouping_dimension) := "dummy",
         !!sym(recipient_grouping_dimension) := .data[[sender_grouping_dimension]],
@@ -263,7 +264,7 @@ generate_pathway_dendrogram <- function(sequences,
         recipient_position = sender_position,
         sender_position = 0,
         recipient_quantity = sender_quantity,
-        sender_quantity = "1",
+        sender_quantity = "1"
       )
     dendrogram_data <- bind_rows(dendrogram_data, dummy_rows)
   }
@@ -476,7 +477,8 @@ generate_pathway_dendrogram <- function(sequences,
     max_size_edges |> mutate(count = count * 0.5),
     max_size_edges |> mutate(count = count * 0.75),
     max_size_edges
-  )
+  ) |>
+    left_join(node_counts |> select(from=id, from_sector_label=sector_label), by="from")
 
   dendrogram_graph <- graph_from_data_frame(count_edges)
   dendrogram_layout <- create_layout(dendrogram_graph, layout="dendrogram", circular=TRUE) |>
@@ -516,7 +518,7 @@ generate_pathway_dendrogram <- function(sequences,
         xend=xend,
         yend=yend,
         linewidth=count,
-        colour=grouping_dimension_and_governance_to_sector(.data[[sender_museum_grouping_dimension]], .data[[sender_grouping_dimension]])
+        colour=from_sector_label,
       ),
       alpha=0.1,
       arrow=arrow(ends="last", length=unit(0.2, "inches"))

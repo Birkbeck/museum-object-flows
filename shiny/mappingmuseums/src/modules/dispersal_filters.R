@@ -645,7 +645,6 @@ get_actor_choices <- function(grouping_dimension, museum_grouping_dimension) {
     ungroup() |>
     select(to, label) |>
     distinct()
-  print(choices_table)
   choices_table
 }
 
@@ -803,8 +802,6 @@ filtered_sequence_data <- function(
     ancestor_destinations
   )
 
-  print(events_destinations)
-
   # find all recipients before event
   events_recipients <- sequential_events |>
     mutate(
@@ -825,16 +822,11 @@ filtered_sequence_data <- function(
     ancestor_recipients
   )
 
-  print(events_recipients)
-
   # remove events that don't lead to end points and filter by collection status and event type
   events_with_filtered_destinations <- events_destinations |>
     filter(destination %in% show_ending_points)
   events_with_filtered_recipients <- events_recipients |>
     filter(recipient %in% show_passes_through)
-
-  print(show_ending_points)
-  print(events_with_filtered_destinations)
 
   sequential_events <- sequential_events |>
     filter(

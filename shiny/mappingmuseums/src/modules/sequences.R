@@ -432,7 +432,9 @@ sequence_network <- function(sequences,
           label_position_x + random_offset * (1 / gradient)
       ),
       label_position_y = mean(c(from_position, to_position)) + random_offset,
-    )
+    ) |>
+    left_join(node_counts |> select(from=id, from_sector_label=sector_label), by="from")
+
 
   edges_bezier <- edges %>%
     select(from_name_numeric, from_position, control1_x, control1_y, control2_x, control2_y, to_name_numeric, to_position, count, .data[[sender_grouping_dimension]], label) %>%
@@ -457,7 +459,7 @@ sequence_network <- function(sequences,
         xend=to_name_numeric,
         yend=to_position,
         linewidth=count,
-        colour=grouping_dimension_and_governance_to_sector(sender_governance_broad, .data[[sender_grouping_dimension]])
+        colour=from_sector_label,
       ),
       alpha=0.1
     ) +
