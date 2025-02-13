@@ -3,10 +3,15 @@ hr_style <- "border-top: 1px solid #000000;"
 
 public_private_colours <- c(
   "private"="#E69F00",
+  "mostly private"="#FFE099",
   "third"="#0072B2",
+  "mostly third"="#80D1FF",
   "public"="#D81B60",
+  "mostly public"="#F4A4C1",
   "university"="#009E73",
+  "mostly university"="#66FFD5",
   "hybrid"="#CC79A7",
+  "mostly hybrid"="#EAC8DB",
   "unknown"="darkgrey"
 )
 public_private_colours_js <- JS(

@@ -198,6 +198,8 @@ generate_pathway_dendrogram <- function(sequences,
      .data[[recipient_museum_grouping_dimension]],
      .data[[sender_grouping_dimension]],
      .data[[recipient_grouping_dimension]],
+     sender_sector,
+     recipient_sector,
      sender_position,
      recipient_position,
      sender_quantity,
@@ -273,7 +275,7 @@ generate_pathway_dendrogram <- function(sequences,
       grouping_dimension=.data[[sender_grouping_dimension]],
       position=sender_position
     ) |>
-    select(sender_id, sender_quantity, id, museum_grouping_dimension, grouping_dimension, position) |>
+    select(sender_id, sender_quantity, id, museum_grouping_dimension, grouping_dimension, position, sender_sector) |>
     distinct() |>
     mutate(
       sender_count=ifelse(sender_quantity=="many",2,as.numeric(sender_quantity))
@@ -282,7 +284,30 @@ generate_pathway_dendrogram <- function(sequences,
     summarize(
       from_count=sum(sender_count),
       from_count_suffix=ifelse("many" %in% sender_quantity, "+", ""),
-      from_count_label=paste0(from_count, from_count_suffix)
+      from_count_label=paste0(from_count, from_count_suffix),
+      public_instances=sum(ifelse(sender_sector=="public", sender_count, 0)),
+      university_instances=sum(ifelse(sender_sector=="university", sender_count, 0)),
+      third_instances=sum(ifelse(sender_sector=="third", sender_count, 0)),
+      private_instances=sum(ifelse(sender_sector=="private", sender_count, 0)),
+      hybrid_instances=sum(ifelse(sender_sector=="hybrid", sender_count, 0)),
+      public_proportion = public_instances / from_count,
+      university_proportion = university_instances / from_count,
+      third_proportion = third_instances / from_count,
+      private_proportion = private_instances / from_count,
+      hybrid_proportion = hybrid_instances / from_count,
+      from_sector = case_when(
+        public_proportion == 1 ~ "public",
+        university_proportion == 1 ~ "university",
+        third_proportion == 1 ~ "third",
+        private_proportion == 1 ~ "private",
+        hybrid_proportion == 1 ~ "hybrid",
+        public_proportion >= 0.5 ~ "mostly public",
+        university_proportion >= 0.5 ~ "mostly university",
+        third_proportion >= 0.5 ~ "mostly third",
+        private_proportion >= 0.5 ~ "mostly private",
+        hybrid_proportion >= 0.5 ~ "mostly hybrid",
+        TRUE ~ "unknown"
+      )
     ) |>
     ungroup()
 
@@ -293,7 +318,7 @@ generate_pathway_dendrogram <- function(sequences,
       grouping_dimension=.data[[recipient_grouping_dimension]],
       position=recipient_position,
     ) |>
-    select(recipient_id, recipient_quantity, id, museum_grouping_dimension, grouping_dimension, position) |>
+    select(recipient_id, recipient_quantity, id, museum_grouping_dimension, grouping_dimension, position, recipient_sector) |>
     distinct() |>
     mutate(
       recipient_count=ifelse(recipient_quantity=="many",2,as.numeric(recipient_quantity))
@@ -302,7 +327,30 @@ generate_pathway_dendrogram <- function(sequences,
     summarize(
       to_count=sum(recipient_count),
       to_count_suffix=ifelse("many" %in% recipient_quantity, "+", ""),
-      to_count_label=paste0(to_count, to_count_suffix)
+      to_count_label=paste0(to_count, to_count_suffix),
+      public_instances=sum(ifelse(recipient_sector=="public", recipient_count, 0)),
+      university_instances=sum(ifelse(recipient_sector=="university", recipient_count, 0)),
+      third_instances=sum(ifelse(recipient_sector=="third", recipient_count, 0)),
+      private_instances=sum(ifelse(recipient_sector=="private", recipient_count, 0)),
+      hybrid_instances=sum(ifelse(recipient_sector=="hybrid", recipient_count, 0)),
+      public_proportion = public_instances / to_count,
+      university_proportion = university_instances / to_count,
+      third_proportion = third_instances / to_count,
+      private_proportion = private_instances / to_count,
+      hybrid_proportion = hybrid_instances / to_count,
+      to_sector = case_when(
+        public_proportion == 1 ~ "public",
+        university_proportion == 1 ~ "university",
+        third_proportion == 1 ~ "third",
+        private_proportion == 1 ~ "private",
+        hybrid_proportion == 1 ~ "hybrid",
+        public_proportion >= 0.5 ~ "mostly public",
+        university_proportion >= 0.5 ~ "mostly university",
+        third_proportion >= 0.5 ~ "mostly third",
+        private_proportion >= 0.5 ~ "mostly private",
+        hybrid_proportion >= 0.5 ~ "mostly hybrid",
+        TRUE ~ "unknown"
+      )
     ) |>
     ungroup()
 
@@ -332,6 +380,19 @@ generate_pathway_dendrogram <- function(sequences,
             from_count > to_count,
             from_count_label,
             to_count_label
+          )
+        )
+      ),
+      sector_label = ifelse(
+        is.na(to_count),
+        from_sector,
+        ifelse(
+          is.na(from_count), 
+          to_sector,
+          ifelse(
+            from_count > to_count,
+            from_sector,
+            to_sector
           )
         )
       )
@@ -463,7 +524,7 @@ generate_pathway_dendrogram <- function(sequences,
     geom_point(
       aes(
         label=label,
-        fill=grouping_dimension_and_governance_to_sector(museum_grouping_dimension, grouping_dimension),
+        fill=sector_label,
         size=count
       ),
       pch=21,
