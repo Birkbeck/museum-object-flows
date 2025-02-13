@@ -11,7 +11,7 @@ pathwaysUI <- function(id) {
       sidebarLayout(
         sidebarPanel(width=3, dispersalFiltersUI(NS(id, "dispersalFilters"))),
         mainPanel(
-          plotlyOutput(NS(id, "pathwaysNetwork"), width="80%", height="850px"),
+          plotlyOutput(NS(id, "pathwaysNetwork"), width="100%", height="850px"),
           tagList(
             tags$span(
               tags$strong("Display: "),
