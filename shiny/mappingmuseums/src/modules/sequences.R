@@ -11,7 +11,7 @@ sequencesUI <- function(id) {
       sidebarLayout(
         sidebarPanel(width=3, dispersalFiltersUI(NS(id, "dispersalFilters"))),
         mainPanel(
-          plotOutput(NS(id, "ownershipNetwork"), width="80%", height="850px"),
+          plotOutput(NS(id, "ownershipNetwork"), width="100%", height="850px"),
           tagList(
             tags$span(
               tags$strong("Display: "),
@@ -479,7 +479,12 @@ sequence_network <- function(sequences,
     ) +
     geom_text(aes(label=count_label), size=5) +
     coord_flip() +
-    scale_x_continuous(breaks=name_mapping$name_numeric, labels=str_replace_all(name_mapping$label, "_", " "), position="top") +
+    scale_x_continuous(
+      name="Actor",
+      breaks=name_mapping$name_numeric,
+      labels=str_replace_all(name_mapping$label, "_", " "),
+      sec.axis=dup_axis(name="Actor")
+    ) +
     scale_y_continuous(breaks=start_position:end_position) +
     scale_size_continuous(range=c(5, 20)) +
     scale_linewidth(range=c(1,10)) +
