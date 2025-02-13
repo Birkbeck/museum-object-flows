@@ -867,7 +867,7 @@ filtered_sequence_data <- function(
         sender_quantity="1",
         recipient_position=2,
         from=paste(.data[[initial_museum_museum_grouping_dimension]], .data[[initial_museum_grouping_dimension]], sender_position, sep="@"),
-        to=paste(.data[[sender_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], recipient_position, sep="@")
+        to=paste(.data[[recipient_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], recipient_position, sep="@")
       ) |>
       ungroup()
     }

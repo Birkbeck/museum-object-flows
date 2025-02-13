@@ -435,6 +435,17 @@ generate_pathway_dendrogram <- function(sequences,
       label_position_y=(y + yend) / 2
     )
 
+  theta <- seq(pi/8, 2*pi, length.out=16)
+  xo <- diff(range(node_counts$x)) / 500
+  yo <- diff(range(node_counts$y)) / 500
+  label_shadows <- node_counts |>
+    mutate(y=y-0.06) |>
+    crossing(theta=theta) |>
+    mutate(
+      x_offset = x + cos(theta) * xo,
+      y_offset = y + sin(theta) * yo
+    )
+
   transaction_pathways_plot <- ggplot(node_counts, aes(x=x, y=y)) +
     geom_segment(
       data=edges,
@@ -463,6 +474,13 @@ generate_pathway_dendrogram <- function(sequences,
       aes(label=count_label)
     ) +
     geom_text(
+      data=label_shadows,
+      aes(x=x_offset, y=y_offset,label=label),
+      size=5,
+      colour="white"
+    ) +
+    geom_text(
+      data=node_counts,
       aes(y=y-0.06,label=label),
       size=5,
     ) +
