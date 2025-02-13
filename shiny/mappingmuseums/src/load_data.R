@@ -1,5 +1,8 @@
 dispersal_events_csv <- "data/query_results/dispersal_events.csv"
-dispersal_events <- read_csv(dispersal_events_csv)
+dispersal_events <- read_csv(dispersal_events_csv) |>
+  mutate(
+    recipient_core_type = ifelse(!is.na(recipient_core_type), recipient_core_type, recipient_general_type)
+  )
 
 closure_reasons <- dispersal_events |>
     select(
