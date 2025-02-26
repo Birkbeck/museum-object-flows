@@ -206,10 +206,12 @@ changesUI <- function(id) {
     hr(style=hr_style),
     fluidRow(
       h3("Museum Closures"),
+      downloadButton(NS(id, "downloadClosuresTable"), label="Download table as CSV"),
       DTOutput(NS(id, "closuresTable"))
     ),
     fluidRow(
       h3("Museum Openings"),
+      downloadButton(NS(id, "downloadOpeningsTable"), label="Download table as CSV"),
       DTOutput(NS(id, "openingsTable"))
     )
   )
@@ -843,8 +845,8 @@ changesServer <- function(id) {
         choices()
       )
     }, width=small_chart_size, height=small_chart_size)
-    
-    output$closuresTable <- renderDT({
+
+    closures_in_time_period_table <- reactive({
       if (filter_field_1() == "No filter") {
         field_must_contain <- c("All")
       } else {
@@ -856,7 +858,25 @@ changesServer <- function(id) {
         input$year_range[2]
       )
     })
-    output$openingsTable <- renderDT({
+
+    output$downloadClosuresTable <- downloadHandler(
+      filename = function() {
+        paste('museum-closures-data-', Sys.Date(), '.csv', sep='')
+      },
+      content = function(con) {
+        write.csv(
+          closures_in_time_period_table(),
+          con
+        )
+      },
+      contentType = "text/csv"
+    )
+
+    output$closuresTable <- renderDT({
+      closures_in_time_period_table()
+    })
+
+    openings_in_time_period_table <- reactive({
       if (filter_field_1() == "No filter") {
         field_must_contain <- c("All")
       } else {
@@ -867,6 +887,23 @@ changesServer <- function(id) {
         input$year_range[1],
         input$year_range[2]
       )
+    })
+
+    output$downloadOpeningsTable <- downloadHandler(
+      filename = function() {
+        paste('museum-openings-data-', Sys.Date(), '.csv', sep='')
+      },
+      content = function(con) {
+        write.csv(
+          openings_in_time_period_table(),
+          con
+        )
+      },
+      contentType = "text/csv"
+    )
+
+    output$openingsTable <- renderDT({
+      openings_in_time_period_table()
     })
   })
 }

@@ -91,6 +91,7 @@ snapshotUI <- function(id) {
     hr(style=hr_style),
     fluidRow(
       h3("Museums Open During Period"),
+      downloadButton(NS(id, "downloadSnapshotTable"), label="Download table as CSV"),
       DTOutput(NS(id, "openMuseumsTable"))
     )
   )
@@ -421,8 +422,8 @@ snapshotServer <- function(id) {
         )
       }
     }, width=small_chart_size, height=small_chart_size)
-    
-    output$openMuseumsTable <- renderDT({
+
+    open_in_time_period_table <- reactive({
       if (filter_field_1() == "No filter") {
         field_must_contain <- c("All")
       } else {
@@ -439,6 +440,23 @@ snapshotServer <- function(id) {
         period_end(),
         measure
       )
+    })
+
+    output$downloadSnapshotTable <- downloadHandler(
+      filename = function() {
+        paste('museums-data-', Sys.Date(), '.csv', sep='')
+      },
+      content = function(con) {
+        write.csv(
+          open_in_time_period_table(),
+          con
+        )
+      },
+      contentType = "text/csv"
+    )
+    
+    output$openMuseumsTable <- renderDT({
+      open_in_time_period_table()
     })
   })
 }

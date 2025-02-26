@@ -697,6 +697,7 @@ event_types_hierarchy <- function() {
     new_row_1 <- data.frame(
       type_name = as.character(counter),
       sub_type_of = types_with_sub_types$type_name[i],
+      core_type = NA,
       is_core_category = FALSE,
       change_of_ownership = FALSE,
       change_of_custody = FALSE,
@@ -706,6 +707,7 @@ event_types_hierarchy <- function() {
     new_row_2 <- data.frame(
       type_name = paste("z", as.character(counter)),
       sub_type_of = types_with_sub_types$type_name[i],
+      core_type = NA,
       is_core_category = FALSE,
       change_of_ownership = FALSE,
       change_of_custody = FALSE,

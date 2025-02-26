@@ -294,7 +294,10 @@ causesUI <- function(id) {
     ),
     hr(style=hr_style),
     fluidRow(
-      h3("Reasons for Museum Closure"),
+      h3("Reasons for Closure"),
+      downloadButton(NS(id, "downloadCausesTable"), label="Download table as CSV")
+    ),
+    fluidRow(
       DTOutput(NS(id, "closureCausesTable"))
     )
   )
@@ -550,8 +553,36 @@ causesServer <- function(id) {
       closure_causes_over_time_small(over_time_table(), reason_level())
     })
 
+    closure_causes_by_museum_table <- reactive({
+      museum_closure_causes_table(
+        closure_causes(),
+        museums_including_crown_dependencies,
+        reason_level(),
+        reason_filter(),
+        size_filter_choices(),
+        governance_filter_choices(),
+        accreditation_filter_choices(),
+        subject_filter_choices(),
+        specific_subject_filter_choices(),
+        region_filter_choices()
+      )
+    })
+
+    output$downloadCausesTable <- downloadHandler(
+      filename = function() {
+        paste('closure-reasons-data-', Sys.Date(), '.csv', sep='')
+      },
+      content = function(con) {
+        write.csv(
+          closure_causes_by_museum_table(),
+          con
+        )
+      },
+      contentType = "text/csv"
+    )
+
     output$closureCausesTable <- renderDT({
-      museum_closure_causes_table(closure_causes(), museums_including_crown_dependencies)
+      closure_causes_by_museum_table()
     }, options=list(pageLength=100))
   })
 }
@@ -602,7 +633,16 @@ closure_causes_types_counts_table <- function(closure_causes,
     summarise(frequency = n())
 }
 
-museum_closure_causes_table <- function(closure_causes, museums_table) {
+museum_closure_causes_table <- function(closure_causes,
+                                        museums_table,
+                                        reason_level,
+                                        reason_filter,
+                                        size_filter,
+                                        governance_filter,
+                                        accreditation_filter,
+                                        subject_filter,
+                                        specific_subject_filter,
+                                        region_filter) {
   closure_causes |>
     group_by(museum_id, museum_name, super_causes) |>
     left_join(museums_table, by="museum_id") |>
@@ -610,6 +650,13 @@ museum_closure_causes_table <- function(closure_causes, museums_table) {
       year_opened = paste(year_opened_1, year_opened_2, sep=":"),
       year_closed = paste(year_closed_1, year_closed_2, sep=":")
     ) |>
+    filter(.data[[reason_level]] %in% reason_filter) |>
+    filter(size %in% size_filter) |>
+    filter(governance %in% governance_filter | governance_main %in% governance_filter) |>
+    filter(accreditation %in% accreditation_filter) |>
+    filter(main_subject %in% subject_filter) |>
+    filter(subject_matter %in% specific_subject_filter) |>
+    filter(region %in% region_filter | nation %in% region_filter) |>
     select(
       museum_id,
       museum_name,
