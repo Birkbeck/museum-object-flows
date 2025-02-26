@@ -33,6 +33,7 @@ class EventsPreprocessor(FilePreprocessor):
 
         # infer unspecified recipients for events with a default recipient type
         new_actors = []
+        undefined_events = []
         for index, row in enumerate(separated_rows):
             event_type_name = row["event_type"].split("?")[0].strip()
             if event_type_name == "":
@@ -40,7 +41,18 @@ class EventsPreprocessor(FilePreprocessor):
             try:
                 event_type = self.event_types.filter(type_name=event_type_name)[0]
             except IndexError as e:
-                raise Exception(f"{event_type_name} not in event types sheet")
+                undefined_events.append(event_type_name)
+        if len(undefined_events) > 0:
+            event_type_names = ", ".join(undefined_events)
+            raise Exception(
+                "The following event types are not defined in the event types sheet:\n"
+                + event_type_names
+            )
+        for index, row in enumerate(separated_rows):
+            event_type_name = row["event_type"].split("?")[0].strip()
+            if event_type_name == "":
+                continue
+            event_type = self.event_types.filter(type_name=event_type_name)[0]
             if row["actor_recipient_id"] == "" and any(
                 [
                     event_type["change_of_ownership"],

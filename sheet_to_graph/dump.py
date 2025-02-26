@@ -48,6 +48,10 @@ OPTIONAL MATCH (event_type)-[:SUB_TYPE_OF]->(super_type:Type)-[:SUB_TYPE_OF*0..]
 RETURN {
     type_name: event_type.type_name,
     sub_type_of: super_type.type_name,
+    core_type: [
+      (event_type)-[:SUB_TYPE_OF*0..]->(event_core_type:Type {is_core_category: TRUE})
+      | event_core_type.type_name
+    ][0],
     is_core_category: event_type.is_core_category,
     change_of_ownership: event_type.change_of_ownership,
     change_of_custody: event_type.change_of_custody,

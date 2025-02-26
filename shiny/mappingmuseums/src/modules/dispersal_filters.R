@@ -511,23 +511,43 @@ dispersalFiltersServer <- function(id, stepsOrFirstLast) {
       event_type_choices <- data.frame(type_name=c())
       core_event_types <- event_types |>
         filter(is_core_category)
+      sub_event_types <- event_types |>
+        filter(!is_core_category & type_name != "event")
       if ("Change of ownership" %in% transaction_type_filter()) {
         event_type_choices <- rbind(
           event_type_choices,
           select(filter(core_event_types, change_of_ownership), type_name)
-        )
+        ) |>
+          rbind(
+            select(
+              filter(sub_event_types, change_of_ownership),
+              type_name=core_type
+            )
+          )
       }
       if ("Change of custody" %in% transaction_type_filter()) {
         event_type_choices <- rbind(
           event_type_choices,
           select(filter(core_event_types, change_of_custody), type_name)
-        )
+        ) |>
+          rbind(
+            select(
+              filter(sub_event_types, change_of_custody),
+              type_name=core_type
+            )
+          )
       }
       if ("End of existence" %in% transaction_type_filter()) {
         event_type_choices <- rbind(
           event_type_choices,
           select(filter(core_event_types, end_of_existence), type_name)
-        )
+        ) |>
+          rbind(
+            select(
+              filter(sub_event_types, end_of_existence),
+              type_name=core_type
+            )
+          )
       }
       event_type_choices <- event_type_choices |>
         distinct()

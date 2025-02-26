@@ -183,6 +183,7 @@ class Table:
                 )
 
     def _add_row(self, row: dict):
+        row_number = row["row_number"] if "row_number" in row else self.size
         row_index = self.size
         clean_row = self._clean_row(row)
         for column in clean_row:
@@ -198,9 +199,9 @@ class Table:
                 clean_row[column_name] = self.columns[column_name].formula(
                     self, row_index
                 )
-            except Exception:
+            except Exception as e:
                 self.validation_errors.append(
-                    f"Row [{row_index}] Failed to infer {column_name}, "
+                    f"Row [{row_number}] Failed to infer {column_name}, "
                     + "check required details are present"
                 )
         for rule in self.inference_rules:
