@@ -13,8 +13,30 @@ library(tidyverse)
 museums <- read_csv("data/mapping-museums-2025-01-07.csv")
 
 governance_ordering <- c("Unknown", "Private", "Independent", "University", "Other_Government", "Local_Authority", "National")
-outcome_ordering <- c("mostly left", "mostly kept", "mostly stored", "mostly moved", "mostly returned", "mostly transferred", "mostly sold", "mixed")
-recipients_ordering <- c("mostly NA", "mostly civic organisation", "mostly museum/library/archive", "mostly museum", "mostly trader", "mostly individual", "mostly unknown", "mixed")
+outcome_ordering <- c(
+  "mostly kept",
+  "mostly stored",
+  "mostly left",
+  "mostly damaged/destroyed",
+  "mostly returned",
+  "mostly loaned",
+  "mostly transferred",
+  "mostly sold",
+  "mixed",
+  "mostly unknown"
+)
+recipients_ordering <- c(
+  "mostly N/A",
+  "mostly storage",
+  "mostly civic organisation",
+  "mostly museum/library/archive",
+  "mostly museum",
+  "mostly other organisation",
+  "mostly trader",
+  "mostly individual",
+  "mixed",
+  "mostly unknown"
+)
 
 heatmap_theme <- theme_minimal() +
   theme(
@@ -87,15 +109,15 @@ wss <- sapply(1:12, function(k) {
   kmeans(numerical_data, centers = k, nstart = 25)$tot.withinss
 })
 
-# plot(1:12, wss, type = "b", pch = 19, frame = FALSE,
-#      xlab = "Number of clusters K",
-#      ylab = "Total within-clusters sum of squares")
+plot(1:12, wss, type = "b", pch = 19, frame = FALSE,
+     xlab = "Number of clusters K",
+     ylab = "Total within-clusters sum of squares")
 ```
 
-Using 8 clusters:
+Using 10 clusters:
 
-```{r k-8-clusters, echo=FALSE}
-kmeans_result <- kmeans(numerical_data, centers = 8, nstart = 25)
+```{r k-10-clusters, echo=FALSE}
+kmeans_result <- kmeans(numerical_data, centers = 10, nstart = 25)
 
 centroids <- as.data.frame(kmeans_result$centers)
 centroids$cluster <- rownames(centroids)
@@ -119,28 +141,32 @@ ggplot(centroids, aes(x=cluster, y=dimension)) +
   )
 ```
 
-- Cluster 1: mixed
-- Cluster 2: mostly moved
-- Cluster 3: mostly stored
-- Cluster 4: mostly sold
-- Cluster 5: mostly left
-- Cluster 6: mostly returned
-- Cluster 7: mostly transferred
-- Cluster 8: mostly kept
+- Cluster 1: mostly stored
+- Cluster 2: mostly unknown
+- Cluster 3: mostly sold
+- Cluster 4: mostly loaned
+- Cluster 5: mostly returned
+- Cluster 6: mostly kept
+- Cluster 7: mostly left
+- Cluster 8: mixed
+- Cluster 9: mostly damaged/destroyed
+- Cluster 10: mostly transferred
 
-```{r k-8-cluster-labels, echo=FALSE}
+```{r k-9-cluster-labels, echo=FALSE}
 closure_outcomes <- closure_outcomes |>
   mutate(
     cluster = kmeans_result$cluster,
     cluster_label = case_when(
-      cluster == 1 ~ "mixed",
-      cluster == 2 ~ "mostly moved",
-      cluster == 3 ~ "mostly stored",
-      cluster == 4 ~ "mostly sold",
-      cluster == 5 ~ "mostly left",
-      cluster == 6 ~ "mostly returned",
-      cluster == 7 ~ "mostly transferred",
-      cluster == 8 ~ "mostly kept",
+      cluster == 1 ~ "mostly stored",
+      cluster == 2 ~ "mostly unknown",
+      cluster == 3 ~ "mostly sold",
+      cluster == 4 ~ "mostly loaned",
+      cluster == 5 ~ "mostly returned",
+      cluster == 6 ~ "mostly kept",
+      cluster == 7 ~ "mostly left",
+      cluster == 8 ~ "mixed",
+      cluster == 9 ~ "mostly damaged/destroyed",
+      cluster == 10 ~ "mostly transferred",
       TRUE ~ "unknown" # Optional, handles unexpected cluster values
     )
   )
@@ -315,15 +341,15 @@ wss <- sapply(1:12, function(k) {
   kmeans(numerical_data, centers = k, nstart = 25)$tot.withinss
 })
 
-# plot(1:12, wss, type = "b", pch = 19, frame = FALSE,
-#     xlab = "Number of clusters K",
-#    ylab = "Total within-clusters sum of squares")
+plot(1:12, wss, type = "b", pch = 19, frame = FALSE,
+    xlab = "Number of clusters K",
+   ylab = "Total within-clusters sum of squares")
 ```
 
-Using 8 clusters:
+Using 10 clusters:
 
-```{r k-8-clusters-recipients, echo=FALSE}
-kmeans_result <- kmeans(numerical_data, centers = 8, nstart = 25)
+```{r k-10-clusters-recipients, echo=FALSE}
+kmeans_result <- kmeans(numerical_data, centers = 10, nstart = 25)
 
 centroids <- as.data.frame(kmeans_result$centers)
 centroids$cluster <- rownames(centroids)
@@ -347,29 +373,33 @@ ggplot(centroids, aes(x=cluster, y=dimension)) +
   )
 ```
 
-- Cluster 1: mostly trader
-- Cluster 2: mostly NA
-- Cluster 3: mostly unknown
-- Cluster 4: mostly individual
-- Cluster 5: mostly museum/library/archive
-- Cluster 6: mostly civic organisation
-- Cluster 7: mixed
-- Cluster 8: mostly museum
+- Cluster 1: mostly museum/library/archive
+- Cluster 2: mixed
+- Cluster 3: mostly storage
+- Cluster 4: mostly museum
+- Cluster 5: mostly unknown
+- Cluster 6: mostly trader
+- Cluster 7: mostly N/A
+- Cluster 8: mostly civic organisation
+- Cluster 9: mostly other organisation
+- Cluster 10: mostly individual
 
 ```{r k-8-cluster-labels-recipients, echo=FALSE}
 closure_recipients <- closure_recipients |>
   mutate(
     cluster = kmeans_result$cluster,
     cluster_label = case_when(
-      cluster == 1 ~ "mostly trader",
-      cluster == 2 ~ "mostly NA",
-      cluster == 3 ~ "mostly unknown",
-      cluster == 4 ~ "mostly individual",
-      cluster == 5 ~ "mostly museum/library/archive",
-      cluster == 6 ~ "mostly civic organisation",
-      cluster == 7 ~ "mixed",
-      cluster == 8 ~ "mostly museum",
-      TRUE ~ "unknown" # Optional, handles unexpected cluster values
+      cluster == 1 ~ "mostly museum/library/archive",
+      cluster == 2 ~ "mixed",
+      cluster == 3 ~ "mostly storage",
+      cluster == 4 ~ "mostly museum",
+      cluster == 5 ~ "mostly unknown",
+      cluster == 6 ~ "mostly trader",
+      cluster == 7 ~ "mostly N/A",
+      cluster == 8 ~ "mostly civic organisation",
+      cluster == 9 ~ "mostly other organisation",
+      cluster == 10 ~ "mostly individual",
+      TRUE ~ "unknown"
     )
   )
 
