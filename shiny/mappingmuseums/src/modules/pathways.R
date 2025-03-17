@@ -184,7 +184,6 @@ generate_pathway_dendrogram <- function(sequences,
   recipient_museum_grouping_dimension <- paste0("recipient_", museum_grouping_dimension)
 
  dendrogram_data <-  sequences |>
-   mutate(initial_museum_all="all", sender_all="all", recipient_all="all") |>
    filter(recipient_position <= end_position) |>
    select(
      event_id,
@@ -243,7 +242,7 @@ generate_pathway_dendrogram <- function(sequences,
 
   initial_senders <- dendrogram_data |>
     filter(event_stage_in_path == 1) |>
-    select(.data[[sender_museum_grouping_dimension]]) |>
+    select(.data[[sender_museum_grouping_dimension]], .data[[sender_grouping_dimension]]) |>
     distinct()
   if(nrow(initial_senders) > 1) {
     dummy_rows <- dendrogram_data |>

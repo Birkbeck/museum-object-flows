@@ -490,8 +490,15 @@ dispersalFiltersServer <- function(id, stepsOrFirstLast) {
         input$startAccreditationFilter
       )
     })
+    grouping_filters <- reactive({
+      list(
+        input$grouping,
+        input$groupingMuseums
+      )
+    })
 
     actor_choices_table <- reactive({
+      req(input$grouping, input$groupingMuseums)
       get_actor_choices(grouping_field(), museum_grouping_field())
     })
     sequence_end <- reactive({
@@ -601,7 +608,7 @@ dispersalFiltersServer <- function(id, stepsOrFirstLast) {
       )
     })
 
-    observeEvent(grouping_field(), {
+    observeEvent(grouping_filters(), {
       grouping_label <- list(
         "Actor Sector"="sector",
         "Actor Type (Core Categories)"="core type",
@@ -652,7 +659,11 @@ get_actor_choices <- function(grouping_dimension, museum_grouping_dimension) {
   recipient_grouping_dimension <- paste0("recipient_", grouping_dimension)
   recipient_museum_grouping_dimension <- paste0("recipient_", museum_grouping_dimension)
   choices_table <- dispersal_events |>
-    mutate(initial_museum_all="all", sender_all="all", recipient_all="all") |>
+    mutate(
+      initial_museum_all="all",
+      sender_all=ifelse(!is.na(sender_size), "all", NA),
+      recipient_all=ifelse(!is.na(recipient_size), "all", NA),
+    ) |>
     group_by(.data[[recipient_museum_grouping_dimension]], .data[[recipient_grouping_dimension]]) |>
     summarize(
       to=paste(.data[[recipient_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], sep="@"),
@@ -720,7 +731,11 @@ filtered_sequence_data <- function(
 
   # find each event's previous event in the chain of shown events
   sequential_events <- sequential_events |>
-    mutate(initial_museum_all="all", sender_all="all", recipient_all="all") |>
+    mutate(
+      initial_museum_all="all",
+      sender_all=ifelse(!is.na(sender_size), "all", NA),
+      recipient_all=ifelse(!is.na(recipient_size), "all", NA),
+    ) |>
     filter(initial_museum_id %in% initial_museum_ids) |>
     rowwise() |>
     mutate(
