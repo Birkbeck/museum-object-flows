@@ -35,3 +35,13 @@ Use the command `make dump-db` to run pre-specified queries that store the conte
 ## Updating Mapping Museums Data
 
 After updating the Mapping Museums data in the `data` directory, update `config.json` with the new file name.
+
+## Troubleshooting
+
+If the Neo4j database has been paused due to inactivity, you will receive `ValueError: Cannot resolve address xxxxxxxx.databases.neo4j.io:xxxx`. Restart the database on the online user interface.
+
+You may then need to flush your DNS cache as your computer may remember that the address is unavailable. On Mac OS:
+
+```
+sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder
+```

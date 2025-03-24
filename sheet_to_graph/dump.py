@@ -45,6 +45,10 @@ event_types_query = """
 MATCH (event_type:Type)-[:SUB_TYPE_OF*0..]->(:Type {type_name: "event"})
 WITH event_type
 OPTIONAL MATCH (event_type)-[:SUB_TYPE_OF]->(super_type:Type)-[:SUB_TYPE_OF*0..]->(:Type {type_name: "event"})
+OPTIONAL MATCH (event_type)<-[:SUB_TYPE_OF*0..]-(:Type)<-[:INSTANCE_OF]-(e:Event)
+WITH event_type,
+     super_type,
+     COUNT(e) AS total_instances
 RETURN {
     type_name: event_type.type_name,
     sub_type_of: super_type.type_name,
@@ -56,7 +60,8 @@ RETURN {
     change_of_ownership: event_type.change_of_ownership,
     change_of_custody: event_type.change_of_custody,
     end_of_existence: event_type.end_of_existence,
-    definition: event_type.definition
+    definition: event_type.definition,
+    total_instances: total_instances
 } as record
 """
 

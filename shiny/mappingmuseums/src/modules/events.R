@@ -702,7 +702,8 @@ event_types_hierarchy <- function() {
       change_of_ownership = FALSE,
       change_of_custody = FALSE,
       end_of_existence = FALSE,
-      definition = "dummy"
+      definition = "dummy",
+      total_instances = NA
     )
     new_row_2 <- data.frame(
       type_name = paste("z", as.character(counter)),
@@ -712,7 +713,8 @@ event_types_hierarchy <- function() {
       change_of_ownership = FALSE,
       change_of_custody = FALSE,
       end_of_existence = FALSE,
-      definition = "dummy"
+      definition = "dummy",
+      total_instances = NA
     )
     counter <- counter + 1
     event_types <- event_types |>

@@ -761,7 +761,7 @@ filtered_sequence_data <- function(
     ungroup() |>
     filter(show_event) |>
     arrange(original_collection_id, collection_id, event_stage_in_path) |>
-    group_by(original_collection_id) |>
+    group_by(original_collection_id) |> # TODO: this does not account for collections that branch
     mutate(
       event_stage_in_path=dense_rank(event_stage_in_path),
       sender_position=event_stage_in_path,

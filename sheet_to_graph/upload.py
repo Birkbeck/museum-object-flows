@@ -566,16 +566,16 @@ if __name__ == "__main__":
                 "event_name", formula=formulae.get_event_name, property_of="event_id"
             ),
             FormulaColumn(
-                "stage_in_path",
-                formula=formulae.get_stage_in_path,
-                property_of="event_id",
-            ),
-            FormulaColumn(
                 "previous_event_id",
                 formula=formulae.get_previous_event_id,
                 relation_to="event_id",
                 type_label="PRECEDES",
                 reference_column="event_id",
+            ),
+            FormulaColumn(
+                "stage_in_path",
+                formula=formulae.get_stage_in_path,
+                property_of="event_id",
             ),
             FormulaColumn(
                 "recipient_id",

@@ -64,8 +64,11 @@ def get_super_cause_types(table, row_index, super_causes_hierarchy):
         cause_name = cause.strip().split("?")[0]
         if cause_name == "":
             continue
-        tidy_cause_name = _tidy_individual_cause(cause_name)
-        tidy_causes.append(tidy_cause_name)
+        try:
+            tidy_cause_name = _tidy_individual_cause(cause_name)
+            tidy_causes.append(tidy_cause_name)
+        except Exception:
+            print(row_index, cause_name)
     return "; ".join(tidy_causes)
 
 
@@ -252,20 +255,13 @@ def get_event_name(table, row_index):
 
 def get_stage_in_path(table, row_index):
     row = table[row_index]
-    if row["collection_id"] == "":
-        return None
-    return len(
-        [
-            r
-            for r in table.rows[:row_index]
-            if r["super_event_id"] == row["super_event_id"]
-            and r["collection_id"] != ""
-            and (
-                r["collection_id"] == row["collection_id"]
-                or r["collection_id"] == row["coll_subset_of"]
-            )
-        ]
-    )
+    previous_event_id = row["previous_event_id"]
+    if previous_event_id is None:
+        return 0
+    previous_event = [
+        r for r in table[:row_index] if r["event_id"] == row["previous_event_id"]
+    ][0]
+    return previous_event["stage_in_path"] + 1
 
 
 def get_previous_event_id(table, row_index):
