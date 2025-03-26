@@ -213,6 +213,8 @@ def get_collection_status(table, row_index):
     if was_removed_from is not None:
         parent_collection = table.filter(collection_or_object_id=was_removed_from)[0]
         return parent_collection["collection_status"]
+    if row["coll_status"] == "":
+        return "collection"
     return row["coll_status"]
 
 

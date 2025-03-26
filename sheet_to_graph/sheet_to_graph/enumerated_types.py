@@ -35,7 +35,7 @@ uk_constituents = {
 }
 
 collection_statuses = {
-    "": "collection",
+    "": "",
     "C": "collection",
     "L": "loan",
     "H": "handling",
