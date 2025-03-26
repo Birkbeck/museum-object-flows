@@ -19,7 +19,6 @@ snapshotUI <- function(id) {
       ),
       uiOutput(NS(id, "yearSlider")),
     ),
-    hr(style=hr_style),
     sidebarLayout(
       sidebarPanel(
         selectInput(
@@ -48,47 +47,45 @@ snapshotUI <- function(id) {
           choices=field_names$name,
           selected="Country/Region"
         ),
+        uiOutput(NS(id, "mainPlotOptions")),
       ),
       mainPanel(
         plotlyOutput(NS(id, "mainPlot"), height="720px", width="100%"),
-        uiOutput(NS(id, "mainPlotOptions")),
-        uiOutput(NS(id, "mainPlotExplanation"))
+        uiOutput(NS(id, "mainPlotExplanation")),
+        fluidRow(
+          p("Click on one of the small charts below to see it enlarged in the main panel above.")
+        ),
+        fluidRow(
+          column(
+            3,
+            plotOutput(
+              NS(id, "museumMapSmall"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "museumMap")
+            ),
+          ),
+          column(
+            3,
+            plotOutput(
+              NS(id, "museumCountsSmall"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "museumCounts")
+            ),
+          ),
+          column(
+            3,
+            plotOutput(
+              NS(id, "museumHeatmapSmall"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "museumHeatmap")
+            )
+          )
+        )
       )
     ),
-    hr(style=hr_style),
-    fluidRow(
-      p("Click on one of the small charts below to see it enlarged in the main panel above.")
-    ),
-    fluidRow(
-      column(
-        3,
-        plotOutput(
-          NS(id, "museumMapSmall"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "museumMap")
-        ),
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "museumCountsSmall"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "museumCounts")
-        ),
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "museumHeatmapSmall"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "museumHeatmap")
-        ),
-      ),
-    ),
-    hr(style=hr_style),
     fluidRow(
       h3("Museums Open During Period"),
       downloadButton(NS(id, "downloadSnapshotTable"), label="Download table as CSV"),
@@ -557,7 +554,7 @@ snapshot_heatmap <- function(museums, dimension, dimension2, metric, show_only_c
     geom_text(aes(label=.data[[metric]]), size=6) +
     scale_x_discrete(labels=short_labels) +
     scale_y_discrete(labels=short_labels) +
-    scale_fill_continuous(low="white", high="purple") +
+    heatmap_fill_scale +
     labs(
       title=paste("Museums in the UK", period),
       x=x_label,
@@ -593,7 +590,7 @@ snapshot_heatmap_small <- function(museums, dimension, dimension2, metric, show_
     geom_text(aes(label=.data[[metric]])) +
     scale_x_discrete(labels=very_short_labels) +
     scale_y_discrete(labels=short_labels) +
-    scale_fill_continuous(low="white", high="purple") +
+    heatmap_fill_scale +
     labs(
       title=paste0(x_label, " vs ", y_label),
       x="",

@@ -6,7 +6,6 @@ outcomesUI <- function(id) {
       p("Outcome categories were determined by clustering museums according to the approximate proportion of their collections involved in events of each event type or received by actors of each actor type."),
       p("Firepower! The Royal Artillery Museum has not been included in this analysis."),
     ),
-    hr(style=hr_style),
     sidebarLayout(
       sidebarPanel(width=3,
         h3("Filter Outcomes"),
@@ -250,47 +249,45 @@ outcomesUI <- function(id) {
             multiple=TRUE
           )   
         ),
+        div(uiOutput(NS(id, "mainPlotOptions")))
       ),
       mainPanel(
-        uiOutput(NS(id, "mainPlot"), height="1200px", width="100%"),
-        uiOutput(NS(id, "mainPlotOptions")),
-        uiOutput(NS(id, "mainPlotExplanation"))
+        div(uiOutput(NS(id, "mainPlot")), style = "height: 1200px; width: 100%;"),
+        div(uiOutput(NS(id, "mainPlotExplanation")), style = "margin-top: 20px;"),
+        fluidRow(
+          p("Click on one of the small charts below to see it enlarged in the main panel above.")
+        ),
+        fluidRow(
+          column(
+            3,
+            plotOutput(
+              NS(id, "outcomesBarChartSmall"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "outcomesBarChart")
+            ),
+          ),
+          column(
+            3,
+            plotOutput(
+              NS(id, "outcomesHeatmapSmall"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "outcomesHeatmap")
+            ),
+          ),
+          column(
+            3,
+            plotOutput(
+              NS(id, "outcomesLineChartSmall"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "outcomesLineChart")
+            )
+          )
+        )
       )
     ),
-    hr(style=hr_style),
-    fluidRow(
-      p("Click on one of the small charts below to see it enlarged in the main panel above.")
-    ),
-    fluidRow(
-      column(
-        3,
-        plotOutput(
-          NS(id, "outcomesBarChartSmall"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "outcomesBarChart")
-        ),
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "outcomesHeatmapSmall"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "outcomesHeatmap")
-        ),
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "outcomesLineChartSmall"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "outcomesLineChart")
-        ),
-      ),
-    ),
-    hr(style=hr_style),
     fluidRow(
       h3("Outcomes of Museum Closure"),
       downloadButton(NS(id, "downloadOutcomesTable"), label="Download table as CSV")

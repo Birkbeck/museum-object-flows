@@ -4,7 +4,6 @@ causesUI <- function(id) {
       p("Why do museums close? We have categorized museum closures in the period 2000-2024 according to a hierarchy of reasons for closure. See the charts below to see reasons given for museum closure and how the prevalence of reasons varies by museum type and over time."),
       p("See the table at the bottom of this page for details of each museum and its reasons for closure.")
     ),
-    hr(style=hr_style),
     sidebarLayout(
       sidebarPanel(width=3,
         h3("Filter Reasons"),
@@ -78,7 +77,6 @@ causesUI <- function(id) {
           )
         ),
 
-        hr(style=hr_style),
         h3("Filter Museums"),
         p("Show only the reasons for closure of certain types of museum."),
 
@@ -243,56 +241,54 @@ causesUI <- function(id) {
             multiple=TRUE
           )   
         ),
+        div(uiOutput(NS(id, "mainPlotOptions")))
       ),
       mainPanel(
         div(uiOutput(NS(id, "mainPlot")), style = "height: 1200px; width: 100%;"),
-        div(uiOutput(NS(id, "mainPlotOptions"))),
-        div(uiOutput(NS(id, "mainPlotExplanation")), style = "margin-top: 20px;")
+        div(uiOutput(NS(id, "mainPlotExplanation")), style = "margin-top: 20px;"),
+        fluidRow(
+          p("Click on one of the small charts below to see it enlarged in the main panel above.")
+        ),
+        fluidRow(
+          column(
+            3,
+            plotOutput(
+              NS(id, "reasonsHierarchySmall"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "reasonsHierarchy")
+            ),
+          ),
+          column(
+            3,
+            plotOutput(
+              NS(id, "reasonsBarChartSmall"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "reasonsBarChart")
+            ),
+          ),
+          column(
+            3,
+            plotOutput(
+              NS(id, "reasonsHeatmapSmall"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "reasonsHeatmap")
+            ),
+          ),
+          column(
+            3,
+            plotOutput(
+              NS(id, "reasonsLineChartSmall"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "reasonsLineChart")
+            )
+          )
+        )
       )
     ),
-    hr(style=hr_style),
-    fluidRow(
-      p("Click on one of the small charts below to see it enlarged in the main panel above.")
-    ),
-    fluidRow(
-      column(
-        3,
-        plotOutput(
-          NS(id, "reasonsHierarchySmall"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "reasonsHierarchy")
-        ),
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "reasonsBarChartSmall"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "reasonsBarChart")
-        ),
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "reasonsHeatmapSmall"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "reasonsHeatmap")
-        ),
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "reasonsLineChartSmall"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "reasonsLineChart")
-        ),
-      ),
-    ),
-    hr(style=hr_style),
     fluidRow(
       h3("Reasons for Closure"),
       downloadButton(NS(id, "downloadCausesTable"), label="Download table as CSV")

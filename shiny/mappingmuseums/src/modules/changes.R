@@ -15,7 +15,6 @@ changesUI <- function(id) {
         width="100%"
       ),
       ),
-    hr(style=hr_style),
     fluidRow(
       sidebarLayout(
         sidebarPanel(
@@ -38,172 +37,170 @@ changesUI <- function(id) {
             ), 
             multiple=TRUE
           ),
-          p("Use dimension 2 to adjust the second axis of the heatmap chart s"),
+          p("Use dimension 2 to adjust the second axis of the heatmap charts"),
           selectInput(
             NS(id, "filterField2"),
             label="Dimension 2:",
             choices=field_names$name,
             selected="Country/Region"
           ),
-          ),
+          uiOutput(NS(id, "mainPlotOptions")),
+        ),
         mainPanel(
           plotlyOutput(NS(id, "mainPlot"), height="720px", width="100%"),
-        uiOutput(NS(id, "mainPlotOptions")),
-          uiOutput(NS(id, "mainPlotExplanation"))
-        )
-      ),
-      ),
-    hr(style=hr_style),
-    fluidRow(
-      p("Click on one of the small charts below to see it enlarged in the main panel above.")
-    ),
-    fluidRow(
-      column(
-        3,
-        plotOutput(
-          NS(id, "openingsVsClosuresScatterSmall"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "openingsVsClosuresScatter")
-        )
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "timeSeriesSmall"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "timeSeriesLine")
-        )
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "openingRatesSmall"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "openingRateLine")
-        )
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "closureRatesSmall"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "closureRateLine")
-        )
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "openingsMap"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "openingsMap")
-        )
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "closuresMap"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "closuresMap")
-        )
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "openingsSmall2Way"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "openings2Way")
-        )
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "closuresSmall2Way"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "closures2Way")
-        )
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "openingsClosuresSmall"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "openingsClosures")
-        )
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "startEndSmall"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "startEnd")
-        )
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "openStartSmall2Way"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "openStart2Way")
-        )
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "openEndSmall2Way"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "openEnd2Way")
-        )
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "absoluteChangeSmall"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "absoluteChange")
-        )
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "percentageChangeSmall"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "percentageChange")
-        )
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "absoluteChangeSmall2Way"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "absoluteChange2Way")
-        )
-      ),
-      column(
-        3,
-        plotOutput(
-          NS(id, "percentageChangeSmall2Way"),
-          width=small_chart_size_px,
-          height=small_chart_size_px,
-          click=NS(id, "percentageChange2Way")
+          uiOutput(NS(id, "mainPlotExplanation")),
+          fluidRow(
+            p("Click on one of the small charts below to see it enlarged in the main panel above.")
+          ),
+          fluidRow(
+            column(
+              3,
+              plotOutput(
+                NS(id, "openingsVsClosuresScatterSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "openingsVsClosuresScatter")
+              )
+            ),
+            column(
+              3,
+              plotOutput(
+                NS(id, "timeSeriesSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "timeSeriesLine")
+              )
+            ),
+            column(
+              3,
+              plotOutput(
+                NS(id, "openingRatesSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "openingRateLine")
+              )
+            ),
+            column(
+              3,
+              plotOutput(
+                NS(id, "closureRatesSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "closureRateLine")
+              )
+            ),
+            column(
+              3,
+              plotOutput(
+                NS(id, "openingsMap"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "openingsMap")
+              )
+            ),
+            column(
+              3,
+              plotOutput(
+                NS(id, "closuresMap"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "closuresMap")
+              )
+            ),
+            column(
+              3,
+              plotOutput(
+                NS(id, "openingsSmall2Way"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "openings2Way")
+              )
+            ),
+            column(
+              3,
+              plotOutput(
+                NS(id, "closuresSmall2Way"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "closures2Way")
+              )
+            ),
+            column(
+              3,
+              plotOutput(
+                NS(id, "openingsClosuresSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "openingsClosures")
+              )
+            ),
+            column(
+              3,
+              plotOutput(
+                NS(id, "startEndSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "startEnd")
+              )
+            ),
+            column(
+              3,
+              plotOutput(
+                NS(id, "openStartSmall2Way"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "openStart2Way")
+              )
+            ),
+            column(
+              3,
+              plotOutput(
+                NS(id, "openEndSmall2Way"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "openEnd2Way")
+              )
+            ),
+            column(
+              3,
+              plotOutput(
+                NS(id, "absoluteChangeSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "absoluteChange")
+              )
+            ),
+            column(
+              3,
+              plotOutput(
+                NS(id, "percentageChangeSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "percentageChange")
+              )
+            ),
+            column(
+              3,
+              plotOutput(
+                NS(id, "absoluteChangeSmall2Way"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "absoluteChange2Way")
+              )
+            ),
+            column(
+              3,
+              plotOutput(
+                NS(id, "percentageChangeSmall2Way"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "percentageChange2Way")
+              )
+            )
+          )
         )
       ),
     ),
-    hr(style=hr_style),
     fluidRow(
       h3("Museum Closures"),
       downloadButton(NS(id, "downloadClosuresTable"), label="Download table as CSV"),

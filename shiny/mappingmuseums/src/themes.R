@@ -135,9 +135,7 @@ museum_attribute_colours <- c(
     accreditation_colours
 )
 
-map_fill_green = "#CAECD4"
-map_line_green = "#7ED298"
-map_points_red = "#8A0A39"
+heatmap_fill_scale <- scale_fill_continuous(low="white", high="#E4A8F0")
 
 title_size <- 22
 subtitle_size <- 18
