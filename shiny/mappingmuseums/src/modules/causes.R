@@ -318,11 +318,11 @@ causesServer <- function(id) {
     reason_level_name <- reactive({
       req(input$reasonLevel)
       if (input$reasonLevel == "Top-level") {
-        return("Top-level Cause Type")
+        return("Top-level Reason")
       } else if (input$reasonLevel == "Mid-level") {
-        return("Mid-level Cause Type")
+        return("Mid-level Reason")
       } else {
-        return("Low-level Cause Type")
+        return("Low-level Reason")
       }
     })
     reason_filter <- reactive({input$reasonFilter})
@@ -861,7 +861,7 @@ closure_causes_bar_chart <- function(summary_table, count_or_percentage, reason_
     geom_col(fill="purple", alpha=0.7) +
     geom_text(aes(label=.data[[count_or_percentage]]), hjust="left", nudge_x=1, size=5) +
     labs(
-      title="Types of Reasons for Museum Closure, 2000-2024",
+      title="Reasons for Museum Closure, 2000-2024",
       y=reason_level_name,
       x=x_title
     ) +
@@ -1138,7 +1138,7 @@ closure_type_hierarchy <- function(closure_causes_hierarchy_layout, reason_level
       values=c("dummy"="white", "normal"="lightgrey")
     ) +
     labs(
-      title="Hierarchy of types of reason for museum closure"
+      title="Hierarchy of reasons for museum closure"
     ) +
     taxonomy_theme
 }
