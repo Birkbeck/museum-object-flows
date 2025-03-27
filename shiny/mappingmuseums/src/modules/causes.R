@@ -252,6 +252,7 @@ causesUI <- function(id) {
         fluidRow(
           column(
             3,
+            style=card_style,
             plotOutput(
               NS(id, "reasonsHierarchySmall"),
               width=small_chart_size_px,
@@ -261,6 +262,7 @@ causesUI <- function(id) {
           ),
           column(
             3,
+            style=card_style,
             plotOutput(
               NS(id, "reasonsBarChartSmall"),
               width=small_chart_size_px,
@@ -270,6 +272,7 @@ causesUI <- function(id) {
           ),
           column(
             3,
+            style=card_style,
             plotOutput(
               NS(id, "reasonsHeatmapSmall"),
               width=small_chart_size_px,
@@ -279,6 +282,7 @@ causesUI <- function(id) {
           ),
           column(
             3,
+            style=card_style,
             plotOutput(
               NS(id, "reasonsLineChartSmall"),
               width=small_chart_size_px,

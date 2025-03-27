@@ -260,6 +260,7 @@ outcomesUI <- function(id) {
         fluidRow(
           column(
             3,
+            style=card_style,
             plotOutput(
               NS(id, "outcomesBarChartSmall"),
               width=small_chart_size_px,
@@ -269,6 +270,7 @@ outcomesUI <- function(id) {
           ),
           column(
             3,
+            style=card_style,
             plotOutput(
               NS(id, "outcomesHeatmapSmall"),
               width=small_chart_size_px,
@@ -278,6 +280,7 @@ outcomesUI <- function(id) {
           ),
           column(
             3,
+            style=card_style,
             plotOutput(
               NS(id, "outcomesLineChartSmall"),
               width=small_chart_size_px,
