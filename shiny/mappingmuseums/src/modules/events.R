@@ -49,19 +49,6 @@ eventsUI <- function(id) {
       p("This tab introduces event types and the types of actor and collection involved in them."),
     ),
     fluidRow(
-      h3("Event Types"),
-      p("The types of event involving museum collections are shown below."),
-      p("Events can be changes of ownership, changes of custody, both, or neither. Alternatively they can mark the end of a collection's or object's existence. The hierarchy colours each event type according to the default way in which it should be understood. Individual events can override this default. For example, some sales do not result in a change of custody."),
-      plotOutput(NS(id, "eventTypes"), width="80%", height="900px")
-    ),
-    hr(style=hr_style),
-    fluidRow(
-      h3("Glossary of Event Types"),
-      DTOutput(NS(id, "eventTypesGlossary"))
-    ),
-    hr(style=hr_style),
-
-    fluidRow(
       h3("Events and Participants by Museum Type"),
       sidebarLayout(
         sidebarPanel(
@@ -278,9 +265,6 @@ eventsUI <- function(id) {
 
 eventsServer <- function(id) {
   moduleServer(id, function(input, output, session) {
-    output$eventTypes <- renderPlot({
-      event_types_hierarchy()
-    }, height=900)
 
     output$eventTypesGlossary <- renderDT({
       event_types |>
@@ -684,165 +668,6 @@ eventsServer <- function(id) {
         select(all_of(selected_columns()))
     }, options=list(pageLength=100))
   })
-}
-
-event_types_hierarchy <- function() {
-  # add dummy types to use as spaces between groups
-  counter <- 1
-  types_with_sub_types <- event_types |>
-    filter(!is.na(sub_type_of)) |>
-    select(type_name=sub_type_of) |>
-    distinct()
-  for (i in 1:nrow(types_with_sub_types)) {
-    new_row_1 <- data.frame(
-      type_name = as.character(counter),
-      sub_type_of = types_with_sub_types$type_name[i],
-      core_type = NA,
-      is_core_category = FALSE,
-      change_of_ownership = FALSE,
-      change_of_custody = FALSE,
-      end_of_existence = FALSE,
-      definition = "dummy",
-      total_instances = NA
-    )
-    new_row_2 <- data.frame(
-      type_name = paste("z", as.character(counter)),
-      sub_type_of = types_with_sub_types$type_name[i],
-      core_type = NA,
-      is_core_category = FALSE,
-      change_of_ownership = FALSE,
-      change_of_custody = FALSE,
-      end_of_existence = FALSE,
-      definition = "dummy",
-      total_instances = NA
-    )
-    counter <- counter + 1
-    event_types <- event_types |>
-      rbind(new_row_1) |>
-      rbind(new_row_2)
-  }
- 
-  ownership_transfers <- event_types |>
-    filter(change_of_ownership == "TRUE") |>
-    select(type_name)
-  custody_transfers <- event_types |>
-   filter(change_of_custody == "TRUE") |>
-   select(type_name)
-  ends_of_existence <- event_types |>
-   filter(end_of_existence == "TRUE") |>
-   select(type_name)
-  core_types <- event_types |>
-    filter(is_core_category == "TRUE") |>
-    select(type_name)
-  dummy_types <- event_types |>
-    filter(definition=="dummy") |>
-    select(type_name)
- 
-  event_edges <- event_types |>
-    arrange(sub_type_of, type_name) |>
-    filter(sub_type_of != "") |>
-    select(
-      from=sub_type_of,
-      to=type_name
-    ) |>
-    mutate(is_to_dummy = to %in% dummy_types$type_name)
-  
-  graph <- graph_from_data_frame(event_edges)
-  V(graph)$distance_to_root <- distances(graph, v=V(graph), to=which(V(graph)$name == "event"))
-  max_distance <- max(V(graph)$distance_to_root)
-  parent_nodes <- sapply(V(graph), function(v) {
-    parents <- neighbors(graph, v, mode = "in")
-    if (length(parents) == 0) {
-      return(NA) # Root node has no parent
-    } else {
-      return(V(graph)$name[parents[1]]) # Assuming one parent for a tree structure
-    }
-  })
-
-  layout <- create_layout(graph, layout="dendrogram", circular=FALSE)
-  layout$is_core_category <- layout$name %in% core_types$type_name
-  # arrange nodes according to distance from root and move all core categories to the same y
-  layout$y <- ifelse(layout$is_core_category, -2, layout$distance_to_root - max_distance)
-  layout$parent <- parent_nodes[layout$name]
-  layout$parent_y <- sapply(1:nrow(layout), function(i) {
-    parent_name <- layout$parent[i]
-    if (is.na(parent_name)) {
-      return(NA) # Root node has no parent, so no parent y-coordinate
-    } else {
-      return(layout$y[layout$name == parent_name]) # Get the y-coordinate of the parent node
-    }
-  })
-  layout$y <- ifelse(
-    !is.na(layout$parent_y) & layout$y == layout$parent_y,
-    layout$y + 1,
-    layout$y
-  )
-  # add transfer types to nodes
-  layout$transfer_type <- ifelse(
-    layout$name %in% ownership_transfers$type_name & layout$name %in% custody_transfers$type_name,
-    "Change of ownership and custody",
-    ifelse(
-      layout$name %in% ownership_transfers$type_name,
-      "Change of ownership",
-      ifelse(
-        layout$name %in% custody_transfers$type_name,
-        "Change of custody",
-        ifelse(
-          layout$name %in% ends_of_existence$type_name,
-          "End of existence",
-          "Non-transfer event"
-        )
-      )
-    )
-  )
-  layout$is_dummy <- layout$name %in% dummy_types$type_name
-
-  ggraph(layout) + 
-    geom_edge_diagonal(
-      aes(colour = ifelse(is_to_dummy, "dummy", "normal")),
-      show.legend=FALSE
-    ) +
-    geom_node_point(
-      data=layout |> filter(!is_dummy),
-      aes(fill=transfer_type, colour=is_core_category),
-      shape=21,
-      size=4,
-      stroke=2
-    ) +
-    geom_node_text(
-      data=layout |> filter(!is_dummy),
-      aes(label=name),
-      size=5,
-      angle=0,
-      vjust="center",
-      hjust="left",
-      nudge_y=0.05
-    ) +
-    coord_flip() +
-    scale_y_continuous(limits=c(-max_distance, 1)) +
-    scale_fill_manual(
-      values=c(
-        "Change of ownership and custody"="#785EF0",
-        "Change of ownership"="#648FFF",
-        "Change of custody"="#FE6100",
-        "End of existence"="#000000",
-        "Non-transfer event"="lightgrey"
-      ), 
-      name="",
-      na.value="black"
-    ) +
-    scale_colour_manual(
-      values=c("TRUE"="black", "FALSE"="lightgrey"),
-      labels=c("TRUE"="core categories", "FALSE"="non-core categories"),
-      name=""
-    ) +
-    scale_edge_colour_manual(
-      values=c("dummy"="white", "normal"="lightgrey")
-    ) +
-    labs(
-      title="Hierarchy of event types involved in dispersal of museum collections"
-    ) +
-    type_hierarchy_theme
 }
 
 museum_vs_event_matrix <- function(events, count_or_percentage, filter_field, y_label, choices, dimension_2, dimension_2_granularity) {

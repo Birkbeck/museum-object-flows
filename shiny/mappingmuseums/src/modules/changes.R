@@ -6,9 +6,9 @@ changesUI <- function(id) {
       sliderInput(
         NS(id, "year_range"),
         label="Time Period:",
-        value=c(2000, 2024),
+        value=c(2000, 2025),
         min=1960,
-        max=2024,
+        max=2025,
         step=1,
         sep="",
         ticks=TRUE,
@@ -18,11 +18,12 @@ changesUI <- function(id) {
     fluidRow(
       sidebarLayout(
         sidebarPanel(
+          width=3,
           selectInput(
             NS(id, "filterField"),
             label="Filter by:",
             choices=c("No filter", field_names$name),
-            selected="Governance"
+            selected="No filter"
           ),
           uiOutput(NS(id, "subjectChoices")),
           pickerInput(
@@ -55,6 +56,7 @@ changesUI <- function(id) {
           fluidRow(
             column(
               3,
+              style=card_style,
               plotOutput(
                 NS(id, "openingsVsClosuresScatterSmall"),
                 width=small_chart_size_px,
@@ -64,6 +66,7 @@ changesUI <- function(id) {
             ),
             column(
               3,
+              style=card_style,
               plotOutput(
                 NS(id, "timeSeriesSmall"),
                 width=small_chart_size_px,
@@ -73,6 +76,7 @@ changesUI <- function(id) {
             ),
             column(
               3,
+              style=card_style,
               plotOutput(
                 NS(id, "openingRatesSmall"),
                 width=small_chart_size_px,
@@ -82,6 +86,7 @@ changesUI <- function(id) {
             ),
             column(
               3,
+              style=card_style,
               plotOutput(
                 NS(id, "closureRatesSmall"),
                 width=small_chart_size_px,
@@ -91,6 +96,7 @@ changesUI <- function(id) {
             ),
             column(
               3,
+              style=card_style,
               plotOutput(
                 NS(id, "openingsMap"),
                 width=small_chart_size_px,
@@ -100,6 +106,7 @@ changesUI <- function(id) {
             ),
             column(
               3,
+              style=card_style,
               plotOutput(
                 NS(id, "closuresMap"),
                 width=small_chart_size_px,
@@ -109,6 +116,7 @@ changesUI <- function(id) {
             ),
             column(
               3,
+              style=card_style,
               plotOutput(
                 NS(id, "openingsSmall2Way"),
                 width=small_chart_size_px,
@@ -118,6 +126,7 @@ changesUI <- function(id) {
             ),
             column(
               3,
+              style=card_style,
               plotOutput(
                 NS(id, "closuresSmall2Way"),
                 width=small_chart_size_px,
@@ -127,6 +136,7 @@ changesUI <- function(id) {
             ),
             column(
               3,
+              style=card_style,
               plotOutput(
                 NS(id, "openingsClosuresSmall"),
                 width=small_chart_size_px,
@@ -136,6 +146,7 @@ changesUI <- function(id) {
             ),
             column(
               3,
+              style=card_style,
               plotOutput(
                 NS(id, "startEndSmall"),
                 width=small_chart_size_px,
@@ -145,6 +156,7 @@ changesUI <- function(id) {
             ),
             column(
               3,
+              style=card_style,
               plotOutput(
                 NS(id, "openStartSmall2Way"),
                 width=small_chart_size_px,
@@ -154,6 +166,7 @@ changesUI <- function(id) {
             ),
             column(
               3,
+              style=card_style,
               plotOutput(
                 NS(id, "openEndSmall2Way"),
                 width=small_chart_size_px,
@@ -163,6 +176,7 @@ changesUI <- function(id) {
             ),
             column(
               3,
+              style=card_style,
               plotOutput(
                 NS(id, "absoluteChangeSmall"),
                 width=small_chart_size_px,
@@ -172,6 +186,7 @@ changesUI <- function(id) {
             ),
             column(
               3,
+              style=card_style,
               plotOutput(
                 NS(id, "percentageChangeSmall"),
                 width=small_chart_size_px,
@@ -181,6 +196,7 @@ changesUI <- function(id) {
             ),
             column(
               3,
+              style=card_style,
               plotOutput(
                 NS(id, "absoluteChangeSmall2Way"),
                 width=small_chart_size_px,
@@ -190,6 +206,7 @@ changesUI <- function(id) {
             ),
             column(
               3,
+              style=card_style,
               plotOutput(
                 NS(id, "percentageChangeSmall2Way"),
                 width=small_chart_size_px,
@@ -571,7 +588,7 @@ changesServer <- function(id) {
           input$filterField,
           x_title,
           c("openings"="openings", "closures"="closures", "openings_rate"="openings per 100 museums", "closures_rate"="closures per 100 museums"),
-          c("openings"="#6666FF", "closures"="#FF6666", "openings per 100 museums"="#6666FF", "closures per 100 museums"="#FF6666"),
+          c("openings"=blue, "closures"=red, "openings per 100 museums"=blue, "closures per 100 museums"=red),
           choices()
         )
       } else if (currentMainPlot() == "startEnd") {
@@ -602,7 +619,7 @@ changesServer <- function(id) {
             "end_total_pc"=paste("percentage of museums in", input$year_range[2])
           ),
           setNames(
-            c("#DDDDDD", "#555555", "#DDDDDD", "#555555"),
+            c(dark_blue, blue, dark_blue, blue),
             c(
               paste("open museums in", input$year_range[1]),
               paste("open museums in", input$year_range[2]),
@@ -715,7 +732,7 @@ changesServer <- function(id) {
         c("openings", "closures"),
         paste0("Openings vs Closures ", input$year_range[1], "-", input$year_range[2]),
         c("openings"="openings", "closures"="closures"),
-        c("start_total"="#DDDDDD", "end_total"="#555555", "openings"="#6666FF", "closures"="#FF6666"),
+        c("start_total"=dark_blue, "end_total"=blue, "openings"=blue, "closures"=red),
         choices()
       )
     }, width=small_chart_size, height=small_chart_size)
@@ -733,7 +750,7 @@ changesServer <- function(id) {
           "end_total"=paste("open in", input$year_range[2])
         ),
         setNames(
-          c("#DDDDDD", "#555555"),
+          c(dark_blue, blue),
           c(
             paste("open in", input$year_range[1]),
             paste("open in", input$year_range[2])
@@ -973,9 +990,9 @@ bar_chart <- function(data, dimension, measure, title, y_label, x_label, show_on
   data <- data |> filter(.data[[dimension]] %in% show_only_choices)
   
   if (measure %in% c("closures")) {
-    fill_scale <- scale_fill_manual(values=c("TRUE"="#FF6666", "FALSE"="#FF6666"))
+    fill_scale <- scale_fill_manual(values=c("TRUE"=red, "FALSE"=blue))
   } else {
-    fill_scale <- scale_fill_manual(values=c("TRUE"="#6666FF", "FALSE"="#FF6666"))
+    fill_scale <- scale_fill_manual(values=c("TRUE"=blue, "FALSE"=red))
   }
   
   bar_chart <- ggplot(
@@ -1013,9 +1030,9 @@ bar_chart_small <- function(data, dimension, measure, title, x_label, show_only_
   data <- data |> filter(.data[[dimension]] %in% show_only_choices)
   
   if (measure %in% c("closures")) {
-    fill_scale <- scale_fill_manual(values=c("TRUE"="#FF6666", "FALSE"="#FF6666"))
+    fill_scale <- scale_fill_manual(values=c("TRUE"=red, "FALSE"=blue))
   } else {
-    fill_scale <- scale_fill_manual(values=c("TRUE"="#6666FF", "FALSE"="#FF6666"))
+    fill_scale <- scale_fill_manual(values=c("TRUE"=blue, "FALSE"=red))
   }
   
   if (measure %in% c("openings", "closures")) {
@@ -1249,8 +1266,8 @@ changes_map_small <- function(museums, dimension, measure, show_only_choices, st
 }
 
 heatmap <- function(museums, dimension, dimension2, measure, title, y_label, x_label, show_only_choices) {
-  data <- museums |>
-    filter(.data[[dimension]] %in% show_only_choices) |>
+  heatmap_data <- museums |>
+    filter(.data[[dimension]]=="All" | .data[[dimension]] %in% show_only_choices) |>
     mutate(
       fill_metric=ifelse(
         is.infinite(.data[[measure]]),
@@ -1258,15 +1275,27 @@ heatmap <- function(museums, dimension, dimension2, measure, title, y_label, x_l
         .data[[measure]]
       )
     )
+  x_lines <- data.frame(
+    x=seq_along(
+      unique(select(heatmap_data, .data[[dimension2]]))[[dimension2]]
+    )
+  ) |>
+    mutate(x=x+0.5)
+  y_lines <- data.frame(
+    y=seq_along(
+      unique(select(heatmap_data, .data[[dimension]]))[[dimension]]
+    )
+  ) |>
+    mutate(y=y+0.5)
   if (measure %in% c("openings", "openings_rate", "start_total", "end_total", "start_total_pc", "end_total_pc")) {
-    fill_scale <- scale_fill_gradient(low="white", high="blue")
+    fill_scale <- scale_fill_gradient(transform="pseudo_log", low=white, high=blue)
   } else if (measure %in% c("closures", "closures_rate")) {
-    fill_scale <- scale_fill_gradient(low="white", high="red")
+    fill_scale <- scale_fill_gradient(transform="pseudo_log", low=white, high=red)
   } else {
-    fill_scale <- scale_fill_gradient2(low="red", mid="white", high="blue", midpoint=0)
+    fill_scale <- scale_fill_gradient2(transform="pseudo_log", low=red, mid=white, high=blue, midpoint=0)
   }
   heatmap <- ggplot(
-    data,
+    heatmap_data,
     aes(
       x=.data[[dimension2]],
       y=.data[[dimension]],
@@ -1288,20 +1317,31 @@ heatmap <- function(museums, dimension, dimension2, measure, title, y_label, x_l
     axis.text.x=element_text(angle=45, vjust=0.5, hjust=1)
   )
 
+  if (measure %in% c("period_total_pc_x", "start_total_pc_x", "end_total_pc_x")) {
+    heatmap <- heatmap + geom_hline(data=y_lines, aes(yintercept=y), colour="white")
+  }
+  if (measure %in% c("period_total_pc_y", "start_total_pc_y", "end_total_pc_y")) {
+    heatmap <- heatmap + geom_vline(data=x_lines, aes(xintercept=x), colour="white")
+  }
+  heatmap <- heatmap +
+    geom_hline(yintercept=1.5) +
+    geom_vline(xintercept=1.5)
+
+
   heatmap |> ggplotly(tooltip=c("x", "y", "fill"))
 }
 
 heatmap_small <- function(museums, dimension, dimension2, measure, title, show_only_choices) {
   if (measure %in% c("openings", "start_total", "end_total")) {
-    fill_scale <- scale_fill_gradient(low="white", high="blue")
+    fill_scale <- scale_fill_gradient(transform="pseudo_log", low=white, high=blue)
   } else if (measure %in% c("closures")) {
-    fill_scale <- scale_fill_gradient(low="white", high="red")
+    fill_scale <- scale_fill_gradient(transform="pseudo_log", low=white, high=red)
   } else {
-    fill_scale <- scale_fill_gradient2(low="red", mid="white", high="blue", midpoint=0)
+    fill_scale <- scale_fill_gradient2(transform="pseudo_log", low=red, mid=white, high=blue, midpoint=0)
   }
   ggplot(
     museums |>
-      filter(.data[[dimension]] %in% show_only_choices),
+      filter(.data[[dimension]]=="All" | .data[[dimension]] %in% show_only_choices),
     aes(
       x=.data[[dimension2]],
       y=.data[[dimension]],

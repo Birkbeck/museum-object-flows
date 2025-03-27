@@ -21,6 +21,7 @@ snapshotUI <- function(id) {
     ),
     sidebarLayout(
       sidebarPanel(
+        width=3,
         selectInput(
           NS(id, "filterField"),
           label="Filter by:",
@@ -37,7 +38,7 @@ snapshotUI <- function(id) {
             actionsBox=TRUE, 
             size=10,
             selectedTextFormat="count > 3"
-          ), 
+          ),
           multiple=TRUE
         ),
         p("Use dimension 2 to adjust the second axis of the heatmap charts"),
@@ -58,6 +59,7 @@ snapshotUI <- function(id) {
         fluidRow(
           column(
             3,
+            style=card_style,
             plotOutput(
               NS(id, "museumMapSmall"),
               width=small_chart_size_px,
@@ -67,6 +69,7 @@ snapshotUI <- function(id) {
           ),
           column(
             3,
+            style=card_style,
             plotOutput(
               NS(id, "museumCountsSmall"),
               width=small_chart_size_px,
@@ -76,6 +79,7 @@ snapshotUI <- function(id) {
           ),
           column(
             3,
+            style=card_style,
             plotOutput(
               NS(id, "museumHeatmapSmall"),
               width=small_chart_size_px,
@@ -136,9 +140,9 @@ snapshotServer <- function(id) {
           sliderInput(
             NS(id, "year"),
             label="Year:",
-            value=c(2024),
+            value=c(2025),
             min=1960,
-            max=2024,
+            max=2025,
             step=1,
             sep="",
             ticks=TRUE,
@@ -150,9 +154,9 @@ snapshotServer <- function(id) {
           sliderInput(
             NS(id, "yearRange"),
             label="Time Period:",
-            value=c(1960, 2024),
+            value=c(1960, 2025),
             min=1960,
-            max=2024,
+            max=2025,
             step=1,
             sep="",
             ticks=TRUE,
@@ -539,11 +543,23 @@ snapshot_heatmap <- function(museums, dimension, dimension2, metric, show_only_c
   } else {
     period <- paste0(start, "-", end)
   }
-  museums_in_time_period <- get_2_way_open_and_close_data(museums, dimension, dimension2, start, end) |>
-    arrange(.data[[dimension]], .data[[dimension2]])
+  heatmap_data <- get_2_way_open_and_close_data(museums, dimension, dimension2, start, end) |>
+    arrange(.data[[dimension]], .data[[dimension2]]) |>
+    filter(.data[[dimension]]=="All" | .data[[dimension]] %in% show_only_choices)
+  x_lines <- data.frame(
+    x=seq_along(
+      unique(select(heatmap_data, .data[[dimension2]]))[[dimension2]]
+    )
+  ) |>
+    mutate(x=x+0.5)
+  y_lines <- data.frame(
+    y=seq_along(
+      unique(select(heatmap_data, .data[[dimension]]))[[dimension]]
+    )
+  ) |>
+    mutate(y=y+0.5)
   heatmap <- ggplot(
-    museums_in_time_period |>
-      filter(.data[[dimension]] %in% show_only_choices),
+    heatmap_data,
     aes(
       x=.data[[dimension2]],
       y=.data[[dimension]],
@@ -554,7 +570,7 @@ snapshot_heatmap <- function(museums, dimension, dimension2, metric, show_only_c
     geom_text(aes(label=.data[[metric]]), size=6) +
     scale_x_discrete(labels=short_labels) +
     scale_y_discrete(labels=short_labels) +
-    heatmap_fill_scale +
+    scale_fill_continuous(transform="pseudo_log", low=white, high=blue) +
     labs(
       title=paste("Museums in the UK", period),
       x=x_label,
@@ -565,7 +581,17 @@ snapshot_heatmap <- function(museums, dimension, dimension2, metric, show_only_c
       legend.position="Non",
       axis.text.x=element_text(angle=45, vjust=0.5, hjust=1)
     )
+  if (metric %in% c("period_total_pc_x", "start_total_pc_x", "end_total_pc_x")) {
+    heatmap <- heatmap + geom_hline(data=y_lines, aes(yintercept=y), colour="white")
   }
+  if (metric %in% c("period_total_pc_y", "start_total_pc_y", "end_total_pc_y")) {
+    heatmap <- heatmap + geom_vline(data=x_lines, aes(xintercept=x), colour="white")
+  }
+  heatmap <- heatmap +
+    geom_hline(yintercept=1.5) +
+    geom_vline(xintercept=1.5)
+  heatmap
+}
 
 
 snapshot_heatmap_small <- function(museums, dimension, dimension2, metric, show_only_choices, year_or_range, start, end, x_label, y_label) {
@@ -574,12 +600,11 @@ snapshot_heatmap_small <- function(museums, dimension, dimension2, metric, show_
   } else {
     period <- paste0(start, "-", end)
   }
-  museums_in_time_period <- museums |>
-    group_by(.data[[dimension]], .data[[dimension2]]) |>
-    museums_in_time_period(start, end)
+  museums_in_time_period <- get_2_way_open_and_close_data(museums, dimension, dimension2, start, end) |>
+    arrange(.data[[dimension]], .data[[dimension2]])
   ggplot(
     museums_in_time_period |>
-      filter(.data[[dimension]] %in% show_only_choices),
+      filter(.data[[dimension]]=="All" | .data[[dimension]] %in% show_only_choices),
     aes(
       x=.data[[dimension2]],
       y=.data[[dimension]],
@@ -587,10 +612,10 @@ snapshot_heatmap_small <- function(museums, dimension, dimension2, metric, show_
     )
   ) +
     geom_tile() +
-    geom_text(aes(label=.data[[metric]])) +
+    geom_text(aes(label=.data[[metric]]), size=3) +
     scale_x_discrete(labels=very_short_labels) +
     scale_y_discrete(labels=short_labels) +
-    heatmap_fill_scale +
+    scale_fill_continuous(transform="pseudo_log", low=white, high=blue) +
     labs(
       title=paste0(x_label, " vs ", y_label),
       x="",

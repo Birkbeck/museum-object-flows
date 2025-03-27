@@ -20,11 +20,11 @@ source("src/load_data.R")
 
 source("src/modules/dispersal_filters.R")
 source("src/modules/home.R")
+source("src/modules/glossary.R")
 source("src/modules/snapshot.R")
 source("src/modules/changes.R")
 source("src/modules/causes.R")
 source("src/modules/length.R")
-source("src/modules/actors.R")
 source("src/modules/events.R")
 source("src/modules/outcomes.R")
 source("src/modules/pathways.R")
@@ -72,6 +72,10 @@ function(input, output, session) {
               homeUI("home"),
             ),
             tabPanel(
+              "Glossary",
+              glossaryUI("glossary"),
+            ),
+            tabPanel(
               "Sector Snapshot",
               snapshotUI("snapshot"),
             ),
@@ -86,10 +90,6 @@ function(input, output, session) {
             tabPanel(
               "Length of Closure",
               lengthUI("length"),
-            ),
-            tabPanel(
-              "Post-closure: Actors",
-              actorsUI("actors"),
             ),
             tabPanel(
               "Post-closure: Events",
@@ -143,11 +143,11 @@ function(input, output, session) {
       )
       
       homeServer("home")
+      glossaryServer("glossary")
       snapshotServer("snapshot")
       changesServer("changes")
       causesServer("causes")
       lengthServer("length")
-      actorsServer("actors")
       eventsServer("events")
       outcomesServer("outcomes")
       pathwaysServer("pathways")

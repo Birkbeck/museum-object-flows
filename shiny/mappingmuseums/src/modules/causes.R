@@ -1098,7 +1098,7 @@ closure_causes_hierarchy_layout <- function(closure_causes, reason_level, reason
 }
 
 closure_type_hierarchy <- function(closure_causes_hierarchy_layout, reason_level) {
-  type_hierarchy_theme <- theme(
+  taxonomy_theme <- theme(
     panel.background = element_rect(fill="white"),
     plot.margin = unit(c(1, 1, 1, 1), "cm"),
     plot.title = element_text(size="18"),
@@ -1136,11 +1136,11 @@ closure_type_hierarchy <- function(closure_causes_hierarchy_layout, reason_level
     labs(
       title="Hierarchy of types of reason for museum closure"
     ) +
-    type_hierarchy_theme
+    taxonomy_theme
 }
 
 closure_type_hierarchy_small <- function(closure_causes_hierarchy_layout) {
-  type_hierarchy_theme <- theme(
+  taxonomy_theme <- theme(
     panel.background = element_rect(fill="white"),
     plot.margin = unit(c(1, 1, 1, 1), "cm"),
     plot.title = element_text(size="11"),
@@ -1158,7 +1158,7 @@ closure_type_hierarchy_small <- function(closure_causes_hierarchy_layout) {
     labs(
       title="Hierarchy of reasons for closure"
     ) +
-    type_hierarchy_theme
+    taxonomy_theme
 }
 
 shorten_cause_labels <- function(label) {

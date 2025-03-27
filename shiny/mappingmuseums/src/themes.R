@@ -1,5 +1,6 @@
 small_chart_size_px <- "300px"
 hr_style <- "border-top: 1px solid #000000;"
+card_style <- "border: 4px double lightgrey;"
 
 public_private_colours <- c(
   "private"="#E69F00",
@@ -135,7 +136,13 @@ museum_attribute_colours <- c(
     accreditation_colours
 )
 
-heatmap_fill_scale <- scale_fill_continuous(low="white", high="#E4A8F0")
+white = "#FFFFFF"
+red = "#FF99A1"
+blue = "#99E0FF"
+dark_blue = "#008ECC"
+purple = "#E4A8F0"
+
+heatmap_fill_scale <- scale_fill_continuous(transform="pseudo_log", low=white, high=purple)
 
 title_size <- 22
 subtitle_size <- 18
@@ -173,7 +180,7 @@ network_theme <- theme(
   axis.text = element_text(size=axis_text_size)
 )
 
-type_hierarchy_theme <- theme(
+taxonomy_theme <- theme(
   panel.background = element_rect(fill="white"),
   plot.margin = unit(c(1, 1, 1, 1), "cm"),
   plot.title = element_text(size="18"),
