@@ -1,3 +1,5 @@
+set.seed(1)
+
 dispersal_events_csv <- "data/query_results/dispersal_events.csv"
 dispersal_events <- read_csv(dispersal_events_csv) |>
   mutate(
@@ -34,7 +36,8 @@ closure_reasons <- dispersal_events |>
 
 closure_outcomes <- read_csv("data/closure_outcomes.csv")
 museums_including_crown_dependencies <- read_csv("data/all_museums_data.csv") |>
-  left_join(closure_outcomes, by="museum_id")
+  left_join(closure_outcomes, by="museum_id") |>
+  mutate(all="All")
 museums <- museums_including_crown_dependencies |>
   filter(!nation %in% c("Channel Islands", "Isle of Man")) |>
   mutate(`No filter`="All") |>
@@ -55,8 +58,8 @@ event_types <- read_csv(event_types_csv)
 explanations <- read_csv("explanations.csv")
 
 field_names <- data.frame(
-  name=c("Size", "Governance", "Accreditation", "Subject Matter", "Country/Region"),
-  value=c("size", "governance_main", "accreditation", "main_subject", "region")
+  name=c("All", "Size", "Governance", "Accreditation", "Subject Matter", "Country/Region"),
+  value=c("all", "size", "governance_main", "accreditation", "main_subject", "region")
 )
 filter_field_choices <- museums |>
   select(size, governance_main, accreditation, main_subject, region) |>

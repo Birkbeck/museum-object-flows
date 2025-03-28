@@ -138,6 +138,7 @@ museum_attribute_colours <- c(
 
 white = "#FFFFFF"
 red = "#FF99A1"
+green = "#99FFEE"
 blue = "#99E0FF"
 dark_blue = "#008ECC"
 purple = "#E4A8F0"
