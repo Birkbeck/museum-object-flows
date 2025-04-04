@@ -16,6 +16,7 @@ library(readr)
 source("src/labels.R")
 source("src/mapping_museums_tables.R")
 source("src/themes.R")
+source("src/calculate_outcomes.R")
 source("src/load_data.R")
 
 source("src/modules/dispersal_filters.R")

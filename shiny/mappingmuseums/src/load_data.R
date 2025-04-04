@@ -34,7 +34,7 @@ closure_reasons <- dispersal_events |>
       )
     )
 
-closure_outcomes <- read_csv("data/closure_outcomes.csv")
+closure_outcomes <- get_outcomes_by_museum(dispersal_events)
 museums_including_crown_dependencies <- read_csv("data/all_museums_data.csv") |>
   left_join(closure_outcomes, by="museum_id") |>
   mutate(all="All")
@@ -243,3 +243,4 @@ sector_type_ordering_table <- actor_types |>
   arrange(ordering, desc=TRUE)
 
 sector_type_ordering <- sector_type_ordering_table$type_name
+

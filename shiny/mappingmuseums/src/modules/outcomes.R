@@ -394,24 +394,65 @@ outcomesServer <- function(id) {
     observeEvent(input$outcomesBarChart, { mainPlot("outcomesBarChart") })
     observeEvent(input$outcomesHeatmap, { mainPlot("outcomesHeatmap") })
     observeEvent(input$outcomesLineChart, { mainPlot("outcomesLineChart") })
+
+    output$mainPlotOptions <- renderUI({
+      if(mainPlot() == "outcomesBarChart") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of closures" = "frequency",
+            "Show percentage of closures" = "percentage"
+          )
+        )
+      } else if(mainPlot() == "outcomesHeatmap") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of closures" = "frequency",
+            "Show percentage of closures" = "percentage",
+            "Show rowwise percentages" = "percentage_y",
+            "Show columnwise percentages" = "percentage_x"
+          )
+        )
+      } else if(mainPlot() == "outcomesLineChart") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of closures" = "frequency",
+            "Show percentage of closures" = "percentage"
+          )
+        )
+      }
+    })
+
+    count_or_percentage <- reactive({
+      if (is.na(input$countOrPercentage)) {
+        return("")
+      }
+      return(input$countOrPercentage)
+    })
+
     output$mainPlot <- renderUI({
       if (mainPlot() == "outcomesBarChart") {
         ggplotly(
-          closure_outcomes_bar_chart(summary_table(), outcome_type(), outcome_type_name()),
+          closure_outcomes_bar_chart(summary_table(), count_or_percentage(), outcome_type(), outcome_type_name()),
           height=1000
         ) |>
           renderPlotly()
       } else if (mainPlot() == "outcomesHeatmap") {
         ggplotly(
           closure_outcomes_heatmap(
-            two_way_summary_table(), outcome_type(), outcome_type_name(), museum_grouping(), museum_grouping_name()
+            two_way_summary_table(), count_or_percentage(), outcome_type(), outcome_type_name(), museum_grouping(), museum_grouping_name()
           ),
           height=1000
         ) |>
           renderPlotly()
       } else if (mainPlot() == "outcomesLineChart") {
         ggplotly(
-          closure_outcomes_over_time(over_time_table(), outcome_type()),
+          closure_outcomes_over_time(over_time_table(), count_or_percentage(), outcome_type()),
           height=1000
         ) |>
           renderPlotly()
@@ -523,7 +564,8 @@ closure_outcomes_summary_table <- function(museums_table,
     filter(region %in% region_filter | nation %in% region_filter) |>
     group_by(.data[[outcome_type]]) |>
     summarize(frequency=n()) |>
-    ungroup()
+    ungroup() |>
+    mutate(percentage=round(frequency / sum(frequency) * 100, 1))
 }
 
 closure_outcomes_two_way_summary_table <- function(museums_table,
@@ -536,6 +578,23 @@ closure_outcomes_two_way_summary_table <- function(museums_table,
                                                    subject_filter,
                                                    specific_subject_filter,
                                                    region_filter) {
+  number_of_closed_museums <- museums_table |>
+    select(museum_id) |>
+    distinct() |>
+    nrow()
+
+  if(museum_grouping =="closure_reason_top_level") {
+    museums_table <- museums_table |>
+      left_join(closure_reasons, by="museum_id")
+  }
+
+  number_of_closed_museums_by_outcome_type <- museums_table |>
+    filter(!is.na(.data[[outcome_type]])) |>
+    select(museum_id, .data[[outcome_type]]) |>
+    distinct() |>
+    group_by(.data[[outcome_type]]) |>
+    summarize(number_of_closures=n())
+
   if(outcome_type==museum_grouping) {
     return(
       closure_outcomes_summary_table(
@@ -548,13 +607,16 @@ closure_outcomes_two_way_summary_table <- function(museums_table,
         subject_filter,
         specific_subject_filter,
         region_filter
-      )
+      ) |>
+        group_by(.data[[outcome_type]]) |>
+        mutate(
+          percentage_x=round(frequency / sum(frequency) * 100, 1),
+          percentage_y=round(frequency / sum(frequency) * 100, 1)
+        ) |>
+        ungroup()
     )
   }
-  if(museum_grouping =="closure_reason_top_level") {
-    museums_table <- museums_table |>
-      left_join(closure_reasons, by="museum_id")
-  }
+  
   museums_table |>
     filter(.data[[outcome_type]] %in% outcome_filter) |>
     filter(size %in% size_filter) |>
@@ -564,7 +626,21 @@ closure_outcomes_two_way_summary_table <- function(museums_table,
     filter(subject_matter %in% specific_subject_filter) |>
     filter(region %in% region_filter | nation %in% region_filter) |>
     group_by(.data[[museum_grouping]], .data[[outcome_type]]) |>
-    summarize(frequency=n()) |>
+    summarize(
+      frequency=n(),
+      percentage=round(frequency / number_of_closed_museums * 100, 1)
+    ) |>
+    ungroup() |>
+    left_join(number_of_closed_museums_by_outcome_type, by=outcome_type) |>
+    group_by(.data[[outcome_type]]) |>
+    mutate(
+      percentage_y=round(frequency / number_of_closures * 100, 1)
+    ) |>
+    ungroup() |>
+    group_by(.data[[museum_grouping]]) |>
+    mutate(
+      percentage_x=round(frequency / sum(frequency) * 100, 1)
+    ) |>
     ungroup()
 }
 
@@ -614,17 +690,26 @@ closure_outcomes_over_time_table <- function(museums_table,
       )
     ) |>
     group_by(.data[[outcome_type]], period_of_closure) |>
-    summarize(count=n())
+    summarize(frequency=n()) |>
+    ungroup() |>
+    group_by(period_of_closure) |>
+    mutate(percentage=round(frequency / sum(frequency) * 100, 1)) |>
+    ungroup()
 }
         
-closure_outcomes_bar_chart <- function(summary_table, outcome_type, outcome_type_name) {
-  ggplot(summary_table, aes(x=frequency, y=reorder(.data[[outcome_type]], frequency))) +
+closure_outcomes_bar_chart <- function(summary_table, count_or_percentage, outcome_type, outcome_type_name) {
+  if (count_or_percentage == "frequency") {
+    x_title <- "Number of museum closures with outcome"
+  } else {
+    x_title <- "Percentage of museum closures with outcome"
+  }
+  ggplot(summary_table, aes(x=.data[[count_or_percentage]], y=reorder(.data[[outcome_type]], .data[[count_or_percentage]]))) +
     geom_col(fill="violet") +
-    geom_text(aes(label=frequency), hjust="left", nudge_x=1, size=6) +
+    geom_text(aes(label=.data[[count_or_percentage]]), hjust="left", nudge_x=1, size=6) +
     labs(
       title="Outcomes of Museum Closure, 2000-2024",
       y=outcome_type_name,
-      x="Number of museum closures with outcome"
+      x=x_title
     ) +
     standard_bars_theme
 }
@@ -641,17 +726,17 @@ closure_outcomes_bar_chart_small <- function(summary_table, outcome_type) {
     theme_minimal()
 }
 
-closure_outcomes_heatmap <- function(summary_table, outcome_type, outcome_type_name, museum_grouping, museum_grouping_name) {
+closure_outcomes_heatmap <- function(summary_table, count_or_percentage, outcome_type, outcome_type_name, museum_grouping, museum_grouping_name) {
   ggplot(
     summary_table,
     aes(
       x=fct_rev(factor(.data[[museum_grouping]], museum_attribute_ordering)),
       y=.data[[outcome_type]],
-      fill=frequency
+      fill=.data[[count_or_percentage]]
     )
   ) +
     geom_tile(show.legend=FALSE) +
-    geom_text(aes(label=frequency), size=6) +
+    geom_text(aes(label=.data[[count_or_percentage]]), size=6) +
     scale_x_discrete(labels=short_labels) +
     scale_fill_continuous(low="white", high="violet") +
     labs(
@@ -689,10 +774,15 @@ closure_outcomes_heatmap_small <- function(summary_table, outcome_type, outcome_
     )
 }
 
-closure_outcomes_over_time <- function(outcomes_over_time_table, outcome_type) {
+closure_outcomes_over_time <- function(outcomes_over_time_table, count_or_percentage, outcome_type) {
+  if (count_or_percentage == "frequency") {
+    y_title <- "Number of museum closures with outcome"
+  } else {
+    y_title <- "Percentage of museum closures with outcome"
+  }
   ggplot(
     outcomes_over_time_table, 
-    aes(x=period_of_closure, y=count, colour=.data[[outcome_type]])
+    aes(x=period_of_closure, y=.data[[count_or_percentage]], colour=.data[[outcome_type]])
   ) +
     geom_line(alpha=0.7, aes(group=.data[[outcome_type]])) +
     geom_point() +
@@ -708,7 +798,7 @@ closure_outcomes_over_time <- function(outcomes_over_time_table, outcome_type) {
     labs(
       title="Changing Outcomes of Museum Closure Over Time",
       x="Year of Closure",
-      y="Number of museum closures with outcome",
+      y=y_title,
       colour="Outcome of closure"
     ) +
     standard_bars_theme
@@ -717,7 +807,7 @@ closure_outcomes_over_time <- function(outcomes_over_time_table, outcome_type) {
 closure_outcomes_over_time_small <- function(outcomes_over_time_table, outcome_type) {
   ggplot(
     outcomes_over_time_table, 
-    aes(x=period_of_closure, y=count, colour=.data[[outcome_type]])
+    aes(x=period_of_closure, y=frequency, colour=.data[[outcome_type]])
   ) +
     geom_line(alpha=0.7, aes(group=.data[[outcome_type]])) +
     geom_point() +
