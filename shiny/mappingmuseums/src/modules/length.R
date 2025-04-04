@@ -198,23 +198,23 @@ lengthUI <- function(id) {
 
         tagList(
           tags$span(
-            tags$strong("Example museum(s): "),
+            tags$strong("Example museum: "),
             tags$i(
               class = "fa fa-info-circle",
               style = "color: #007bff; cursor: pointer;",
               `data-toggle` = "popover",
               `data-placement` = "right",
-              title = "Example museums",
-              `data-content` = "<p>Select museums to display their closure timelines.</p>"
+              title = "Example museum",
+              `data-content` = "<p>Select a museum to display its closure timelines.</p>"
             )
           ),
           tags$script(popover_js),
           virtualSelectInput(
-            NS(id, "exampleMuseums"),
+            NS(id, "exampleMuseum"),
             "",
             choices=NULL,
             selected=NULL,
-            multiple=TRUE,
+            multiple=FALSE,
             disableSelectAll=FALSE,
             search=TRUE
           )
@@ -352,36 +352,90 @@ lengthServer <- function(id) {
       sapply(input$initialMuseum, function(text) sub(".*\\(([^()]*)\\)$", "\\1", text))
     })
 
+    museums_list <- dispersal_events |>
+      mutate(
+        name=paste0(initial_museum_name, " (", initial_museum_id, ")")
+      ) |>
+      arrange(name) |>
+      select(
+        name,
+        museum_id=initial_museum_id,
+        size=initial_museum_size,
+        governance=initial_museum_governance,
+        governance_broad=initial_museum_governance_broad,
+        subject_matter_broad=initial_museum_subject_matter_broad,
+        subject_matter=initial_museum_subject_matter,
+        region=initial_museum_region,
+        country=initial_museum_country,
+        accreditation=initial_museum_accreditation
+      ) |>
+      distinct()
+
     observeEvent(museum_filters(), {
-      freezeReactiveValue(input, "exampleMuseums")
-      museums_list <- dispersal_events |>
+      freezeReactiveValue(input, "exampleMuseum")
+      filtered_museums_list <- museums_list |>
         filter(
-          initial_museum_size %in% size_filter_choices(),
-          initial_museum_governance %in% governance_filter_choices() | initial_museum_governance_broad %in% governance_filter_choices(),
-          initial_museum_subject_matter_broad %in% subject_filter_choices(),
-          initial_museum_subject_matter %in% specific_subject_filter_choices(),
-          initial_museum_region %in% region_filter_choices() | initial_museum_country %in% region_filter_choices(),
-          initial_museum_accreditation %in% accreditation_filter_choices()
-        ) |>
-        mutate(
-          museum_id=initial_museum_id,
-          name=paste0(initial_museum_name, " (", initial_museum_id, ")")
-        ) |>
-        arrange(name) |>
-        select(name, museum_id, initial_museum_size) |>
-        distinct()
+          size %in% size_filter_choices(),
+          governance %in% governance_filter_choices() | governance_broad %in% governance_filter_choices(),
+          subject_matter_broad %in% subject_filter_choices(),
+          subject_matter %in% specific_subject_filter_choices(),
+          region %in% region_filter_choices() | country %in% region_filter_choices(),
+          accreditation %in% accreditation_filter_choices()
+        )
+      becm <- "mm.domus.SW043"
+      if (becm %in% filtered_museums_list$museum_id) {
+        example_museum_name <- filter(filtered_museums_list, museum_id == becm)$name
+      } else {
+        example_museum_name <- slice_sample(filtered_museums_list, n=1)$name
+      }
       updateVirtualSelect(
         session=session,
-        inputId="exampleMuseums",
-        choices=museums_list$name,
-        selected=museums_list$name
+        inputId="exampleMuseum",
+        choices=filtered_museums_list$name,
+        selected=example_museum_name
       )
     })
 
     event_dates_table <- reactive({get_event_dates_table()})
     lengths_table <- reactive({get_lengths_table(event_dates_table())})
 
-    example_museums <- reactive({c("mm.domus.SW043")})
+    example_museum_id <- reactive({
+      filter(
+        museums_list,
+        name==input$exampleMuseum
+      )$museum_id
+    })
+
+    output$mainPlotOptions <- renderUI({
+      if(currentMainPlot() == "lengthTileChart") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of museums" = "count",
+            "Show percentage of museums" = "percentage",
+            "Show rowwise percentages" = "percentage_y",
+            "Show columnwise percentages" = "percentage_x"
+          )
+        )
+      } else if(currentMainPlot() == "lengthLineChart") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of museums" = "count",
+            "Show percentage of museums" = "percentage"
+          )
+        )
+      }
+    })
+
+    count_or_percentage <- reactive({
+      if (is.na(input$countOrPercentage)) {
+        return("")
+      }
+      return(input$countOrPercentage)
+    })
 
     currentMainPlot <- reactiveVal("lengthTileChart")
     # Update the current plot based on user clicks
@@ -392,13 +446,13 @@ lengthServer <- function(id) {
 
     output$mainPlot <- renderPlotly({
       if (currentMainPlot() == "lengthTileChart") {
-        length_tile_chart(lengths_table(), museum_grouping())
+        length_tile_chart(lengths_table(), count_or_percentage(), museum_grouping())
       } else if (currentMainPlot() == "lengthLineChart") {
-        length_line_chart(lengths_table(), museum_grouping())
+        length_line_chart(lengths_table(), count_or_percentage(), museum_grouping())
       } else if (currentMainPlot() == "lengthScatter") {
         length_scatter(lengths_table(), museum_grouping())
       } else if (currentMainPlot() == "exampleTimelines") {
-        example_timelines(event_dates_table(), example_museums())
+        example_timelines(event_dates_table(), example_museum_id())
       }
     })
 
@@ -412,7 +466,7 @@ lengthServer <- function(id) {
       length_scatter_small(lengths_table(), museum_grouping())
     })
     output$exampleTimelinesSmall <- renderPlot({
-      example_timelines_small(event_dates_table(), example_museums())
+      example_timelines_small(event_dates_table(), example_museum_id())
     })
 
     output$downloadLengthsTable <- downloadHandler(
@@ -580,21 +634,28 @@ get_lengths_table <- function(event_dates_table) {
     )
 } 
 
-length_tile_chart <- function(lengths_table, museum_grouping) {
+length_tile_chart <- function(lengths_table, count_or_percentage, museum_grouping) {
   heatmap_data <- lengths_table |>
     group_by(closure_length_category, .data[[museum_grouping]]) |>
     summarize(count=n()) |>
+    ungroup() |>
+    mutate(percentage=round(count / sum(count) * 100, 1)) |>
+    group_by(.data[[museum_grouping]]) |>
+    mutate(percentage_y=round(count / sum(count) * 100, 1)) |>
+    ungroup() |>
+    group_by(closure_length_category) |>
+    mutate(percentage_x=round(count / sum(count) * 100, 1)) |>
     ungroup()
   heatmap <- ggplot(
     heatmap_data,
     aes(
       x=closure_length_category,
       y=.data[[museum_grouping]],
-      fill=count
+      fill=.data[[count_or_percentage]]
     )
   ) +
     geom_tile(show.legend=FALSE) +
-    geom_text(aes(label=count)) +
+    geom_text(aes(label=.data[[count_or_percentage]])) +
     scale_y_discrete(labels=short_labels) +
     heatmap_fill_scale +
     labs(
@@ -643,16 +704,19 @@ length_tile_chart_small <- function(lengths_table, museum_grouping) {
     )
 }
 
-length_line_chart <- function(lengths_table, museum_grouping) {
+length_line_chart <- function(lengths_table, count_or_percentage, museum_grouping) {
   line_data <- lengths_table |>
     group_by(closure_length_category, .data[[museum_grouping]]) |>
     summarize(count=n()) |>
+    ungroup() |>
+    group_by(.data[[museum_grouping]]) |>
+    mutate(percentage=round(count / sum(count) * 100, 1)) |>
     ungroup()
   ggplot(
     line_data,
     aes(
       x=closure_length_category,
-      y=count,
+      y=.data[[count_or_percentage]],
       group=.data[[museum_grouping]],
       colour=.data[[museum_grouping]]
     )
@@ -661,7 +725,7 @@ length_line_chart <- function(lengths_table, museum_grouping) {
     geom_line() +
     geom_text(
       data=line_data |> filter(closure_length_category=="< 4 years"),
-      aes(y=count*1.1, label=tidy_labels[.data[[museum_grouping]]])
+      aes(y=.data[[count_or_percentage]]*1.1, label=tidy_labels[.data[[museum_grouping]]])
     ) +
     scale_colour_manual(values=museum_attribute_colours) +
     guides(colour="none") +
@@ -779,89 +843,77 @@ length_scatter_small <- function(lengths_table, museum_grouping) {
     )
 }
 
-example_timelines <- function(events_table, museum_ids) {
-  events_expanded <- events_table |>
-    filter(museum_id %in% museum_ids) |>
-    mutate(event_id = row_number()) |>
-    select(-year) |>
-    rowwise() |>
+example_timelines <- function(events_table, example_museum_id) {
+  events <- events_table |>
+    filter(museum_id==example_museum_id) |>
     mutate(
-      year = list({
-        y1 <- floor(year1)
-        y2 <- ceiling(year2) + 1
-        mean <- (y1 + y2) / 2
-        sd <- (y2 - y1) / 6
-        rtruncnorm(1000, a=y1, b=y2, mean=mean, sd=sd)
-        #runif(1000, min=y1, max=y2)
-      }),
-      museum_name = paste0(substr(museum, 1, 10), "...")
-    ) |>
-    unnest(year)
-  ggplot(
-    events_expanded,
-    aes(
-      x = event_id,
-      y = year,
-      group = event_id,
-      fill = event_level
+      event_id = row_number(),
+      ymax=event_id * 2,
+      ymin=ymax - 0.5,
+      year2 = year2 + 1
     )
+  ggplot(
+    events
   ) +
-    geom_violin(adjust=1, show.legend=FALSE) +
+    geom_rect(
+      aes(
+        xmin=year1,
+        xmax=year2,
+        ymin=ymin,
+        ymax=ymax,
+        fill=event_level,
+        label=event_description
+      ),
+      colour="black"
+    ) +
     scale_fill_manual(values=c("sub"=green, "super"=red)) +
-    labs(x = "Museum", y = "Year", title = "Timeline of Post-closure events") +
-    coord_flip() +
+    labs(x = "Date", y = "", title = "Timeline of Post-closure events") +
     theme_minimal() +
     theme(
       plot.title = element_text(size=14),
       plot.subtitle = element_text(size=0),
       axis.title.x = element_text(size=14),
-      axis.title.y = element_text(size=0),
-      axis.text.y = element_text(size=11),
       axis.text.x = element_text(size=11),
+      axis.title.y = element_blank(),
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
       axis.line.x.bottom = element_line(colour="black"),
       legend.position="Non"
     )
 }
 
-example_timelines_small <- function(events_table, museum_ids) {
-  events_expanded <- events_table |>
-    filter(museum_id %in% museum_ids) |>
-    mutate(event_id = row_number()) |>
-    select(-year) |>
-    rowwise() |>
+example_timelines_small <- function(events_table, example_museum_id) {
+  events <- events_table |>
+    filter(museum_id==example_museum_id) |>
     mutate(
-      year = list({
-        y1 <- floor(year1)
-        y2 <- ceiling(year2) + 1
-        mean <- (y1 + y2) / 2
-        sd <- (y2 - y1) / 6
-        rtruncnorm(1000, a=y1, b=y2, mean=mean, sd=sd)
-        #runif(1000, min=y1, max=y2)
-      }),
-      museum_name = paste0(substr(museum, 1, 10), "...")
-    ) |>
-    unnest(year)
-  ggplot(
-    events_expanded,
-    aes(
-      x = event_id,
-      y = year,
-      group = event_id,
-      fill = event_level
+      event_id = row_number(),
+      ymax=event_id * 2,
+      ymin=ymax - 0.5,
+      year2 = year2 + 1
     )
+  ggplot(
+    events
   ) +
-    geom_violin(adjust=1) +
+    geom_rect(
+      aes(
+        xmin=year1,
+        xmax=year2,
+        ymin=ymin,
+        ymax=ymax,
+        fill=event_level
+      ),
+      colour="black"
+    ) +
     scale_fill_manual(values=c("sub"=green, "super"=red)) +
-    labs(x = "Museum", y = "Year", title = "Timeline of Post-closure events") +
-    coord_flip() +
+    labs(x = "Date", y = "", title = "Timeline of Post-closure events") +
     theme_minimal() +
     theme(
       plot.title = element_text(size=14),
       plot.subtitle = element_text(size=0),
       axis.title.x = element_text(size=14),
-      axis.title.y = element_text(size=0),
-      axis.text.y = element_text(size=11),
       axis.text.x = element_text(size=11),
+      axis.title.y = element_text(size=0),
+      axis.text.y = element_text(size=0),
       axis.line.x.bottom = element_line(colour="black"),
       legend.position="Non"
     )
