@@ -853,6 +853,16 @@ dispersalServer <- function(id) {
         ownershipChangesEnd()
       )
     })
+    output$mapSmall <- renderPlot({
+      generate_movements_map(
+        filtered_sequences(),
+        ownershipChangesStart(),
+        ownershipChangesEnd(),
+        input$grouping,
+        input$showTransactionCounts,
+        steps_or_first_last()
+      )
+    })
 
     output$downloadSequencesTable <- downloadHandler(
       filename = function() {
@@ -1524,7 +1534,7 @@ pathway_dendrogram <- function(layout, show_transaction_counts) {
     public_private_fill_scale +
     public_private_colour_scale +
     labs(
-      title="Pathways Taken by Museum Collections"
+      title="Pathways Taken by Collections"
     ) +
     network_theme +
     theme(
@@ -2030,5 +2040,178 @@ sequence_network_small <- function(layout, start_position, end_position) {
       legend.position="None",
       axis.title = element_text(size=14),
       axis.text = element_blank()
+    )
+}
+
+generate_movements_map <- function(sequences,
+                                   start_position,
+                                   end_position,
+                                   grouping_dimension,
+                                   show_transaction_counts,
+                                   steps_or_first_last) {
+  grouping_dimension <- list(
+    "Actor Sector"="sector",
+    "Actor Type (Core Categories)"="core_type",
+    "Actor Type (Most General)"="general_type",
+    "Actor Type (Most Specific)"="type"
+  )[grouping_dimension]
+  sender_grouping_dimension <- paste0("sender_", grouping_dimension)
+  recipient_grouping_dimension <- paste0("recipient_", grouping_dimension)
+
+  from_nodes <- sequences |>
+    filter(sender_position >= start_position & sender_position <= end_position) |>
+    select(
+      id=origin_id,
+      name=sender_name,
+      governance_broad=sender_governance_broad,
+      grouping_dimension=.data[[sender_grouping_dimension]],
+      x=origin_x,
+      y=origin_y
+    )
+  to_nodes <- sequences |>
+    filter(recipient_position >= start_position & recipient_position <= end_position) |>
+    select(
+      id=destination_id,
+      name=recipient_name,
+      governance_broad=recipient_governance_broad,
+      grouping_dimension=.data[[recipient_grouping_dimension]],
+      x=destination_x,
+      y=destination_y
+    )
+  nodes <- rbind(from_nodes, to_nodes) |>
+    distinct() |>
+    filter(
+      !is.na(x),
+      !is.na(y),
+      y < 2e6
+    )
+
+  edges <- sequences |>
+    filter(
+      sender_position >= start_position,
+      recipient_position <= end_position,
+      !is.na(origin_x),
+      !is.na(destination_x)
+    )
+  count_edges <- sequences |>
+    select(
+      from=origin_id,
+      to=destination_id,
+      sender_sector
+    ) |>
+    group_by(from, to, sender_sector) |>
+    summarize(count=n()) |>
+    ungroup() |>
+    mutate(label=count)
+  size_edges <- sequences |>
+    mutate(
+      collection_estimated_size = ifelse(is.na(collection_estimated_size), 1, collection_estimated_size)
+    ) |>
+    select(
+      from=origin_id,
+      to=destination_id,
+      sender_sector,
+      collection_estimated_size
+    ) |>
+    group_by(from, to, sender_sector) |>
+    summarize(count=sum(collection_estimated_size)) |>
+    ungroup() |>
+    mutate(label="")
+  max_size_edges <- sequences |>
+    mutate(
+      collection_estimated_size = ifelse(is.na(collection_estimated_size_max), 1, collection_estimated_size_max)
+    ) |>
+    select(
+      from=origin_id,
+      to=destination_id,
+      sender_sector,
+      collection_estimated_size
+    ) |>
+    group_by(from, to, sender_sector) |>
+    summarize(count=sum(collection_estimated_size)) |>
+    ungroup() |>
+    mutate(label="")
+  min_size_edges <- sequences |>
+    mutate(
+      collection_estimated_size = ifelse(is.na(collection_estimated_size_min), 1, collection_estimated_size_min)
+    ) |>
+    select(
+      from=origin_id,
+      to=destination_id,
+      sender_sector,
+      collection_estimated_size
+    ) |>
+    group_by(from, to, sender_sector) |>
+    summarize(count=sum(collection_estimated_size)) |>
+    ungroup() |>
+    mutate(label="")
+  edges <- rbind(
+    count_edges,
+    min_size_edges |> mutate(count = count * 0.25),
+    min_size_edges |> mutate(count = count * 0.5),
+    min_size_edges |> mutate(count = count * 0.75),
+    min_size_edges,
+    size_edges |> mutate(count = count * 0.25),
+    size_edges |> mutate(count = count * 0.5),
+    size_edges |> mutate(count = count * 0.75),
+    size_edges,
+    max_size_edges |> mutate(count = count * 0.25),
+    max_size_edges |> mutate(count = count * 0.5),
+    max_size_edges |> mutate(count = count * 0.75),
+    max_size_edges
+  )
+
+  start_positions <- nodes |>
+    select(from=id, x, y)
+  end_positions <- nodes |>
+    select(to=id, xend=x, yend=y)
+  edges <- edges |>
+    left_join(start_positions, by="from") |>
+    left_join(end_positions, by="to") |>
+    mutate(
+      label_position_x=(x + xend) / 2,
+      label_position_y=(y + yend) / 2
+    )
+
+  ggplot(nodes, aes(x=x, y=y)) +
+    geom_polygon(data=regions, aes(x=x, y=y, group=group), linewidth=0.1, label=NA, colour="black", fill=NA) +
+    geom_segment(
+      data=edges,
+      aes(
+        x=x,
+        y=y,
+        xend=xend,
+        yend=yend,
+        linewidth=count,
+        colour=sender_sector
+      ),
+      alpha=0.1,
+      arrow=arrow(ends="last", length=unit(0.1, "inches"))
+    ) +
+    geom_point(
+      aes(
+        fill=grouping_dimension_and_governance_to_sector(governance_broad, grouping_dimension)
+      ),
+      size=2,
+      pch=21,
+      colour="black",
+      alpha=0.9
+    ) +
+    coord_fixed() +
+    scale_size_continuous(range=c(5, 20)) +
+    scale_linewidth(range=c(0.5,5)) +
+    public_private_fill_scale +
+    public_private_colour_scale +
+    labs(
+      title="Pathways Taken by Collections"
+    ) +
+    standard_bars_theme +
+    theme(
+      plot.title = element_text(size=14),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.text = element_text(colour="white"),
+      axis.title = element_text(colour="white"),
+      legend.position = "non"
     )
 }
