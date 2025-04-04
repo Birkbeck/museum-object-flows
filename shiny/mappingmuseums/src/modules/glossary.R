@@ -302,7 +302,7 @@ event_types_taxonomy <- function() {
         ifelse(
           layout$name %in% ends_of_existence$type_name,
           "End of existence",
-          "Non-transfer event"
+          "Event without recipient"
         )
       )
     )
@@ -338,7 +338,7 @@ event_types_taxonomy <- function() {
         "Change of ownership"="#648FFF",
         "Change of custody"="#FE6100",
         "End of existence"="#000000",
-        "Non-transfer event"="lightgrey"
+        "Event without recipient"="lightgrey"
       ), 
       name="",
       na.value="black"
