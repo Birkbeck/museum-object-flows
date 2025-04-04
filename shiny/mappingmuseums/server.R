@@ -19,7 +19,7 @@ source("src/themes.R")
 source("src/calculate_outcomes.R")
 source("src/load_data.R")
 
-source("src/modules/dispersal_filters.R")
+#source("src/modules/dispersal_filters.R")
 source("src/modules/home.R")
 source("src/modules/glossary.R")
 source("src/modules/snapshot.R")
@@ -28,9 +28,10 @@ source("src/modules/causes.R")
 source("src/modules/length.R")
 source("src/modules/events.R")
 source("src/modules/outcomes.R")
-source("src/modules/pathways.R")
-source("src/modules/sequences.R")
-source("src/modules/movements.R")
+source("src/modules/dispersal.R")
+#source("src/modules/pathways.R")
+#source("src/modules/sequences.R")
+#source("src/modules/movements.R")
 
 PRODUCTION <- FALSE
 user_base <- readRDS("users.rds")
@@ -93,25 +94,29 @@ function(input, output, session) {
               lengthUI("length"),
             ),
             tabPanel(
-              "Post-closure: Events",
-              eventsUI("events"),
-            ),
-            tabPanel(
               "Outcomes of Closure",
               outcomesUI("outcomes"),
             ),
             tabPanel(
-              "Dispersal: Pathways",
-              pathwaysUI("pathways"),
+              "Post-closure Events",
+              eventsUI("events"),
             ),
             tabPanel(
-              "Dispersal: Sequences",
-              sequencesUI("sequences")
+              "Collections Dispersal",
+              dispersalUI("dispersal"),
             ),
-            tabPanel(
-              "Dispersal: Movements",
-              movementsUI("movements")
-            ),
+            #tabPanel(
+            #  "Dispersal: Pathways",
+            #  pathwaysUI("pathways"),
+            #),
+            #tabPanel(
+            #  "Dispersal: Sequences",
+            #  sequencesUI("sequences")
+            #),
+            #tabPanel(
+            #  "Dispersal: Movements",
+            #  movementsUI("movements")
+            #),
           )
         )
       })
@@ -149,11 +154,12 @@ function(input, output, session) {
       changesServer("changes")
       causesServer("causes")
       lengthServer("length")
-      eventsServer("events")
       outcomesServer("outcomes")
-      pathwaysServer("pathways")
-      sequencesServer("sequences")
-      movementsServer("movements")
+      eventsServer("events")
+      dispersalServer("dispersal")
+      #pathwaysServer("pathways")
+      #sequencesServer("sequences")
+      #movementsServer("movements")
       
     }
   })
