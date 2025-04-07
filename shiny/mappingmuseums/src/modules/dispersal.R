@@ -2270,6 +2270,7 @@ get_map_layout <- function(sequences,
 
 movements_map <- function(layout) {
   nodes <- layout$nodes
+  print(colnames(nodes))
   edges <- layout$edges
   transaction_map_plot <- ggplot(nodes, aes(x=x, y=y)) +
     geom_polygon(data=regions, aes(x=x, y=y, group=group), linewidth=0.1, label=NA, colour="black", fill=NA) +
@@ -2287,7 +2288,14 @@ movements_map <- function(layout) {
       arrow=arrow(ends="last", length=unit(0.1, "inches"))
     ) +
     geom_point(
+      data=edges,
+      aes(x=xend, y=yend, colour=sender_sector),
+      pch=17,
+      size=3
+    ) +
+    geom_point(
       aes(
+        label=name,
         fill=grouping_dimension_and_governance_to_sector(governance_broad, grouping_dimension)
       ),
       size=2,
@@ -2312,11 +2320,10 @@ movements_map <- function(layout) {
       axis.title = element_text(colour="white"),
       legend.position = "non"
     )
+
   transaction_map_plot |>
-    ggplotly(tooltip=c()) |>
-    layout(
-      showlegend=FALSE
-    )
+    ggplotly(tooltip=c("label")) |>
+    layout(showlegend=FALSE)
 }
 
 movements_map_small <- function(layout) {
