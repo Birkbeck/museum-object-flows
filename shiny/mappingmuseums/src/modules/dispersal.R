@@ -468,10 +468,12 @@ dispersalUI <- function(id) {
                 width="50%"
               )
             )
-          )
+          ),
+
+          uiOutput(NS(id, "mainPlotOptions")),
         ),
         mainPanel(
-          plotlyOutput(NS(id, "pathwaysNetwork"), width="100%", height="850px"),
+          plotlyOutput(NS(id, "mainPlot"), width="100%", height="850px"),
           img(src='actor-sector-key.png', align="left", width="150px"),
           fluidRow(
             p("Click on one of the small charts below to see it enlarged in the main panel above.")
@@ -562,6 +564,21 @@ dispersalServer <- function(id) {
         return("subject_matter_broad")
       } else if (input$groupingMuseums == "Country/Region") {
         return("region")
+      }
+    })
+    scatter_grouping_field <- reactive({
+      if (input$groupingMuseums == "All museums") {
+        return("initial_museum_all")
+      } else if (input$groupingMuseums == "Size") {
+        return("initial_museum_size")
+      } else if (input$groupingMuseums == "Governance") {
+        return("initial_museum_governance_broad")
+      } else if (input$groupingMuseums == "Accreditation") {
+        return("initial_museum_accreditation")
+      } else if (input$groupingMuseums == "Subject Matter") {
+        return("initial_museum_subject_matter_broad")
+      } else if (input$groupingMuseums == "Country/Region") {
+        return("initial_museum_region")
       }
     })
 
@@ -835,13 +852,79 @@ dispersalServer <- function(id) {
         input$grouping
       )
     })
-
-    output$pathwaysNetwork <- renderPlotly({
-      pathway_dendrogram(
-        pathways_layout(),
-        input$showTransactionCounts
+    map_layout <- reactive({
+      get_map_layout(
+        filtered_sequences(),
+        ownershipChangesStart(),
+        ownershipChangesEnd(),
+        input$grouping,
+        input$showTransactionCounts,
+        steps_or_first_last()
       )
     })
+    movements_distances <- reactive({
+      get_movements_distances(
+        filtered_sequences(),
+        ownershipChangesStart(),
+        ownershipChangesEnd(),
+        scatter_grouping_field(),
+        input$groupingMuseums,
+        input$showTransactionCounts,
+        steps_or_first_last(),
+        TRUE
+      )
+    })
+
+    currentMainPlot <- reactiveVal("pathways")
+    # Update the current plot based on user clicks
+    observeEvent(input$pathways, { currentMainPlot("pathways") })
+    observeEvent(input$sequences, { currentMainPlot("sequences") })
+    observeEvent(input$map, { currentMainPlot("map") })
+    observeEvent(input$distances, { currentMainPlot("distances") })
+
+    output$mainPlotOptions <- renderUI({
+      if(currentMainPlot() == "distances") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of collections/objects" = "count",
+            "Show percentage of collections/objects" = "percentage",
+            "Show rowwise percentages" = "percentage_y",
+            "Show columnwise percentages" = "percentage_x"
+          )
+        )
+      }
+    })
+
+    output$mainPlot <- renderPlotly({
+      if (currentMainPlot() == "pathways") {
+        pathway_dendrogram(
+          pathways_layout(),
+          input$showTransactionCounts
+        )
+      } else if (currentMainPlot() == "sequences") {
+        sequence_network(
+          sequences_layout(),
+          ownershipChangesStart(),
+          ownershipChangesEnd(),
+          input$showTransactionCounts
+        )
+      } else if (currentMainPlot() == "map") {
+        movements_map(
+          map_layout()
+        )
+      } else if (currentMainPlot() == "distances") {
+        movements_heatmap(
+          movements_distances(),
+          scatter_grouping_field(),
+          input$groupingMuseums,
+          count_or_percentage()
+        )
+      }
+    })
+
+    count_or_percentage <- reactive({input$countOrPercentage})
 
     output$pathwaysSmall <- renderPlot({
       pathway_dendrogram_small(pathways_layout())
@@ -854,13 +937,15 @@ dispersalServer <- function(id) {
       )
     })
     output$mapSmall <- renderPlot({
-      generate_movements_map(
-        filtered_sequences(),
-        ownershipChangesStart(),
-        ownershipChangesEnd(),
-        input$grouping,
-        input$showTransactionCounts,
-        steps_or_first_last()
+      movements_map_small(
+        map_layout()
+      )
+    })
+    output$distancesSmall <- renderPlot({
+      movements_heatmap_small(
+        movements_distances(),
+        scatter_grouping_field(),
+        input$groupingMuseums
       )
     })
 
@@ -1914,12 +1999,13 @@ get_sequences_layout <- function(sequences,
     group_by(interaction(count, .data[[sender_grouping_dimension]], label)) %>%
     filter(n() == 4) 
 
-  list("nodes"=node_counts, "edges"=edges)
+  list("nodes"=node_counts, "edges"=edges, "name_mapping"=name_mapping)
 }
 
-sequence_network <- function(layout, show_transaction_counts) {
+sequence_network <- function(layout, start_position, end_position, show_transaction_counts) {
   node_counts <- layout$nodes
   edges <- layout$edges
+  name_mapping <- layout$name_mapping
   transaction_sequence_plot <- ggplot(node_counts, aes(x=name_numeric, y=position)) +
     geom_segment(
       data=edges,
@@ -1990,6 +2076,12 @@ sequence_network <- function(layout, show_transaction_counts) {
   }
   
   transaction_sequence_plot
+
+  transaction_sequence_plot |>
+    ggplotly(tooltip=c("label", "count")) |>
+    layout(
+      showlegend=FALSE
+    )
 }
   
 sequence_network_small <- function(layout, start_position, end_position) {
@@ -2043,7 +2135,7 @@ sequence_network_small <- function(layout, start_position, end_position) {
     )
 }
 
-generate_movements_map <- function(sequences,
+get_map_layout <- function(sequences,
                                    start_position,
                                    end_position,
                                    grouping_dimension,
@@ -2173,6 +2265,63 @@ generate_movements_map <- function(sequences,
       label_position_y=(y + yend) / 2
     )
 
+  list("nodes"=nodes, "edges"=edges)
+}
+
+movements_map <- function(layout) {
+  nodes <- layout$nodes
+  edges <- layout$edges
+  transaction_map_plot <- ggplot(nodes, aes(x=x, y=y)) +
+    geom_polygon(data=regions, aes(x=x, y=y, group=group), linewidth=0.1, label=NA, colour="black", fill=NA) +
+    geom_segment(
+      data=edges,
+      aes(
+        x=x,
+        y=y,
+        xend=xend,
+        yend=yend,
+        linewidth=count,
+        colour=sender_sector
+      ),
+      alpha=0.1,
+      arrow=arrow(ends="last", length=unit(0.1, "inches"))
+    ) +
+    geom_point(
+      aes(
+        fill=grouping_dimension_and_governance_to_sector(governance_broad, grouping_dimension)
+      ),
+      size=2,
+      pch=21,
+      colour="black",
+      alpha=0.9
+    ) +
+    coord_fixed() +
+    scale_size_continuous(range=c(5, 20)) +
+    scale_linewidth(range=c(0.5,5)) +
+    public_private_fill_scale +
+    public_private_colour_scale +
+    labs(
+      title="Pathways Taken by Collections"
+    ) +
+    standard_bars_theme +
+    theme(
+      plot.title = element_text(size=14),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.text = element_text(colour="white"),
+      axis.title = element_text(colour="white"),
+      legend.position = "non"
+    )
+  transaction_map_plot |>
+    ggplotly(tooltip=c()) |>
+    layout(
+      showlegend=FALSE
+    )
+}
+
+movements_map_small <- function(layout) {
+  nodes <- layout$nodes
+  edges <- layout$edges
   ggplot(nodes, aes(x=x, y=y)) +
     geom_polygon(data=regions, aes(x=x, y=y, group=group), linewidth=0.1, label=NA, colour="black", fill=NA) +
     geom_segment(
@@ -2212,6 +2361,182 @@ generate_movements_map <- function(sequences,
       panel.grid.minor = element_blank(),
       axis.text = element_text(colour="white"),
       axis.title = element_text(colour="white"),
+      legend.position = "non"
+    )
+}
+
+calculate_distance <- function(lat1, lon1, lat2, lon2) {
+  # Convert degrees to radians
+  radians <- function(degrees) {
+    degrees * pi / 180
+  }
+  earth_radius <- 6371
+  dlat <- radians(lat2 - lat1)
+  dlon <- radians(lon2 - lon1)
+  lat1 <- radians(lat1)
+  lat2 <- radians(lat2)
+  # Haversine formula
+  a <- sin(dlat / 2) * sin(dlat / 2) +
+    cos(lat1) * cos(lat2) * sin(dlon / 2) * sin(dlon / 2)
+  c <- 2 * atan2(sqrt(a), sqrt(1 - a))
+  # Distance in kilometers
+  distance <- earth_radius * c
+  return(distance)
+}
+
+get_movements_distances <- function(sequences,
+                                    start_position,
+                                    end_position,
+                                    grouping_dimension,
+                                    grouping_title,
+                                    show_transaction_counts,
+                                    steps_or_first_last,
+                                    show_boxplot) {
+  data <- sequences |>
+    filter(
+      sender_position >= start_position,
+      recipient_position <= end_position,
+      !is.na(origin_x),
+      !is.na(destination_x)
+    ) |>
+    mutate(
+      all="All",
+      label=paste(
+        ifelse(is.na(collection_description), "", collection_description),
+        "from:",
+        sender_name,
+        "to:",
+        recipient_name
+      ),
+      distance=calculate_distance(
+        origin_latitude,
+        origin_longitude,
+        destination_latitude,
+        destination_longitude
+      ),
+      distance_category=case_when(
+        distance < 1 ~ "0 - 1",
+        distance < 10 ~ "1 - 10",
+        distance < 100 ~ "10 - 100",
+        distance < 1000 ~ "100 - 1,000",
+        TRUE ~ "1,000+"
+      )
+    )
+  data_2_way <- data |>
+    group_by(.data[[grouping_dimension]], distance_category) |>
+    summarize(
+      count = n()
+    ) |>
+    ungroup() |>
+    group_by(.data[[grouping_dimension]]) |>
+    mutate(
+      percentage_y = round(count / sum(count) * 100, 1)
+    ) |>
+    ungroup() |>
+    group_by(distance_category) |>
+    mutate(
+      percentage_x = round(count / sum(count) * 100, 1)
+    ) |>
+    ungroup() |>
+    mutate(
+      percentage = round(count / sum(count) * 100, 1)
+    )
+  data_museum_totals <- data |>
+    group_by(.data[[grouping_dimension]]) |>
+    summarize(
+      count = n()
+    ) |>
+    mutate(
+      percentage_x = round(count / sum(count) * 100, 1)
+    ) |>
+    ungroup() |>
+    mutate(
+      distance_category = "All",
+      percentage = round(count / sum(count) * 100, 1),
+      percentage_y = 100
+    )
+  data_distance_totals <- data |>
+    group_by(distance_category) |>
+    summarize(
+      count = n()
+    ) |>
+    mutate(
+      percentage_y = round(count / sum(count) * 100, 1)
+    ) |>
+    ungroup() |>
+    mutate(
+      !!sym(grouping_dimension) := "All",
+      percentage = round(count / sum(count) * 100, 1),
+      percentage_x = 100
+    )
+  data_all_totals <- data |>
+    summarize(
+      count = n()
+    ) |>
+    mutate(
+      !!sym(grouping_dimension) := "All",
+      distance_category = "All",
+      percentage = 100,
+      percentage_x = 100,
+      percentage_y = 100
+    )
+  data_2_way |>
+    rbind(data_museum_totals) |>
+    rbind(data_distance_totals) |>
+    rbind(data_all_totals)
+}
+
+movements_heatmap <- function(jumps, grouping_dimension, grouping_title, count_or_percentage) {
+  ggplot(
+    jumps,
+    aes(
+      x=distance_category,
+      y=factor(.data[[grouping_dimension]], museum_attribute_ordering)
+    )
+  ) +
+    geom_tile(aes(fill=.data[[count_or_percentage]]), show.legend=FALSE) +
+    geom_text(aes(label=.data[[count_or_percentage]])) +
+    geom_hline(aes(yintercept=1.5), colour="black") +
+    geom_vline(aes(xintercept=4.5), colour="black") +
+    scale_y_discrete(labels=tidy_labels) +
+    heatmap_fill_scale +
+    labs(
+      title = "Distances travelled by collections\n<sup>(Number of collections/objects)</sup>",
+      x = "Distance travelled (km)",
+      y = paste0("Origin museum (", grouping_title, ")")
+    ) +
+    standard_bars_theme +
+    theme(
+      axis.text.x = element_text(angle=45, hjust=1)
+    )
+}
+
+movements_heatmap_small <- function(jumps, grouping_dimension, grouping_title) {
+  ggplot(
+    jumps,
+    aes(
+      x=distance_category,
+      y=factor(.data[[grouping_dimension]], museum_attribute_ordering)
+    )
+  ) +
+    geom_tile(aes(fill=count)) +
+    geom_text(aes(label=count)) +
+    geom_hline(aes(yintercept=1.5), colour="black") +
+    geom_vline(aes(xintercept=4.5), colour="black") +
+    scale_y_discrete(labels=tidy_labels) +
+    heatmap_fill_scale +
+    labs(
+      title = "Distances travelled by collections",
+      x = "Distance (km)",
+      y = paste0("Origin museum (", grouping_title, ")")
+    ) +
+    standard_bars_theme +
+    theme(
+      plot.title = element_text(size=14),
+      axis.title.x = element_text(size=14),
+      axis.text.x = element_text(size=11, angle=45, hjust=1),
+      axis.title.y = element_text(size=0),
+      axis.text.y = element_text(size=11),
       legend.position = "non"
     )
 }
