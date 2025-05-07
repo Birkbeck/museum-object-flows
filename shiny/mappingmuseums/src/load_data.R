@@ -58,13 +58,13 @@ event_types <- read_csv(event_types_csv)
 explanations <- read_csv("explanations.csv")
 
 field_names <- data.frame(
-  name=c("All", "Size", "Governance", "Accreditation", "Subject Matter", "Country/Region"),
-  value=c("all", "size", "governance_main", "accreditation", "main_subject", "region")
+  name=c("All", "Size", "Governance", "Accreditation", "Subject Matter", "Country/Region", "Country"),
+  value=c("all", "size", "governance_main", "accreditation", "main_subject", "region", "nation")
 )
 filter_field_choices <- museums |>
-  select(size, governance_main, accreditation, main_subject, region) |>
+  select(size, governance_main, accreditation, main_subject, region, nation) |>
   pivot_longer(
-    cols=c(size, governance_main, accreditation, main_subject, region), names_to=c("field")
+    cols=c(size, governance_main, accreditation, main_subject, region, nation), names_to=c("field")
   ) |>
   mutate(label=unname(tidy_labels[value])) |>
   unique() |>

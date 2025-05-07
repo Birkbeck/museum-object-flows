@@ -116,7 +116,8 @@ snapshotServer <- function(id) {
         "governance"="Museum Governance",
         "accreditation"="Museum Accreditation",
         "main_subject"="Subject Matter",
-        "region"="Country/Region"
+        "region"="Country/Region",
+        "nation"="Country"
       )
 
     year_or_range <- reactive({input$yearOrRange})
