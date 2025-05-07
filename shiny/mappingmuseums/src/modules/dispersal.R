@@ -22,6 +22,27 @@ dispersalUI <- function(id) {
           width=3,
           tagList(
             h3("Filter Transactions"),
+
+            tagList(
+              tags$span(
+                tags$strong("Firepower: "),
+                tags$i(
+                  class = "fa fa-info-circle", # Font Awesome info icon
+                  style = "color: #007bff; cursor: pointer;", # Style for visibility
+                  `data-toggle` = "popover", # Bootstrap popover attribute
+                  `data-placement` = "right", # Position above the icon
+                  title = "Firepower",
+                  `data-content` = "Transactions involving collections originating from Firepower are automatically excluded from the diagrams. Switch on in order to include them."
+                )
+              ),
+              tags$script(popover_js),
+              switchInput(
+                NS(id, "firepower"),
+                label="",
+                value=FALSE
+              )
+            ),
+
             tagList(
               tags$span(
                 tags$strong("Group Actors by: "),
@@ -631,6 +652,7 @@ dispersalServer <- function(id) {
     })
     initial_museum_filters <- reactive({
       list(
+        input$firepower,
         input$startSizeFilter,
         input$startGovernanceFilter,
         input$startSubjectFilter,
@@ -735,6 +757,7 @@ dispersalServer <- function(id) {
       freezeReactiveValue(input, "initialMuseum")
       museums_list <- dispersal_events |>
         filter(
+          input$firepower | initial_museum_id != "mm.domus.SE513",
           initial_museum_size %in% size_filter_choices(),
           initial_museum_governance %in% governance_filter_choices() | initial_museum_governance_broad %in% governance_filter_choices(),
           initial_museum_subject_matter_broad %in% subject_filter_choices(),
