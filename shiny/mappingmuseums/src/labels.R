@@ -917,6 +917,11 @@ short_labels <- c(
   "Mixed-Bygones"="Bygones",
   "Mixed-Encyclopaedic"="Encyclopaedic",
   "Mixed-Other"="Other",
+  # destination outcome
+  "mostly same LAD"="mostly same LAD",
+  "mostly same region"="mostly same region",
+  "mostly UK"="mostly UK",
+  "mostly abroad"="mostly abroad",
   # recipient outcome
   "mostly storage"="mostly storage",
   "mostly armed forces"="mostly armed forces",
@@ -1139,6 +1144,11 @@ very_short_labels <- c(
   "Mixed-Bygones"="Bygones",
   "Mixed-Encyclopaedic"="Encyc.",
   "Mixed-Other"="Other",
+  # destination outcome
+  "mostly same LAD"="mostly same LAD",
+  "mostly same region"="mostly same region",
+  "mostly UK"="mostly UK",
+  "mostly abroad"="mostly abroad",
   # recipient outcome
   "mostly storage"="mostly storage",
   "mostly armed forces"="mostly armed forces",
@@ -1360,6 +1370,11 @@ museum_attribute_ordering <- c(
   "Archaeology-Medieval",
   "Archaeology-Greek_and_Egyptian",
   "Archaeology",
+  # destination outcome
+  "mostly same LAD",
+  "mostly same region",
+  "mostly UK",
+  "mostly abroad",
   # recipient outcome
   "mostly storage",
   "mostly armed forces",

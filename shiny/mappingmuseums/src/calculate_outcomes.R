@@ -1,12 +1,4 @@
 get_outcomes_by_museum <- function(events_table) {
-  event_outcomes <- get_outcomes_by_museum_for_type(events_table, "event_core_type") |>
-    select(museum_id=initial_museum_id, outcome_main_event=outcome)
-  recipient_outcomes <- get_outcomes_by_museum_for_type(events_table, "recipient_core_type") |>
-    select(museum_id=initial_museum_id, outcome_main_recipient=outcome)
-  left_join(event_outcomes, recipient_outcomes, by="museum_id")
-}
-
-get_outcomes_by_museum_for_type <- function(events_table, event_attribute) {
   events_with_numeric_collection_size <- events_table |>
     filter(event_stage_in_path == 0) |>
     mutate(
@@ -17,8 +9,33 @@ get_outcomes_by_museum_for_type <- function(events_table, event_attribute) {
         "half"=50,
         "some"=25,
         "few"=5
+      ),
+      destination_type=case_when(
+        is.na(destination_latitude) ~ "unknown",
+        origin_lad==destination_lad ~ "same LAD",
+        origin_region==destination_region ~ "same region",
+        origin_country==destination_country ~ "UK",
+        TRUE ~ "abroad"
       )
     )
+  event_outcomes <- get_outcomes_by_museum_for_type(
+    events_with_numeric_collection_size, "event_core_type"
+  ) |>
+    select(museum_id=initial_museum_id, outcome_event_type=outcome)
+  recipient_outcomes <- get_outcomes_by_museum_for_type(
+    events_with_numeric_collection_size, "recipient_core_type"
+  ) |>
+    select(museum_id=initial_museum_id, outcome_recipient_type=outcome)
+  destination_outcomes <- get_outcomes_by_museum_for_type(
+    events_with_numeric_collection_size, "destination_type"
+  ) |>
+    select(museum_id=initial_museum_id, outcome_destination_type=outcome)
+  event_outcomes |>
+    left_join(recipient_outcomes, by="museum_id") |>
+    left_join(destination_outcomes, by="museum_id")
+}
+
+get_outcomes_by_museum_for_type <- function(events_with_numeric_collection_size, event_attribute) {
   collection_totals <- events_with_numeric_collection_size |>
     group_by(initial_museum_id) |>
     summarize(
@@ -47,13 +64,29 @@ get_outcomes_by_museum_for_type <- function(events_table, event_attribute) {
     ) |>
     ungroup() |>
     select(initial_museum_id, .data[[event_attribute]], percent)
-  rbind(outcomes_under_counted, outcomes_over_counted) |>
+  outcome_proportions <- rbind(outcomes_under_counted, outcomes_over_counted) |>
     group_by(initial_museum_id) |>
     mutate(total = sum(percent)) |>
     ungroup() |>
     pivot_wider(names_from=.data[[event_attribute]], values_from=percent) |>
     mutate(unknown=unknown + 100 - total) |>
-    select(-total) |>
+    select(-total)
+  if (event_attribute == "destination_type") {
+    outcome_proportions |>
+      mutate(
+        `same region`=`same region` + `same LAD`,
+        `UK`=`UK` + `same region`,
+        outcome=case_when(
+          `same LAD` > 50 ~ "mostly same LAD",
+          `same region` > 50 ~ "mostly same region",
+          `UK` > 50 ~ "mostly UK",
+          `abroad` > 50 ~ "mostly abroad",
+          `unknown` > 50 ~ "mostly unknown",
+          TRUE ~ "mixed"
+        )
+      )
+  }
+  outcome_proportions |>
     pivot_longer(
       cols=c(-initial_museum_id),
       names_to="category",

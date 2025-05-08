@@ -201,6 +201,7 @@ RETURN {
     origin_longitude: origin.longitude,
     origin_x: origin.bng_x,
     origin_y: origin.bng_y,
+    origin_lad: origin.local_authority_name,
     origin_region: origin.region,
     origin_country: origin.country,
     destination_id: destination.place_id,
@@ -208,6 +209,7 @@ RETURN {
     destination_longitude: destination.longitude,
     destination_x: destination.bng_x,
     destination_y: destination.bng_y,
+    destination_lad: destination.local_authority_name,
     destination_region: destination.region,
     destination_country: destination.country
 } as record
