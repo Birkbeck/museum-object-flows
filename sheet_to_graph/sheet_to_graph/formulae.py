@@ -25,6 +25,7 @@ def get_sub_type_of_id(table, row_index, id_prefix):
 
 def get_super_cause_types(table, row_index, super_causes_hierarchy):
     def _tidy_individual_cause(individual_cause) -> str:
+        # find cause description in hierarchy
         if individual_cause in super_causes_hierarchy.columns["cause"]:
             row = super_causes_hierarchy.filter(cause=individual_cause)[0]
             return (
@@ -37,10 +38,11 @@ def get_super_cause_types(table, row_index, super_causes_hierarchy):
             return individual_cause
         if individual_cause in super_causes_hierarchy.columns["cause_type"]:
             row = super_causes_hierarchy.filter(cause_type=individual_cause)[0]
-            return row["cause_super_type"] + " - " + row["cause_type"] + " - other"
+            return row["cause_super_type"] + " - " + row["cause_type"]
         if individual_cause in super_causes_hierarchy.columns["cause_super_type"]:
             row = super_causes_hierarchy.filter(cause_super_type=individual_cause)[0]
-            return row["cause_super_type"] + " - other - other"
+            return row["cause_super_type"]
+        # find how cause description maps onto hierarchy
         row = super_causes_hierarchy.filter(super_cause_text=individual_cause)[0]
         if row["cause"] != "":
             return (
@@ -51,9 +53,9 @@ def get_super_cause_types(table, row_index, super_causes_hierarchy):
                 + row["cause"]
             )
         if row["cause_type"] != "":
-            return row["cause_super_type"] + " - " + row["cause_type"] + " - other"
+            return row["cause_super_type"] + " - " + row["cause_type"]
         if row["cause_super_type"] != "":
-            return row["cause_super_type"] + " - other - other"
+            return row["cause_super_type"]
 
     super_causes = table[row_index]["super_causes"]
     if super_causes is None:

@@ -19,20 +19,17 @@ source("src/themes.R")
 source("src/calculate_outcomes.R")
 source("src/load_data.R")
 
-#source("src/modules/dispersal_filters.R")
 source("src/modules/home.R")
 source("src/modules/glossary/ui.R")
 source("src/modules/glossary/server.R")
 source("src/modules/snapshot.R")
 source("src/modules/changes.R")
-source("src/modules/causes.R")
+source("src/modules/reasons/ui.R")
+source("src/modules/reasons/server.R")
 source("src/modules/length.R")
 source("src/modules/events.R")
 source("src/modules/outcomes.R")
 source("src/modules/dispersal.R")
-#source("src/modules/pathways.R")
-#source("src/modules/sequences.R")
-#source("src/modules/movements.R")
 
 PRODUCTION <- FALSE
 user_base <- readRDS("users.rds")
@@ -88,7 +85,7 @@ function(input, output, session) {
             ),
             tabPanel(
               "Reasons for Closure",
-              causesUI("causes"),
+              reasonsUI("reasons"),
             ),
             tabPanel(
               "Length of Closure",
@@ -153,7 +150,7 @@ function(input, output, session) {
       glossaryServer("glossary")
       snapshotServer("snapshot")
       changesServer("changes")
-      causesServer("causes")
+      reasonsServer("reasons")
       lengthServer("length")
       outcomesServer("outcomes")
       eventsServer("events")
