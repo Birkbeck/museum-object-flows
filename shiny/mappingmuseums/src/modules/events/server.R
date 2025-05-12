@@ -150,9 +150,7 @@ eventsServer <- function(id) {
     })
     observeEvent(only_show_last_event(), {
       req(input$stepsOrLast)
-      print(only_show_last_event())
       if (only_show_last_event()) {
-        print("ONLY SHOW LAST EVENT")
         updatePickerInput(
           session=session,
           inputId="stagesInPath",
@@ -160,7 +158,6 @@ eventsServer <- function(id) {
           selected=NA
         )
       } else {
-        print("SHOW MANY EVENTS")
         updatePickerInput(
           session=session,
           inputId="stagesInPath",

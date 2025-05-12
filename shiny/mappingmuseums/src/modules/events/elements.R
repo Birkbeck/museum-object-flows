@@ -16,7 +16,8 @@ filter_events <- function(events,
   if (only_show_last_event) {
     events <- events |>
       group_by(collection_id) |>
-      filter(event_stage_in_path == max(event_stage_in_path))
+      filter(event_stage_in_path == max(event_stage_in_path)) |>
+      ungroup()
   } else {
     events <- events |>
       filter(event_stage_in_path %in% stages_in_path)
@@ -38,15 +39,14 @@ filter_events <- function(events,
 }
 
 summarize_events <- function(events, dimension_1, dimension_2) {
-  events |>
+  events <- events |>
     mutate(
       dimension_1=.data[[dimension_1]],
       dimension_2=.data[[dimension_2]]
-    ) |>
+    )
+  events_2_way <- events |>
     group_by(dimension_1, dimension_2) |>
-    summarize(
-      count=n()
-    ) |>
+    summarize(count=n()) |>
     ungroup() |>
     mutate(
       percentage=round(count / sum(count) * 100, 1)
@@ -60,10 +60,43 @@ summarize_events <- function(events, dimension_1, dimension_2) {
     mutate(
       percentage_columnwise=round(count / sum(count) * 100, 1)
     )
+  dimension_1_totals <- events |>
+    group_by(dimension_1) |>
+    summarize(count=n()) |>
+    ungroup() |>
+    mutate(
+      dimension_2 = "All",
+      percentage=round(count / sum(count) * 100, 1),
+      percentage_rowwise=round(count / sum(count) * 100, 1),
+      percentage_columnwise=100
+    )
+  dimension_2_totals <- events |>
+    group_by(dimension_2) |>
+    summarize(count=n()) |>
+    ungroup() |>
+    mutate(
+      dimension_1 = "All",
+      percentage=round(count / sum(count) * 100, 1),
+      percentage_rowwise=100,
+      percentage_columnwise=round(count / sum(count) * 100, 1)
+    )
+  all_totals <- events |>
+    summarize(count=n()) |>
+    mutate(
+      dimension_1 = "All",
+      dimension_2 = "All",
+      percentage=100,
+      percentage_rowwise=100,
+      percentage_columnwise=100
+    )
+  events_2_way |>
+    rbind(dimension_1_totals) |>
+    rbind(dimension_2_totals) |>
+    rbind(all_totals)
 }
 
 event_heatmap <- function(table, x_label, y_label, count_or_percentage) {
-  ggplot(
+  plot <- ggplot(
     table,
     aes(
       x=dimension_1,
@@ -83,4 +116,26 @@ event_heatmap <- function(table, x_label, y_label, count_or_percentage) {
     theme(
       axis.text.x=element_text(angle=45, hjust=1, vjust=1)
     )
+
+  if (count_or_percentage == "percentage_rowwise") {
+    y_lines <- data.frame(
+      y=seq_along(
+        unique(select(table, dimension_1))$dimension_1
+      )
+    ) |>
+      mutate(y=y+0.5)
+    plot <- plot + geom_hline(data=y_lines, aes(yintercept=y), colour="white")
+  } else if (count_or_percentage == "percentage_columnwise") {
+    x_lines <- data.frame(
+      x=seq_along(
+        unique(select(table, dimension_2))$dimension_2
+      )
+    ) |>
+      mutate(x=x+0.5)
+    plot <- plot + geom_vline(data=x_lines, aes(xintercept=x), colour="white")
+  }
+
+  plot <- plot +
+    geom_hline(yintercept=1.5) +
+    geom_vline(xintercept=1.5)
 }
