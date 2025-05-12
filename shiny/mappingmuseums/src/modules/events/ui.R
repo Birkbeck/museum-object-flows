@@ -111,7 +111,7 @@ eventsUI <- function(id) {
           ),
           tags$script(popover_js),
           radioButtons(
-            NS(id, "stepsOrFirstLast"),
+            NS(id, "stepsOrLast"),
             label="",
             choices=c("Stepwise events", "Last known event"),
             selected="Stepwise events",
@@ -132,10 +132,10 @@ eventsUI <- function(id) {
           ),
           tags$script(popover_js),
           pickerInput(
-            NS(id, "eventStageInPath"),
+            NS(id, "stagesInPath"),
             "",
-            choices=c(1,2,3,4,5,6,7),
-            selected=c(1),
+            choices=c(),
+            selected=c(),
             options=pickerOptions(
               actionsBox=TRUE,
               size=10,

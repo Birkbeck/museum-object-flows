@@ -1,6 +1,6 @@
 get_outcomes_by_museum <- function(events_table) {
   events_with_numeric_collection_size <- events_table |>
-    filter(event_stage_in_path == 0) |>
+    filter(event_stage_in_path == 1) |>
     mutate(
       collection_size=recode(
         collection_size,

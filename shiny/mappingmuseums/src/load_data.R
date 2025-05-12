@@ -4,7 +4,8 @@ dispersal_events_csv <- "data/query_results/dispersal_events.csv"
 dispersal_events <- read_csv(dispersal_events_csv) |>
   mutate(
     initial_museum_all = "All",
-    recipient_core_type = ifelse(!is.na(recipient_core_type), recipient_core_type, recipient_general_type)
+    recipient_core_type = ifelse(!is.na(recipient_core_type), recipient_core_type, recipient_general_type),
+    event_stage_in_path = event_stage_in_path + 1
   )
 
 closure_reasons <- dispersal_events |>

@@ -145,6 +145,32 @@ eventsServer <- function(id) {
       )
     })
 
+    only_show_last_event <- reactive({
+      input$stepsOrLast == "Last known event"
+    })
+    observeEvent(only_show_last_event(), {
+      req(input$stepsOrLast)
+      print(only_show_last_event())
+      if (only_show_last_event()) {
+        print("ONLY SHOW LAST EVENT")
+        updatePickerInput(
+          session=session,
+          inputId="stagesInPath",
+          choices=NA,
+          selected=NA
+        )
+      } else {
+        print("SHOW MANY EVENTS")
+        updatePickerInput(
+          session=session,
+          inputId="stagesInPath",
+          choices=c(1,2,3,4,5,6,7),
+          selected=c(1)
+        )
+      }
+    })
+    stages_in_path <- reactive({input$stagesInPath})
+
     count_or_percentage <- reactive({input$countOrPercentage})
 
     observeEvent(event_grouping(), {
@@ -236,20 +262,23 @@ eventsServer <- function(id) {
     })
 
     filtered_events_and_participants <- reactive({
-      dispersal_events |>
-        filter(
-          .data[[event_grouping()]] %in% event_filter_choices(),
-          .data[[sender_grouping()]] %in% sender_filter_choices(),
-          .data[[recipient_grouping()]] %in% recipient_filter_choices(),
-          initial_museum_size %in% size_filter_choices(), 
-          initial_museum_governance %in% governance_filter_choices()
-          | initial_museum_governance_broad %in% governance_filter_choices(),
-          initial_museum_subject_matter_broad %in% subject_filter_choices(),
-          initial_museum_subject_matter %in% specific_subject_filter_choices(),
-          initial_museum_region %in% region_filter_choices()
-          | initial_museum_country %in% region_filter_choices(),
-          initial_museum_accreditation %in% accreditation_filter_choices()
-        )
+      filter_events(
+        dispersal_events,
+        event_grouping=event_grouping(),
+        sender_grouping=sender_grouping(),
+        recipient_grouping=recipient_grouping(),
+        only_show_last_event=only_show_last_event(),
+        stages_in_path=stages_in_path(),
+        event_filter=event_filter_choices(),
+        sender_filter=sender_filter_choices(),
+        recipient_filter=recipient_filter_choices(),
+        size_filter=size_filter_choices(),
+        governance_filter=governance_filter_choices(),
+        subject_broad_filter=subject_filter_choices(),
+        subject_specific_filter=specific_subject_filter_choices(),
+        region_filter=region_filter_choices(),
+        accreditation_filter=accreditation_filter_choices()
+      )
     })
 
     events_summary <- reactive({
