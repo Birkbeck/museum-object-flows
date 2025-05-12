@@ -20,16 +20,24 @@ source("src/calculate_outcomes.R")
 source("src/load_data.R")
 
 source("src/modules/home.R")
+
 source("src/modules/glossary/ui.R")
 source("src/modules/glossary/server.R")
+
 source("src/modules/snapshot.R")
 source("src/modules/changes.R")
+
 source("src/modules/reasons/ui.R")
 source("src/modules/reasons/server.R")
+
 source("src/modules/length.R")
+
 source("src/modules/outcomes/ui.R")
 source("src/modules/outcomes/server.R")
-source("src/modules/events.R")
+
+source("src/modules/events/ui.R")
+source("src/modules/events/server.R")
+
 source("src/modules/dispersal.R")
 
 PRODUCTION <- FALSE
