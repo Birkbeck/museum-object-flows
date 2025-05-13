@@ -208,6 +208,12 @@ eventsServer <- function(id) {
     event_filter_choices <- reactive({input$eventTypeFilter})
     sender_filter_choices <- reactive({input$senderTypeFilter})
     recipient_filter_choices <- reactive({input$recipientTypeFilter})
+    collection_status_filter_choices <- reactive({
+      filter(
+        collection_status_labels,
+        tidy_label %in% input$collectionStatusFilter
+      )$internal_label
+    })
 
     size_filter_choices <- reactive({
       filter(
@@ -269,6 +275,7 @@ eventsServer <- function(id) {
         event_filter=event_filter_choices(),
         sender_filter=sender_filter_choices(),
         recipient_filter=recipient_filter_choices(),
+        collection_status_filter=collection_status_filter_choices(),
         size_filter=size_filter_choices(),
         governance_filter=governance_filter_choices(),
         subject_broad_filter=subject_filter_choices(),

@@ -349,6 +349,33 @@ eventsUI <- function(id) {
             multiple=TRUE
           ) 
         ),
+
+        tagList(
+          tags$span(
+            tags$strong("Collection status: "),
+            tags$i(
+              class = "fa fa-info-circle",
+              style = "color: #007bff; cursor: pointer;",
+              `data-toggle` = "popover",
+              `data-placement` = "right",
+              title = "Collection status",
+              `data-content` = "<p>Show only events with a collection of a specified status.</p>"
+            )
+          ),
+          tags$script(popover_js),
+          pickerInput(
+            NS(id, "collectionStatusFilter"), 
+            "",
+            choices=collection_status_labels$tidy_label,
+            selected=filter(collection_status_labels, default_filter)$tidy_label,
+            options=pickerOptions(
+              actionsBox=TRUE, 
+              size=10,
+              selectedTextFormat="count > 3"
+            ), 
+            multiple=TRUE
+          ) 
+        ),
         
         tagList(
           tags$span(
