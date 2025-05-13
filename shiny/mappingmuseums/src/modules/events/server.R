@@ -190,43 +190,47 @@ eventsServer <- function(id) {
     })
 
     observeEvent(actor_and_museum_grouping(), {
-      # assemble type choices for senders (actor type & museum attribute)
+      # assemble type choices for senders and recipients (actor type & museum attribute)
+      if (museum_grouping() == "_all") {
+        sender_museum_type_choices = c()
+        recipient_museum_type_choices = c()
+      } else {
+        sender_museum_type <- paste0("sender", museum_grouping())
+        sender_museum_types <- dispersal_events |>
+          filter(!is.na(.data[[sender_museum_type]])) |>
+          select(.data[[sender_museum_type]]) |>
+          unique() |>
+          mutate(
+            sender_museum_type=paste0("museum (", .data[[sender_museum_type]], ")")
+          )
+        sender_museum_type_choices <- sender_museum_types$sender_museum_type
+        recipient_museum_type <- paste0("recipient", museum_grouping())
+        recipient_museum_types <- dispersal_events |>
+          filter(!is.na(.data[[recipient_museum_type]])) |>
+          select(.data[[recipient_museum_type]]) |>
+          unique() |>
+          mutate(
+            recipient_museum_type=paste0("museum (", .data[[recipient_museum_type]], ")")
+          )
+        recipient_museum_type_choices <- recipient_museum_types$recipient_museum_type
+      }
+
       sender_type <- paste0("sender", actor_grouping())
       sender_type_choices <- unique(
         select(dispersal_events, .data[[sender_type]])
       )[[sender_type]]
-      sender_museum_type <- paste0("sender", museum_grouping())
-      sender_museum_types <- dispersal_events |>
-        filter(!is.na(.data[[sender_museum_type]])) |>
-        select(.data[[sender_museum_type]]) |>
-        unique() |>
-        mutate(
-          sender_museum_type=paste0("museum (", .data[[sender_museum_type]], ")")
-        )
-      sender_museum_type_choices <- sender_museum_types$sender_museum_type
       sender_choices <- c(sender_museum_type_choices, sender_type_choices)
-      print(sender_type_choices)
-      print(sender_museum_type_choices)
       updatePickerInput(
         session=session,
         inputId="senderTypeFilter",
         choices=sender_choices,
         selected=sender_choices,
       )
-      # assemble type choices for recipients (actor type & museum attribute)
+
       recipient_type <- paste0("recipient", actor_grouping())
       recipient_type_choices <- unique(
         select(dispersal_events, .data[[recipient_type]])
       )[[recipient_type]]
-      recipient_museum_type <- paste0("recipient", museum_grouping())
-      recipient_museum_types <- dispersal_events |>
-        filter(!is.na(.data[[recipient_museum_type]])) |>
-        select(.data[[recipient_museum_type]]) |>
-        unique() |>
-        mutate(
-          recipient_museum_type=paste0("museum (", .data[[recipient_museum_type]], ")")
-        )
-      recipient_museum_type_choices <- recipient_museum_types$recipient_museum_type
       recipient_choices <- c(recipient_museum_type_choices, recipient_type_choices)
       updatePickerInput(
         session=session,

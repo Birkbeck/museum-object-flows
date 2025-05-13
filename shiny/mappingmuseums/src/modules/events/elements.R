@@ -24,9 +24,7 @@ filter_events <- function(events,
     events <- events |>
       filter(event_stage_in_path %in% stages_in_path)
   }
-  sender_museum_type <- paste0("sender", museum_grouping)
-  recipient_museum_type <- paste0("recipient", museum_grouping)
-  events |>
+  events <- events |>
     filter(
       .data[[event_grouping]] %in% event_filter,
       collection_status %in% collection_status_filter,
@@ -38,19 +36,25 @@ filter_events <- function(events,
       initial_museum_region %in% region_filter
       | initial_museum_country %in% region_filter,
       initial_museum_accreditation %in% accreditation_filter
-    ) |>
-    mutate(
-      !!sym(sender_grouping):=ifelse(
-        is.na(.data[[sender_museum_type]]),
-        .data[[sender_grouping]],
-        paste0("museum (", .data[[sender_museum_type]], ")")
-      ),
-      !!sym(recipient_grouping):=ifelse(
-        is.na(.data[[recipient_museum_type]]),
-        .data[[recipient_grouping]],
-        paste0("museum (", .data[[recipient_museum_type]], ")")
+    )
+  if (museum_grouping != "_all") {
+    sender_museum_type <- paste0("sender", museum_grouping)
+    recipient_museum_type <- paste0("recipient", museum_grouping)
+    events <- events |>
+      mutate(
+        !!sym(sender_grouping):=ifelse(
+          is.na(.data[[sender_museum_type]]),
+          .data[[sender_grouping]],
+          paste0("museum (", .data[[sender_museum_type]], ")")
+        ),
+        !!sym(recipient_grouping):=ifelse(
+          is.na(.data[[recipient_museum_type]]),
+          .data[[recipient_grouping]],
+          paste0("museum (", .data[[recipient_museum_type]], ")")
+        )
       )
-    ) |>
+  }
+  events |>
     filter(
       .data[[sender_grouping]] %in% sender_filter,
       .data[[recipient_grouping]] %in% recipient_filter
