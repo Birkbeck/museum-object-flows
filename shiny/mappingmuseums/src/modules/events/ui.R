@@ -54,37 +54,16 @@ eventsUI <- function(id) {
         style = "height: 90vh; overflow-y: auto;",
         
         h3("View"),
-        
+
         tagList(
           tags$span(
-            tags$strong("X Axis: "),
+            tags$strong("Main Axis: "),
             tags$i(
               class = "fa fa-info-circle",
               style = "color: #007bff; cursor: pointer;",
               `data-toggle` = "popover",
               `data-placement` = "right",
-              title = "X Axis",
-              `data-content` = "<p>Select which part of the event to view on the x-axis</p>"
-            )
-          ),
-          tags$script(popover_js),
-          selectInput(
-            NS(id, "xAxis"),
-            label="",
-            choices=c("Event type", "Sender type", "Recipient type", "Collection type", "Initial museum"),
-            selected="Event type"
-          )
-        ),
-        
-        tagList(
-          tags$span(
-            tags$strong("Y Axis: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Y Axis",
+              title = "Main Axis",
               `data-content` = "<p>Select which part of the event to view on the y-axis</p>"
             )
           ),
@@ -94,6 +73,27 @@ eventsUI <- function(id) {
             label="",
             choices=c("Event type", "Sender type", "Recipient type", "Collection type", "Initial museum"),
             selected="Sender type"
+          )
+        ),
+        
+        tagList(
+          tags$span(
+            tags$strong("Secondary Axis: "),
+            tags$i(
+              class = "fa fa-info-circle",
+              style = "color: #007bff; cursor: pointer;",
+              `data-toggle` = "popover",
+              `data-placement` = "right",
+              title = "Secondary Axis",
+              `data-content` = "<p>Select which part of the event to view on the x-axis</p>"
+            )
+          ),
+          tags$script(popover_js),
+          selectInput(
+            NS(id, "xAxis"),
+            label="",
+            choices=c("Event type", "Sender type", "Recipient type", "Collection type", "Initial museum"),
+            selected="Event type"
           )
         ),
         
