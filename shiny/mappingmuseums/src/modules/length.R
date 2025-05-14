@@ -1,5 +1,3 @@
-library(truncnorm)
-
 lengthUI <- function(id) {
   fluidPage(
     fluidRow(
