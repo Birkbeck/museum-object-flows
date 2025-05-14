@@ -11,6 +11,17 @@ dispersal_events <- read_csv(dispersal_events_csv) |>
     event_stage_in_path = event_stage_in_path + 1
   )
 
+collection_types <- dispersal_events |>
+  mutate(
+    collection_type = str_remove_all(collection_types, "\\[|\\]|'") |>
+      str_split(",\\s*")
+  ) |>
+  unnest(collection_type) |>
+  select(collection_type) |>
+  unique() |>
+  filter(collection_type != "")
+print(collection_types)
+
 closure_reasons <- dispersal_events |>
     select(
       museum_id=initial_museum_id,

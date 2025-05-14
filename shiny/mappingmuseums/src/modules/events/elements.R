@@ -8,6 +8,7 @@ filter_events <- function(events,
                           event_filter,
                           sender_filter,
                           recipient_filter,
+                          collection_type_filter,
                           collection_status_filter,
                           size_filter,
                           governance_filter,
@@ -15,6 +16,14 @@ filter_events <- function(events,
                           subject_specific_filter,
                           region_filter,
                           accreditation_filter) {
+  event_collection_types <- events |>
+    mutate(
+      collection_type = str_remove_all(collection_types, "\\[|\\]|'") |>
+        str_split(",\\s*")
+    ) |>
+    unnest(collection_type) |>
+    select(event_id, collection_type) |>
+    filter(collection_type %in% collection_type_filter)
   if (only_show_last_event) {
     events <- events |>
       group_by(collection_id) |>
@@ -27,6 +36,7 @@ filter_events <- function(events,
   events <- events |>
     filter(
       .data[[event_grouping]] %in% event_filter,
+      event_id %in% event_collection_types$event_id,
       collection_status %in% collection_status_filter,
       initial_museum_size %in% size_filter, 
       initial_museum_governance %in% governance_filter

@@ -332,15 +332,15 @@ eventsUI <- function(id) {
               `data-toggle` = "popover",
               `data-placement` = "right",
               title = "Collection type",
-              `data-content` = "<p>Show only events with a collection of a specified type.</p>"
+              `data-content` = "<p>Show only events with a collection of a specified type.</p><p>Some collections have more than one type. Any collection which has at least one of the types selected in this filter will contribute to the chart.</p>"
             )
           ),
           tags$script(popover_js),
           pickerInput(
             NS(id, "collectionTypeFilter"), 
             "",
-            choices=c(),
-            selected=c(),
+            choices=collection_types$collection_type,
+            selected=collection_types$collection_type,
             options=pickerOptions(
               actionsBox=TRUE, 
               size=10,
