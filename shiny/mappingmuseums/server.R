@@ -40,7 +40,8 @@ source("src/modules/events/server.R")
 
 source("src/modules/dispersal.R")
 
-PRODUCTION <- FALSE
+PRODUCTION <- as.logical(Sys.getenv("PRODUCTION"))
+
 user_base <- readRDS("users.rds")
 
 function(input, output, session) {
