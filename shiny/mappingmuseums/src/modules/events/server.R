@@ -78,7 +78,7 @@ eventsServer <- function(id) {
           recipient_grouping()
         },
         "Collection type" = {
-          "collection_or_object_type"
+          "collection_type"
         },
         "Initial museum" = {
           paste0("initial_museum", museum_grouping())
@@ -100,7 +100,7 @@ eventsServer <- function(id) {
           recipient_grouping()
         },
         "Collection type" = {
-          "collection_or_object_type"
+          "collection_type"
         },
         "Initial museum" = {
           paste0("initial_museum", museum_grouping())

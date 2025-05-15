@@ -72,6 +72,14 @@ filter_events <- function(events,
 }
 
 summarize_events <- function(events, dimension_1, dimension_2) {
+  if ("collection_type" %in% c(dimension_1, dimension_2)) {
+    events <- events |>
+      mutate(
+        collection_type = str_remove_all(collection_types, "\\[|\\]|'") |>
+          str_split(",\\s*")
+      ) |>
+      unnest(collection_type)
+  }
   events <- events |>
     mutate(
       dimension_1=.data[[dimension_1]],
@@ -79,7 +87,7 @@ summarize_events <- function(events, dimension_1, dimension_2) {
     )
   events_2_way <- events |>
     group_by(dimension_1, dimension_2) |>
-    summarize(count=n()) |>
+    summarize(count=n_distinct(event_id)) |>
     ungroup() |>
     mutate(
       percentage=round(count / sum(count) * 100, 1)
@@ -95,7 +103,7 @@ summarize_events <- function(events, dimension_1, dimension_2) {
     )
   dimension_1_totals <- events |>
     group_by(dimension_1) |>
-    summarize(count=n()) |>
+    summarize(count=n_distinct(event_id)) |>
     ungroup() |>
     mutate(
       dimension_2 = "All",
@@ -105,7 +113,7 @@ summarize_events <- function(events, dimension_1, dimension_2) {
     )
   dimension_2_totals <- events |>
     group_by(dimension_2) |>
-    summarize(count=n()) |>
+    summarize(count=n_distinct(event_id)) |>
     ungroup() |>
     mutate(
       dimension_1 = "All",
@@ -114,7 +122,7 @@ summarize_events <- function(events, dimension_1, dimension_2) {
       percentage_columnwise=round(count / sum(count) * 100, 1)
     )
   all_totals <- events |>
-    summarize(count=n()) |>
+    summarize(count=n_distinct(event_id)) |>
     mutate(
       dimension_1 = "All",
       dimension_2 = "All",
