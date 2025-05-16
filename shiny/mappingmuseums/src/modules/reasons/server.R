@@ -6,7 +6,7 @@ reasonsServer <- function(id) {
       req(input$reasonLevel)
       if (input$reasonLevel == "Core categories") {
         return("reason_core")
-      } else if (input$reasonLevel == "Core category children") {
+      } else if (input$reasonLevel == "Core categories and their sub-categories") {
         return("reason_core_or_child")
       } else {
         return("reason_specific")
@@ -16,8 +16,8 @@ reasonsServer <- function(id) {
       req(input$reasonLevel)
       if (input$reasonLevel == "Core categories") {
         return("Reason Core Categories")
-      } else if (input$reasonLevel == "Core category children") {
-        return("Reason Core Category Children")
+      } else if (input$reasonLevel == "Core categories and their sub-categories") {
+        return("Reason Core Category/Sub-category")
       } else {
         return("Most Specific Reason")
       }

@@ -24,7 +24,7 @@ reasonsUI <- function(id) {
           selectInput(
             NS(id, "reasonLevel"),
             label="",
-            choices=c("Core categories", "Core category children", "Most specific"),
+            choices=c("Core categories", "Core categories and their sub-categories", "Most specific"),
             selected="Core categories"
           )
         ),
