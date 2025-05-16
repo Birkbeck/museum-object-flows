@@ -27,7 +27,8 @@ source("src/modules/glossary/server.R")
 source("src/modules/snapshot/ui.R")
 source("src/modules/snapshot/server.R")
 
-source("src/modules/changes.R")
+source("src/modules/changes/ui.R")
+source("src/modules/changes/server.R")
 
 source("src/modules/reasons/ui.R")
 source("src/modules/reasons/server.R")

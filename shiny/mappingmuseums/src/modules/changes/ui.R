@@ -1,16 +1,8 @@
-snapshotUI <- function(id) {
+changesUI <- function(id) {
   fluidPage(
-
     fluidRow(
-      p(
-        "The distribution of different types of museum across the UK in a single year or during a selected time period."
-      ),
-      p(
-        "If viewing museums in a single year, charts display the number of museums open at the end of that year. If viewing museums during a time period, charts display the number of museums open for at least some of the period."
-      ),
-      p(
-        "The numbers in the charts show the estimated number of museums. Estimates take into account uncertain opening and closure dates."
-      ),
+      p("Changes in the museum sector across the UK during a selected time period (between the start of the first year and the end of the last year). The numbers in the charts below show estimated numbers which take into account uncertain opening and closure dates."),
+      p("Click on a smaller chart to view it enlarged in the main panel.")
     ),
 
     sidebarLayout(
@@ -22,28 +14,29 @@ snapshotUI <- function(id) {
 
         tagList(
           tags$span(
-            tags$strong("Single year or range of years: "),
+            tags$strong("Time Period: "),
             tags$i(
               class = "fa fa-info-circle",
               style = "color: #007bff; cursor: pointer;",
               `data-toggle` = "popover",
               `data-placement` = "right",
-              title = "Single year or range of years",
-              `data-content` = "<p><strong>Single year:</strong> Select to view the museums that were open at the end of the specified year.</p><p><strong>Range of years:</strong> Select to view the museums that were open during at least part of the specified range of years.</p>"
+              title = "Time Period",
+              `data-content` = "<p>Move the slider to adjust the date range under consideration. Data in the charts reflects museum closures and new museum openings between 1st January of the year at the start of the range and 31st December of the year at the end of the range.</p>"
             )
           ),
           tags$script(popover_js),
-          radioButtons(
-            NS(id, "yearOrRange"),
+          sliderInput(
+            NS(id, "yearRange"),
             label="",
-            choices=c("Single year", "Range of years"),
-            selected="Single year",
-            inline=TRUE
-          ),
+            value=c(2000, 2025),
+            min=1960,
+            max=2025,
+            step=1,
+            sep="",
+            ticks=TRUE,
+            width="100%"
+          )
         ),
-
-
-        uiOutput(NS(id, "yearSlider")),
 
         tagList(
           tags$span(
@@ -61,8 +54,8 @@ snapshotUI <- function(id) {
           selectInput(
             NS(id, "mainAxis"),
             label="",
-            choices=c("No filter", field_names$name),
-            selected="Governance"
+            choices=field_names$name,
+            selected="All"
           )
         ),
 
@@ -252,10 +245,11 @@ snapshotUI <- function(id) {
             multiple=TRUE
           )   
         )
+
       ),
 
       mainPanel(
-        plotlyOutput(NS(id, "mainPlot"), height="800px", width="100%"),
+        plotlyOutput(NS(id, "mainPlot"), height="720px", width="100%"),
         uiOutput(NS(id, "mainPlotExplanation")),
         fluidRow(
           p("Click on one of the small charts below to see it enlarged in the main panel above.")
@@ -265,39 +259,174 @@ snapshotUI <- function(id) {
             3,
             style=card_style,
             plotOutput(
-              NS(id, "museumMapSmall"),
+              NS(id, "openingsVsClosuresScatterSmall"),
               width=small_chart_size_px,
               height=small_chart_size_px,
-              click=NS(id, "museumMap")
-            ),
+              click=NS(id, "openingsVsClosuresScatter")
+            )
           ),
           column(
             3,
             style=card_style,
             plotOutput(
-              NS(id, "museumCountsSmall"),
+              NS(id, "timeSeriesSmall"),
               width=small_chart_size_px,
               height=small_chart_size_px,
-              click=NS(id, "museumCounts")
-            ),
+              click=NS(id, "timeSeriesLine")
+            )
           ),
           column(
             3,
             style=card_style,
             plotOutput(
-              NS(id, "museumHeatmapSmall"),
+              NS(id, "openingRatesSmall"),
               width=small_chart_size_px,
               height=small_chart_size_px,
-              click=NS(id, "museumHeatmap")
+              click=NS(id, "openingRateLine")
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            plotOutput(
+              NS(id, "closureRatesSmall"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "closureRateLine")
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            plotOutput(
+              NS(id, "openingsMap"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "openingsMap")
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            plotOutput(
+              NS(id, "closuresMap"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "closuresMap")
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            plotOutput(
+              NS(id, "openingsSmall2Way"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "openings2Way")
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            plotOutput(
+              NS(id, "closuresSmall2Way"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "closures2Way")
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            plotOutput(
+              NS(id, "openingsClosuresSmall"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "openingsClosures")
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            plotOutput(
+              NS(id, "startEndSmall"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "startEnd")
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            plotOutput(
+              NS(id, "openStartSmall2Way"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "openStart2Way")
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            plotOutput(
+              NS(id, "openEndSmall2Way"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "openEnd2Way")
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            plotOutput(
+              NS(id, "absoluteChangeSmall"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "absoluteChange")
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            plotOutput(
+              NS(id, "percentageChangeSmall"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "percentageChange")
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            plotOutput(
+              NS(id, "absoluteChangeSmall2Way"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "absoluteChange2Way")
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            plotOutput(
+              NS(id, "percentageChangeSmall2Way"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "percentageChange2Way")
             )
           )
         )
       )
     ),
     fluidRow(
-      h3("Museums Open During Period"),
-      downloadButton(NS(id, "downloadSnapshotTable"), label="Download table as CSV"),
-      DTOutput(NS(id, "openMuseumsTable"))
+      h3("Museum Closures"),
+      downloadButton(NS(id, "downloadClosuresTable"), label="Download table as CSV"),
+      DTOutput(NS(id, "closuresTable"))
+    ),
+    fluidRow(
+      h3("Museum Openings"),
+      downloadButton(NS(id, "downloadOpeningsTable"), label="Download table as CSV"),
+      DTOutput(NS(id, "openingsTable"))
     )
   )
 }

@@ -78,7 +78,6 @@ snapshotServer <- function(id) {
         filter(field_names, name==input$mainAxis)$value[1]
       )
     })
-
     second_axis <- reactive({
       req(input$secondAxis)
       return(
