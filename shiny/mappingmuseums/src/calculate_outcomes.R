@@ -8,16 +8,31 @@ get_outcomes_by_museum <- function(events_table) {
         "most"=80,
         "half"=50,
         "some"=25,
-        "few"=5
+        "few"=5,
+        "NA"=1 # TODO: doesn't work, check why some have NA size
       ),
       destination_type=case_when(
+        recipient_type=="end of existence" ~ "end of existence",
+        recipient_type=="N/A" ~ "no move",
         is.na(destination_latitude) ~ "unknown",
-        origin_lad==destination_lad ~ "same LAD",
-        origin_region==destination_region ~ "same region",
-        origin_country==destination_country ~ "UK",
+        origin_lad==destination_lad ~ "within the same LAD",
+        origin_region==destination_region ~ "within the same region",
+        origin_country==destination_country ~ "within the UK",
         TRUE ~ "abroad"
       )
     )
+  write.csv(
+    events_with_numeric_collection_size |>
+      select(
+        initial_museum_id,
+        initial_museum_name,
+        event_core_type,
+        recipient_core_type,
+        destination_type,
+        collection_size
+      ),
+    "events_numeric.csv"
+  )
   event_outcomes <- get_outcomes_by_museum_for_type(
     events_with_numeric_collection_size, "event_core_type"
   ) |>
@@ -50,6 +65,7 @@ get_outcomes_by_museum_for_type <- function(events_with_numeric_collection_size,
       percent=sum(collection_size)
     ) |>
     ungroup()
+  write.csv(outcomes_under_counted, paste0("under_counted_", event_attribute, ".csv"))
   outcomes_over_counted <- events_with_numeric_collection_size |>
     left_join(collection_totals, by="initial_museum_id") |>
     filter(total > 100) |>
@@ -64,27 +80,38 @@ get_outcomes_by_museum_for_type <- function(events_with_numeric_collection_size,
     ) |>
     ungroup() |>
     select(initial_museum_id, .data[[event_attribute]], percent)
+  write.csv(outcomes_over_counted, paste0("over_counted_", event_attribute, ".csv"))
   outcome_proportions <- rbind(outcomes_under_counted, outcomes_over_counted) |>
     group_by(initial_museum_id) |>
     mutate(total = sum(percent)) |>
     ungroup() |>
-    pivot_wider(names_from=.data[[event_attribute]], values_from=percent) |>
+    pivot_wider(
+      names_from=.data[[event_attribute]],
+      values_from=percent,
+      values_fill=0
+    ) |>
     mutate(unknown=unknown + 100 - total) |>
     select(-total)
   if (event_attribute == "destination_type") {
-    outcome_proportions |>
+    outcome_proportions <- outcome_proportions |>
       mutate(
-        `same region`=`same region` + `same LAD`,
-        `UK`=`UK` + `same region`,
+        `within the same LAD`=`within the same LAD` + `no move`,
+        `within the same region`=`within the same region` + `within the same LAD`,
+        `within the UK`=`within the UK` + `within the same region`,
         outcome=case_when(
-          `same LAD` > 50 ~ "mostly same LAD",
-          `same region` > 50 ~ "mostly same region",
-          `UK` > 50 ~ "mostly UK",
-          `abroad` > 50 ~ "mostly abroad",
-          `unknown` > 50 ~ "mostly unknown",
-          TRUE ~ "mixed"
+          `end of existence` >= 50 ~ "mostly end of existence",
+          `no move` >= 50 ~ "mostly no move",
+          `within the same LAD` >= 50 ~ "mostly within the same LAD",
+          `within the same region` >= 50 ~ "mostly within the same region",
+          `within the UK` >= 50 ~ "mostly within the UK",
+          `abroad` >= 50 ~ "mostly abroad",
+          `unknown` >= 50 ~ "mostly unknown",
+          TRUE ~ "mixed destinations"
         )
       )
+    write.csv(outcome_proportions, "outcome_destination_proportions.csv")
+    print(outcome_proportions |> filter(outcome=="mixed destinations"))
+    return(outcome_proportions)
   }
   outcome_proportions |>
     pivot_longer(
