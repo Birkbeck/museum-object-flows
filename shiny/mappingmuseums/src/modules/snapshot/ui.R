@@ -107,8 +107,8 @@ snapshotUI <- function(id) {
           pickerInput(
             NS(id, "governanceFilter"), 
             "",
-            choices=governance_labels$tidy_label,
-            selected=governance_labels$tidy_label,
+            choices=filter(governance_labels, internal_label != "Independent")$tidy_label,
+            selected=filter(governance_labels, internal_label != "Independent")$tidy_label,
             options=pickerOptions(
               actionsBox=TRUE, 
               size=10,
@@ -215,8 +215,8 @@ snapshotUI <- function(id) {
           pickerInput(
             NS(id, "regionFilter"), 
             "",
-            choices=country_region_labels$tidy_label,
-            selected=filter(country_region_labels, default_filter)$tidy_label,
+            choices=filter(country_region_labels, internal_label != "England")$tidy_label,
+            selected=filter(country_region_labels, internal_label != "England")$tidy_label,
             options=pickerOptions(
               actionsBox=TRUE, 
               size=10,
