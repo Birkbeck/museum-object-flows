@@ -24,7 +24,9 @@ source("src/modules/home.R")
 source("src/modules/glossary/ui.R")
 source("src/modules/glossary/server.R")
 
-source("src/modules/snapshot.R")
+source("src/modules/snapshot/ui.R")
+source("src/modules/snapshot/server.R")
+
 source("src/modules/changes.R")
 
 source("src/modules/reasons/ui.R")
