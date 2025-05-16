@@ -1288,11 +1288,14 @@ heatmap <- function(museums, dimension, dimension2, measure, title, y_label, x_l
   ) |>
     mutate(y=y+0.5)
   if (measure %in% c("openings", "openings_rate", "start_total", "end_total", "start_total_pc", "end_total_pc")) {
-    fill_scale <- scale_fill_gradient(transform="pseudo_log", low=white, high=blue)
+    #fill_scale <- scale_fill_gradient(transform="pseudo_log", low=white, high=blue)
+    fill_scale <- scale_fill_gradient(low=white, high=blue)
   } else if (measure %in% c("closures", "closures_rate")) {
-    fill_scale <- scale_fill_gradient(transform="pseudo_log", low=white, high=red)
+    #fill_scale <- scale_fill_gradient(transform="pseudo_log", low=white, high=red)
+    fill_scale <- scale_fill_gradient(low=white, high=red)
   } else {
-    fill_scale <- scale_fill_gradient2(transform="pseudo_log", low=red, mid=white, high=blue, midpoint=0)
+    #fill_scale <- scale_fill_gradient2(transform="pseudo_log", low=red, mid=white, high=blue, midpoint=0)
+    fill_scale <- scale_fill_gradient2(low=red, mid=white, high=blue, midpoint=0)
   }
   heatmap <- ggplot(
     heatmap_data,
@@ -1333,11 +1336,14 @@ heatmap <- function(museums, dimension, dimension2, measure, title, y_label, x_l
 
 heatmap_small <- function(museums, dimension, dimension2, measure, title, show_only_choices) {
   if (measure %in% c("openings", "start_total", "end_total")) {
-    fill_scale <- scale_fill_gradient(transform="pseudo_log", low=white, high=blue)
+    #fill_scale <- scale_fill_gradient(transform="pseudo_log", low=white, high=blue)
+    fill_scale <- scale_fill_gradient(low=white, high=blue)
   } else if (measure %in% c("closures")) {
-    fill_scale <- scale_fill_gradient(transform="pseudo_log", low=white, high=red)
+    #fill_scale <- scale_fill_gradient(transform="pseudo_log", low=white, high=red)
+    fill_scale <- scale_fill_gradient(low=white, high=red)
   } else {
-    fill_scale <- scale_fill_gradient2(transform="pseudo_log", low=red, mid=white, high=blue, midpoint=0)
+    #fill_scale <- scale_fill_gradient2(transform="pseudo_log", low=red, mid=white, high=blue, midpoint=0)
+    fill_scale <- scale_fill_gradient2(low=red, mid=white, high=blue, midpoint=0)
   }
   ggplot(
     museums |>

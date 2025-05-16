@@ -571,7 +571,8 @@ snapshot_heatmap <- function(museums, dimension, dimension2, metric, show_only_c
     geom_text(aes(label=.data[[metric]]), size=6) +
     scale_x_discrete(labels=short_labels) +
     scale_y_discrete(labels=short_labels) +
-    scale_fill_continuous(transform="pseudo_log", low=white, high=blue) +
+    #scale_fill_continuous(transform="pseudo_log", low=white, high=blue) +
+    scale_fill_continuous(low=white, high=blue) +
     labs(
       title=paste("Museums in the UK", period),
       x=x_label,
@@ -616,7 +617,8 @@ snapshot_heatmap_small <- function(museums, dimension, dimension2, metric, show_
     geom_text(aes(label=.data[[metric]]), size=3) +
     scale_x_discrete(labels=very_short_labels) +
     scale_y_discrete(labels=short_labels) +
-    scale_fill_continuous(transform="pseudo_log", low=white, high=blue) +
+    #scale_fill_continuous(transform="pseudo_log", low=white, high=blue) +
+    scale_fill_continuous(low=white, high=blue) +
     labs(
       title=paste0(x_label, " vs ", y_label),
       x="",

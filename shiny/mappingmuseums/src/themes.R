@@ -143,7 +143,8 @@ blue = "#99E0FF"
 dark_blue = "#008ECC"
 purple = "#E4A8F0"
 
-heatmap_fill_scale <- scale_fill_continuous(transform="pseudo_log", low=white, high=purple)
+#heatmap_fill_scale <- scale_fill_continuous(transform="pseudo_log", low=white, high=purple)
+heatmap_fill_scale <- scale_fill_continuous(low=white, high=purple)
 
 title_size <- 22
 subtitle_size <- 18
