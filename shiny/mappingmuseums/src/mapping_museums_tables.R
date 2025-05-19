@@ -94,7 +94,11 @@ museums_in_time_period <- function(museums, start_year, end_year) {
 get_open_and_close_data <- function(data, dimension, start_year, end_year) {
   data |>
     group_by(.data[[dimension]]) |>
-    museums_in_time_period(start_year, end_year)
+    museums_in_time_period(start_year, end_year) |>
+    mutate(
+      !!sym(dimension) := factor(.data[[dimension]], museum_attribute_ordering)
+    )
+
 }
 get_2_way_open_and_close_data <- function(data, dimension1, dimension2, start_year, end_year) {
   data_2_way <- data |>
@@ -240,7 +244,11 @@ get_2_way_open_and_close_data <- function(data, dimension1, dimension2, start_ye
   data_2_way |>
     rbind(data_dimension_1_totals) |>
     rbind(data_dimension_2_totals) |>
-    rbind(data_all_totals)
+    rbind(data_all_totals) |>
+    mutate(
+      !!sym(dimension1) := factor(.data[[dimension1]], museum_attribute_ordering),
+      !!sym(dimension2) := factor(.data[[dimension2]], museum_attribute_ordering)
+    )
 }
 
 get_museums_in_time_period <- function(museums, start_year, end_year) {
