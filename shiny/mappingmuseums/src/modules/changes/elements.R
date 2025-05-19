@@ -270,9 +270,16 @@ changes_map <- function(museums, dimension, measure, start, end) {
     data <- museums |>
       filter(year_closed_2 > start & year_closed_1 < end)
   }
+  min_x <- min(museums$bng_x)
+  max_x <- max(museums$bng_x)
+  min_y <- min(museums$bng_y)
+  max_y <- max(museums$bng_y)
+  padding <- 10000
   map <- ggplot(data) +
     geom_polygon(data=regions, aes(x=x, y=y, group=group), linewidth=0.1, label=NA, colour="black", fill=NA) +
     geom_point(aes(label=name_of_museum, x=bng_x, y=bng_y, colour=.data[[dimension]]), size=0.5) +
+    scale_x_continuous(limits=c(min_x - padding, max_x + padding)) +
+    scale_y_continuous(limits=c(min_y - padding, max_y + padding)) +
     scale_colour_manual(values=museum_attribute_colours, labels=tidy_labels) +
     coord_fixed() +
     labs(
