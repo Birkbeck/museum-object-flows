@@ -134,6 +134,7 @@ closure_reasons_two_way_summary_table <- function(closure_reasons,
                                                   region_filter) {
   closure_reasons <- closure_reasons |>
     left_join(museums_table, by="museum_id") |>
+    filter(reason_core %in% reason_filter) |>
     filter(size %in% size_filter) |>
     filter(governance %in% governance_filter | governance_main %in% governance_filter) |>
     filter(accreditation %in% accreditation_filter) |>
@@ -149,9 +150,8 @@ closure_reasons_two_way_summary_table <- function(closure_reasons,
     distinct() |>
     group_by(.data[[museum_grouping]]) |>
     summarize(number_of_closures=n())
-  closure_reasons |>
+  data_2_way <- closure_reasons |>
     filter(!is.na(reason_core)) |>
-    filter(reason_core %in% reason_filter) |>
     group_by(.data[[museum_grouping]], .data[[reason_level]]) |>
     summarize(
       frequency=n(),
@@ -168,7 +168,49 @@ closure_reasons_two_way_summary_table <- function(closure_reasons,
     mutate(
       percentage_y=round(frequency / sum(frequency) * 100, 1)
     ) |>
+    ungroup() |>
+    select(-number_of_closures)
+  data_dimension_1_totals <- closure_reasons |>
+    filter(!is.na(reason_core)) |>
+    group_by(.data[[reason_level]]) |>
+    summarize(
+      !!sym(museum_grouping) := "All",
+      frequency=n(),
+      percentage=round(frequency / number_of_closed_museums * 100, 1),
+      percentage_x=percentage,
+      percentage_y=100
+    ) |>
     ungroup()
+  data_dimension_2_totals <- closure_reasons |>
+    filter(!is.na(reason_core)) |>
+    left_join(number_of_closed_museums_by_type, by=museum_grouping) |>
+    group_by(.data[[museum_grouping]]) |>
+    summarize(
+      !!sym(reason_level) := "All",
+      frequency=number_of_closures,
+      percentage=round(frequency / number_of_closed_museums * 100, 1),
+      percentage_x=100,
+      percentage_y=percentage
+    ) |>
+    ungroup() |>
+    distinct()
+  data_all_totals <- closure_reasons |>
+    filter(!is.na(reason_core)) |>
+    summarize(
+      !!sym(reason_level) := "All",
+      !!sym(museum_grouping) := "All",
+      frequency=number_of_closed_museums,
+      percentage=100,
+      percentage_x=100,
+      percentage_y=100
+    )
+  data_2_way |>
+    rbind(data_dimension_1_totals) |>
+    rbind(data_dimension_2_totals) |>
+    rbind(data_all_totals) |>
+    mutate(
+      !!sym(museum_grouping) := factor(.data[[museum_grouping]], museum_attribute_ordering)
+    )
 }
 
 closure_reasons_over_time_table <- function(closure_reasons,
@@ -314,10 +356,22 @@ closure_reasons_heatmap <- function(summary_table,
   } else {
     use_theme <- theme_minimal()
   }
-  ggplot(
+  x_lines <- data.frame(
+    x=seq_along(
+      unique(select(summary_table, .data[[museum_grouping]]))[[museum_grouping]]
+    )
+  ) |>
+    mutate(x=x+0.5)
+  y_lines <- data.frame(
+    y=seq_along(
+      unique(select(summary_table, .data[[reason_level]]))[[reason_level]]
+    )
+  ) |>
+    mutate(y=y+0.5)
+  heatmap <- ggplot(
     summary_table,
     aes(
-      x=fct_rev(factor(.data[[museum_grouping]], museum_attribute_ordering)),
+      x=.data[[museum_grouping]],
       y=.data[[reason_level]],
       fill=.data[[count_or_percentage]]
     )
@@ -335,6 +389,16 @@ closure_reasons_heatmap <- function(summary_table,
     theme(
       axis.text.x = element_text(angle=45, hjust=1, vjust=1)
     )
+  if (count_or_percentage == "percentage_y") {
+    heatmap <- heatmap + geom_hline(data=y_lines, aes(yintercept=y), colour="white")
+  }
+  if (count_or_percentage == "percentage_x") {
+    heatmap <- heatmap + geom_vline(data=x_lines, aes(xintercept=x), colour="white")
+  }
+  heatmap <- heatmap +
+    geom_hline(yintercept=1.5) +
+    geom_vline(xintercept=1.5)
+  heatmap
 }
 
 closure_reasons_heatmap_small <- function(summary_table,
@@ -345,7 +409,7 @@ closure_reasons_heatmap_small <- function(summary_table,
   ggplot(
     summary_table,
     aes(
-      x=fct_rev(factor(.data[[museum_grouping]], museum_attribute_ordering)),
+      x=.data[[museum_grouping]],
       y=.data[[reason_level]],
       fill=frequency
     )
