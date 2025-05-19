@@ -57,13 +57,13 @@ eventsUI <- function(id) {
 
         tagList(
           tags$span(
-            tags$strong("Main Axis: "),
+            tags$strong("Main axis: "),
             tags$i(
               class = "fa fa-info-circle",
               style = "color: #007bff; cursor: pointer;",
               `data-toggle` = "popover",
               `data-placement` = "right",
-              title = "Main Axis",
+              title = "Main axis",
               `data-content` = "<p>Select which part of the event to view on the y-axis</p>"
             )
           ),
@@ -78,13 +78,13 @@ eventsUI <- function(id) {
         
         tagList(
           tags$span(
-            tags$strong("Secondary Axis: "),
+            tags$strong("Secondary axis: "),
             tags$i(
               class = "fa fa-info-circle",
               style = "color: #007bff; cursor: pointer;",
               `data-toggle` = "popover",
               `data-placement` = "right",
-              title = "Secondary Axis",
+              title = "Secondary axis",
               `data-content` = "<p>Select which part of the event to view on the x-axis</p>"
             )
           ),
