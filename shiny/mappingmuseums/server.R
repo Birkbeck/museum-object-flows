@@ -33,7 +33,8 @@ source("src/modules/changes/server.R")
 source("src/modules/reasons/ui.R")
 source("src/modules/reasons/server.R")
 
-source("src/modules/length.R")
+source("src/modules/length/ui.R")
+source("src/modules/length/server.R")
 
 source("src/modules/outcomes/ui.R")
 source("src/modules/outcomes/server.R")
