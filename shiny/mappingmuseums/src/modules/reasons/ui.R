@@ -4,30 +4,13 @@ reasonsUI <- function(id) {
       p("Why do museums close? We have categorized museum closures in the period 2000-2024 according to a hierarchy of reasons for closure. See the charts below to see reasons given for museum closure and how the prevalence of reasons varies by museum type and over time."),
       p("See the table at the bottom of this page for details of each museum and its reasons for closure.")
     ),
-    sidebarLayout(
-      sidebarPanel(width=3,
-        h3("Filter Reasons"),
 
-        tagList(
-          tags$span(
-            tags$strong("Reason type level: "),
-            tags$i(
-              class = "fa fa-info-circle", # Font Awesome info icon
-              style = "color: #007bff; cursor: pointer;", # Style for visibility
-              `data-toggle` = "popover", # Bootstrap popover attribute
-              `data-placement` = "right", # Position above the icon
-              title = "Reason type level",
-              `data-content` = "<p>Select how reasons for closure should be displayed on the diagrams.</p><p><strong>Top-level:</strong> the most general categories for closure reasons.</p><p><strong>Mid-level:</strong> Categories in between the most general and most specific categories for closure reasons.</p> <p><strong>Low-level:</strong> the most specific categories for closure reasons.</p>"
-            )
-          ),
-          tags$script(popover_js),
-          selectInput(
-            NS(id, "reasonLevel"),
-            label="",
-            choices=c("Core categories", "Core categories and their sub-categories", "Most specific"),
-            selected="Core categories"
-          )
-        ),
+    sidebarLayout(
+      sidebarPanel(
+        width=3,
+        style = "height: 90vh; overflow-y: auto;",
+
+        h3("View"),
 
         tagList(
           tags$span(
@@ -56,6 +39,31 @@ reasonsUI <- function(id) {
           ) 
         ),
 
+        div(uiOutput(NS(id, "mainPlotOptions"))),
+
+        h3("Grouping"),
+
+        tagList(
+          tags$span(
+            tags$strong("Reason type level: "),
+            tags$i(
+              class = "fa fa-info-circle", # Font Awesome info icon
+              style = "color: #007bff; cursor: pointer;", # Style for visibility
+              `data-toggle` = "popover", # Bootstrap popover attribute
+              `data-placement` = "right", # Position above the icon
+              title = "Reason type level",
+              `data-content` = "<p>Select how reasons for closure should be displayed on the diagrams.</p><p><strong>Top-level:</strong> the most general categories for closure reasons.</p><p><strong>Mid-level:</strong> Categories in between the most general and most specific categories for closure reasons.</p> <p><strong>Low-level:</strong> the most specific categories for closure reasons.</p>"
+            )
+          ),
+          tags$script(popover_js),
+          selectInput(
+            NS(id, "reasonLevel"),
+            label="",
+            choices=c("Core categories", "Core categories and their sub-categories", "Most specific"),
+            selected="Core categories"
+          )
+        ),
+
         tagList(
           tags$span(
             tags$strong("Group museums by: "),
@@ -77,8 +85,7 @@ reasonsUI <- function(id) {
           )
         ),
 
-        h3("Filter Museums"),
-        p("Show only the reasons for closure of certain types of museum."),
+        h3("Filters"),
 
         tagList(
           tags$span(
@@ -240,8 +247,7 @@ reasonsUI <- function(id) {
             ), 
             multiple=TRUE
           )   
-        ),
-        div(uiOutput(NS(id, "mainPlotOptions")))
+        )
       ),
 
       mainPanel(

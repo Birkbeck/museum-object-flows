@@ -28,15 +28,6 @@ reasonsServer <- function(id) {
     })
     museum_grouping_name <- reactive({input$museumGrouping})
 
-    #observeEvent(reason_level(), {
-    #  choices <- distinct(select(closure_reasons(), reason_core))$reason_core
-    #  updatePickerInput(
-    #    inputId="reasonFilter",
-    #    choices=choices,
-    #    selected=choices
-    #  ) 
-    #})
-
     size_filter_choices <- reactive({
       filter(
         size_labels,
