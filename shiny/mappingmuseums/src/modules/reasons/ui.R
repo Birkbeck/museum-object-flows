@@ -12,33 +12,6 @@ reasonsUI <- function(id) {
 
         h3("View"),
 
-        tagList(
-          tags$span(
-            tags$strong("Show only reasons: "),
-            tags$i(
-              class = "fa fa-info-circle", # Font Awesome info icon
-              style = "color: #007bff; cursor: pointer;", # Style for visibility
-              `data-toggle` = "popover", # Bootstrap popover attribute
-              `data-placement` = "right", # Position above the icon
-              title = "Show only reasons",
-              `data-content` = "<p>Select which reasons should appear in the visualizations.</p>"
-            )
-          ),
-          tags$script(popover_js),
-          pickerInput(
-            NS(id, "reasonFilter"),
-            label="",
-            choices=NULL,
-            selected=NULL,
-            options=pickerOptions(
-              actionsBox=TRUE, 
-              size=10,
-              selectedTextFormat="count > 3"
-            ), 
-            multiple=TRUE
-          ) 
-        ),
-
         div(uiOutput(NS(id, "mainPlotOptions"))),
 
         h3("Grouping"),
@@ -86,6 +59,33 @@ reasonsUI <- function(id) {
         ),
 
         h3("Filters"),
+
+        tagList(
+          tags$span(
+            tags$strong("Reason core category: "),
+            tags$i(
+              class = "fa fa-info-circle", # Font Awesome info icon
+              style = "color: #007bff; cursor: pointer;", # Style for visibility
+              `data-toggle` = "popover", # Bootstrap popover attribute
+              `data-placement` = "right", # Position above the icon
+              title = "Reason core category",
+              `data-content` = "<p>Show only museums where at least one of their reasons for closure belongs to the selected reason core categories.</p>"
+            )
+          ),
+          tags$script(popover_js),
+          pickerInput(
+            NS(id, "reasonFilter"),
+            label="",
+            choices=NULL,
+            selected=NULL,
+            options=pickerOptions(
+              actionsBox=TRUE, 
+              size=10,
+              selectedTextFormat="count > 3"
+            ), 
+            multiple=TRUE
+          ) 
+        ),
 
         tagList(
           tags$span(

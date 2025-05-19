@@ -99,6 +99,8 @@ closure_reasons_summary_table <- function(closure_reasons,
                                           region_filter) {
   closure_reasons <- closure_reasons |>
     left_join(museums_table, by="museum_id") |>
+    filter(!is.na(reason_core)) |>
+    filter(reason_core %in% reason_filter) |>
     filter(size %in% size_filter) |>
     filter(governance %in% governance_filter | governance_main %in% governance_filter) |>
     filter(accreditation %in% accreditation_filter) |>
@@ -110,12 +112,9 @@ closure_reasons_summary_table <- function(closure_reasons,
     distinct() |>
     nrow()
   closure_reasons |>
-    filter(!is.na(reason_core)) |>
-    filter(reason_core %in% reason_filter) |>
-    filter(!is.na(reason_core)) |>
     group_by(.data[[reason_level]]) |>
     summarize(
-      frequency=n(),
+      frequency=n_distinct(museum_id),
       percentage=round(frequency / number_of_closed_museums * 100, 1)
     ) |>
     ungroup()
