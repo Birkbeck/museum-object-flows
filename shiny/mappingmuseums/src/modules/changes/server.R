@@ -5,23 +5,23 @@ changesServer <- function(id) {
     
     small_chart_size <- 300
     x_labels <- reactive({c(
-      "start_total"=paste("Open Museums at start of", input$year_range[1]),
-      "start_total_pc"=paste("Percentage of museums at start of", input$year_range[1]),
-      "start_total_pc_x"=paste("Percentage of museums at start of", input$year_range[1]),
-      "start_total_pc_y"=paste("Percentage of museums at start of", input$year_range[1]),
-      "end_total"=paste("Open Museums at end of", input$year_range[2]),
-      "end_total_pc"=paste("Percentage of museums at end of", input$year_range[2]),
-      "end_total_pc_x"=paste("Percentage of museums at end of", input$year_range[2]),
-      "end_total_pc_y"=paste("Percentage of museums at end of", input$year_range[2]),
-      "openings"=paste0("New Museum Openings ", input$year_range[1], "-", input$year_range[2]),
-      "openings_rate"=paste0("Openings per 100 Existing Museums ", input$year_range[1], "-", input$year_range[2]),
-      "closures"=paste0("Museum Closures ", input$year_range[1], "-", input$year_range[2]),
-      "closures_rate"=paste0("Closures per 100 Museums ", input$year_range[1], "-", input$year_range[2]),
-      "change"=paste0("Change in Museum Numbers ", input$year_range[1], "-", input$year_range[2]),
-      "change_pc"=paste0("Percentage Change in Museums ", input$year_range[1], "-", input$year_range[2])
+      "start_total"=paste("Open Museums at start of", period_start()),
+      "start_total_pc"=paste("Percentage of museums at start of", period_start()),
+      "start_total_pc_x"=paste("Percentage of museums at start of", period_start()),
+      "start_total_pc_y"=paste("Percentage of museums at start of", period_start()),
+      "end_total"=paste("Open Museums at end of", period_end()),
+      "end_total_pc"=paste("Percentage of museums at end of", period_end()),
+      "end_total_pc_x"=paste("Percentage of museums at end of", period_end()),
+      "end_total_pc_y"=paste("Percentage of museums at end of", period_end()),
+      "openings"=paste0("New Museum Openings ", period_start(), "-", period_end()),
+      "openings_rate"=paste0("Openings per 100 Existing Museums ", period_start(), "-", period_end()),
+      "closures"=paste0("Museum Closures ", period_start(), "-", period_end()),
+      "closures_rate"=paste0("Closures per 100 Museums ", period_start(), "-", period_end()),
+      "change"=paste0("Change in Museum Numbers ", period_start(), "-", period_end()),
+      "change_pc"=paste0("Percentage Change in Museums ", period_start(), "-", period_end())
     )})
     y_labels <- c(
-      "No filter"="All Museums",
+      "all"="All Museums",
       "size"="Museum Size",
       "governance"="Museum Governance",
       "accreditation"="Museum Accreditation",
@@ -40,9 +40,6 @@ changesServer <- function(id) {
 
     main_axis <- reactive({
       req(input$mainAxis)
-      if (input$mainAxis == "No filter") {
-        return("No filter")
-      }
       return(
         filter(field_names, name==input$mainAxis)$value[1]
       )
@@ -366,14 +363,14 @@ changesServer <- function(id) {
       } else if (current_main_plot() == "startEnd") {
         if (count_or_percentage()=="_pc") {
           measures <- c(
-            paste("percentage of museums in", input$year_range[2]),
-            paste("percentage of museums in", input$year_range[1])
+            paste("percentage of museums in", period_end()),
+            paste("percentage of museums in", period_start())
           )
           x_title <- "Percentage of open museums"
         } else {
           measures <- c(
-            paste("open museums in", input$year_range[2]),
-            paste("open museums in", input$year_range[1])
+            paste("open museums in", period_end()),
+            paste("open museums in", period_start())
           )
           x_title <- "Number of open museums"
         }
@@ -382,7 +379,7 @@ changesServer <- function(id) {
           main_axis(),
           measures,
           paste0("Open Museums in ", period_start(), " vs in ", period_end()),
-          input$filterField,
+          input$mainAxis,
           x_title,
           c(
             "start_total"=paste("open museums in", period_start()),

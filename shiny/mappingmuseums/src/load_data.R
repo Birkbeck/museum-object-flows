@@ -20,7 +20,6 @@ collection_types <- dispersal_events |>
   select(collection_type) |>
   unique() |>
   filter(collection_type != "")
-print(collection_types)
 
 closure_reasons <- dispersal_events |>
     select(

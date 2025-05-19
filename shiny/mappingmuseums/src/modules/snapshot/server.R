@@ -13,7 +13,7 @@ snapshotServer <- function(id) {
         "change_pc"=paste0("Percentage Change in Museums ", input$year_range[1], "-", input$year_range[2])
       )})
       y_labels <- c(
-        "No filter"="All Museums",
+        "all"="All Museums",
         "size"="Museum Size",
         "governance"="Museum Governance",
         "accreditation"="Museum Accreditation",
@@ -71,9 +71,6 @@ snapshotServer <- function(id) {
 
     main_axis <- reactive({
       req(input$mainAxis)
-      if (input$mainAxis == "No filter") {
-        return("No filter")
-      }
       return(
         filter(field_names, name==input$mainAxis)$value[1]
       )
@@ -139,7 +136,7 @@ snapshotServer <- function(id) {
     })
     y_label <- reactive({input$mainAxis})
     title <- reactive({
-      if (main_axis() == "No filter") {
+      if (main_axis() == "all") {
         return(x_label())
       } else {
         return(paste(x_label(), "by", y_label()))
@@ -294,17 +291,15 @@ snapshotServer <- function(id) {
       )
     }, width=small_chart_size, height=small_chart_size)
     output$museumHeatmapSmall <- renderPlot({
-      if (second_axis() != "No filter") {
-        snapshot_heatmap_small(
-          museum_type_two_way_summary(),
-          basic_metric(),
-          year_or_range(),
-          period_start(),
-          period_end(),
-          input$mainAxis,
-          input$secondAxis
-        )
-      }
+      snapshot_heatmap_small(
+        museum_type_two_way_summary(),
+        basic_metric(),
+        year_or_range(),
+        period_start(),
+        period_end(),
+        input$mainAxis,
+        input$secondAxis
+      )
     }, width=small_chart_size, height=small_chart_size)
 
     output$downloadSnapshotTable <- downloadHandler(

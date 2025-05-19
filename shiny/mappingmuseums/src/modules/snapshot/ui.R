@@ -61,7 +61,7 @@ snapshotUI <- function(id) {
           selectInput(
             NS(id, "mainAxis"),
             label="",
-            choices=c("No filter", field_names$name),
+            choices=field_names$name,
             selected="Governance"
           )
         ),
