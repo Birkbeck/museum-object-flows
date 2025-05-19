@@ -157,7 +157,7 @@ closure_outcomes_bar_chart <- function(summary_table, count_or_percentage, outco
     x_title <- "Percentage of museum closures with outcome"
   }
   ggplot(summary_table, aes(x=.data[[count_or_percentage]], y=reorder(.data[[outcome_type]], .data[[count_or_percentage]]))) +
-    geom_col(fill="violet") +
+    geom_col(fill=purple) +
     geom_text(aes(label=.data[[count_or_percentage]]), hjust="left", nudge_x=1, size=6) +
     labs(
       title="Outcomes of Museum Closure, 2000-2024",
@@ -169,7 +169,7 @@ closure_outcomes_bar_chart <- function(summary_table, count_or_percentage, outco
 
 closure_outcomes_bar_chart_small <- function(summary_table, outcome_type) {
   ggplot(summary_table, aes(x=frequency, y=reorder(.data[[outcome_type]], frequency))) +
-    geom_col(fill="violet") +
+    geom_col(fill=purple) +
     geom_text(aes(label=frequency), hjust="left", nudge_x=1, size=3) +
     labs(
       title="Outcomes of Museum Closure, 2000-2024",
@@ -191,7 +191,7 @@ closure_outcomes_heatmap <- function(summary_table, count_or_percentage, outcome
     geom_tile(show.legend=FALSE) +
     geom_text(aes(label=.data[[count_or_percentage]]), size=6) +
     scale_x_discrete(labels=short_labels) +
-    scale_fill_continuous(low="white", high="violet") +
+    heatmap_fill_scale +
     labs(
       title=paste0("Outcomes of Museum Closure by ", museum_grouping_name, " (Number of Closures)"),
       y=outcome_type_name,
@@ -215,7 +215,7 @@ closure_outcomes_heatmap_small <- function(summary_table, outcome_type, outcome_
     geom_tile(show.legend=FALSE) +
     geom_text(aes(label=frequency)) +
     scale_x_discrete(labels=short_labels) +
-    scale_fill_continuous(low="white", high="violet") +
+    scale_fill_continuous(low="white", high=purple) +
     labs(
       title=paste0("Outcomes vs ", museum_grouping_name),
       y=outcome_type_name,

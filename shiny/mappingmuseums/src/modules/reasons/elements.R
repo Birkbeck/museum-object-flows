@@ -277,7 +277,7 @@ closure_reasons_bar_chart <- function(summary_table,
     use_theme <- theme_minimal()
   }
   ggplot(summary_table, aes(x=.data[[count_or_percentage]], y=reorder(.data[[reason_level]], .data[[count_or_percentage]]))) +
-    geom_col(fill="purple", alpha=0.7) +
+    geom_col(fill=purple) +
     geom_text(aes(label=.data[[count_or_percentage]]), hjust="left", nudge_x=1, size=5) +
     labs(
       title="Reasons for Museum Closure, 2000-2024",
@@ -289,7 +289,7 @@ closure_reasons_bar_chart <- function(summary_table,
 
 closure_reasons_bar_chart_small <- function(summary_table, reason_level) {
   ggplot(summary_table, aes(x=frequency, y=reorder(.data[[reason_level]], frequency))) +
-    geom_col(fill="purple") +
+    geom_col(fill=purple) +
     geom_text(aes(label=frequency), hjust="left", nudge_x=1, size=3) +
     labs(
       title="Reasons for Museum Closure, 2000-2024",
@@ -325,7 +325,7 @@ closure_reasons_heatmap <- function(summary_table,
     geom_tile(show.legend=FALSE) +
     geom_text(aes(label=.data[[count_or_percentage]]), size=5) +
     scale_x_discrete(labels=short_labels) +
-    scale_fill_continuous(low="white", high="purple") +
+    heatmap_fill_scale +
     labs(
       title=paste0("Reasons for Museum Closure by ", museum_grouping_name, " (Number of Closures)"),
       y=reason_level_name,
@@ -353,7 +353,7 @@ closure_reasons_heatmap_small <- function(summary_table,
     geom_tile(show.legend=FALSE) +
     scale_x_discrete(labels=short_labels) +
     scale_y_discrete(labels = function(labels) sapply(labels, shorten_cause_labels)) +
-    scale_fill_continuous(low="white", high="purple") +
+    scale_fill_continuous(low="white", high=purple) +
     labs(
       title=paste0("Reasons vs ", museum_grouping_name),
       y=reason_level_name,

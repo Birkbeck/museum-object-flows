@@ -6,12 +6,15 @@ outcomesUI <- function(id) {
       p("Outcome categories were determined by clustering museums according to the approximate proportion of their collections involved in events of each event type or received by actors of each actor type."),
     ),
     sidebarLayout(
-      sidebarPanel(width=3,
-        h3("Filter Outcomes"),
+      sidebarPanel(
+        width=3,
+        style = "height: 90vh; overflow-y: auto;",
+
+        h3("View"),
 
         tagList(
           tags$span(
-            tags$strong("Outcome type: "),
+            tags$strong("Main axis: "),
             tags$i(
               class = "fa fa-info-circle", # Font Awesome info icon
               style = "color: #007bff; cursor: pointer;", # Style for visibility
@@ -27,6 +30,33 @@ outcomesUI <- function(id) {
             label="",
             choices=c("Outcome event type", "Outcome recipient type", "Outcome destination type"),
             selected="Outcome event type"
+          )
+        ),
+
+        tagList(
+          tags$span(
+            tags$strong("Secondary axis: "),
+            tags$i(
+              class = "fa fa-info-circle", # Font Awesome info icon
+              style = "color: #007bff; cursor: pointer;", # Style for visibility
+              `data-toggle` = "popover", # Bootstrap popover attribute
+              `data-placement` = "right", # Position above the icon
+              title = "Second axis",
+              `data-content` = "<p>For the 2-dimensional heatmap.</p><p>Select which museum attribute to show on the <i>x</i>-axis.</p>"
+            )
+          ),
+          tags$script(popover_js),
+          selectInput(
+            NS(id, "museumGrouping"),
+            label="",
+            choices=c(
+              field_names$name,
+              "Core reason for closure",
+              "Outcome event type",
+              "Outcome recipient type",
+              "Outcome destination type"
+            ),
+            selected="Governance"
           )
         ),
 
@@ -57,36 +87,9 @@ outcomesUI <- function(id) {
           ) 
         ),
 
-        tagList(
-          tags$span(
-            tags$strong("Group museums by: "),
-            tags$i(
-              class = "fa fa-info-circle", # Font Awesome info icon
-              style = "color: #007bff; cursor: pointer;", # Style for visibility
-              `data-toggle` = "popover", # Bootstrap popover attribute
-              `data-placement` = "right", # Position above the icon
-              title = "Group museums by",
-              `data-content` = "<p>For the 2-dimensional heatmap.</p><p>Select which museum attribute to show on the <i>x</i>-axis.</p>"
-            )
-          ),
-          tags$script(popover_js),
-          selectInput(
-            NS(id, "museumGrouping"),
-            label="",
-            choices=c(
-              field_names$name,
-              "Core reason for closure",
-              "Outcome event type",
-              "Outcome recipient type",
-              "Outcome destination type"
-            ),
-            selected="Governance"
-          )
-        ),
+        div(uiOutput(NS(id, "mainPlotOptions"))),
 
-
-        h3("Filter Museums"),
-        p("Show only the outcomes of closure for certain types of museum."),
+        h3("Filters"),
 
         tagList(
           tags$span(
@@ -248,9 +251,9 @@ outcomesUI <- function(id) {
             ), 
             multiple=TRUE
           )   
-        ),
-        div(uiOutput(NS(id, "mainPlotOptions")))
+        )
       ),
+
       mainPanel(
         div(uiOutput(NS(id, "mainPlot")), style = "height: 1200px; width: 100%;"),
         div(uiOutput(NS(id, "mainPlotExplanation")), style = "margin-top: 20px;"),
