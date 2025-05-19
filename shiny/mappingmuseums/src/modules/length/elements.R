@@ -1,3 +1,14 @@
+closure_length_categories <- c(
+  "All",
+  "unknown",
+  "< 1 year",
+  "< 2 years",
+  "< 4 years",
+  "< 8 years",
+  "< 16 years",
+  "16+ years"
+)
+
 get_event_dates_table <- function() {
   closure_super_events <- dispersal_events |>
     mutate(museum_id=initial_museum_id) |>
@@ -105,18 +116,7 @@ get_event_dates_table <- function() {
         length_of_closure < 16 ~ "< 16 years",
         TRUE ~ "16+ years"
       ),
-      closure_length_category = factor(
-        closure_length_category,
-        c(
-          "unknown",
-          "< 1 year",
-          "< 2 years",
-          "< 4 years",
-          "< 8 years",
-          "< 16 years",
-          "16+ years"
-        )
-      )
+      closure_length_category = factor(closure_length_category, closure_length_categories)
     )
 }
 
@@ -143,8 +143,8 @@ get_lengths_table <- function(event_dates_table) {
     )
 } 
 
-length_tile_chart <- function(lengths_table, count_or_percentage, museum_grouping) {
-  heatmap_data <- lengths_table |>
+get_lengths_two_way_table <- function(lengths_table, museum_grouping) {
+  heatmap_data_2_way <- lengths_table |>
     group_by(closure_length_category, .data[[museum_grouping]]) |>
     summarize(count=n()) |>
     ungroup() |>
@@ -155,6 +155,58 @@ length_tile_chart <- function(lengths_table, count_or_percentage, museum_groupin
     group_by(closure_length_category) |>
     mutate(percentage_x=round(count / sum(count) * 100, 1)) |>
     ungroup()
+  heatmap_data_museum_totals <- lengths_table |>
+    group_by(.data[[museum_grouping]]) |>
+    summarize(count=n()) |>
+    ungroup() |>
+    mutate(
+      closure_length_category="All",
+      percentage=round(count / sum(count) * 100, 1),
+      percentage_x=percentage,
+      percentage_y=100
+    )
+  heatmap_data_length_totals <- lengths_table |>
+    group_by(closure_length_category) |>
+    summarize(count=n()) |>
+    ungroup() |>
+    mutate(
+      !!sym(museum_grouping):="All",
+      percentage=round(count / sum(count) * 100, 1),
+      percentage_x=100,
+      percentage_y=percentage
+    )
+  heatmap_data_all_totals <- lengths_table |>
+    summarize(
+      !!sym(museum_grouping):="All",
+      closure_length_category="All",
+      count=n(),
+      percentage=100,
+      percentage_x=100,
+      percentage_y=100
+    )
+  heatmap_data_2_way |>
+    rbind(heatmap_data_museum_totals) |>
+    rbind(heatmap_data_length_totals) |>
+    rbind(heatmap_data_all_totals) |>
+    mutate(
+      !!sym(museum_grouping):=factor(.data[[museum_grouping]], museum_attribute_ordering),
+      closure_length_category = factor(closure_length_category, closure_length_categories)
+    )
+}
+
+length_tile_chart <- function(heatmap_data, count_or_percentage, museum_grouping) {
+  x_lines <- data.frame(
+    x=seq_along(
+      unique(select(heatmap_data, closure_length_category))$closure_length_category
+    )
+  ) |>
+    mutate(x=x+0.5)
+  y_lines <- data.frame(
+    y=seq_along(
+      unique(select(heatmap_data, .data[[museum_grouping]]))[[museum_grouping]]
+    )
+  ) |>
+    mutate(y=y+0.5)
   heatmap <- ggplot(
     heatmap_data,
     aes(
@@ -176,14 +228,19 @@ length_tile_chart <- function(lengths_table, count_or_percentage, museum_groupin
     theme(
       axis.text.x=element_text(angle=45, vjust=0.5, hjust=1)
     )
+  if (count_or_percentage == "percentage_y") {
+    heatmap <- heatmap + geom_hline(data=y_lines, aes(yintercept=y), colour="white")
+  }
+  if (count_or_percentage == "percentage_x") {
+    heatmap <- heatmap + geom_vline(data=x_lines, aes(xintercept=x), colour="white")
+  }
+  heatmap <- heatmap +
+    geom_hline(yintercept=1.5) +
+    geom_vline(xintercept=1.5)
   heatmap |> ggplotly(tooltip=c("x", "y", "fill"))
 }
 
-length_tile_chart_small <- function(lengths_table, museum_grouping) {
-  heatmap_data <- lengths_table |>
-    group_by(closure_length_category, .data[[museum_grouping]]) |>
-    summarize(count=n()) |>
-    ungroup()
+length_tile_chart_small <- function(heatmap_data, museum_grouping) {
   ggplot(
     heatmap_data,
     aes(

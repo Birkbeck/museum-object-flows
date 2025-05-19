@@ -116,6 +116,9 @@ lengthServer <- function(id) {
 
     event_dates_table <- reactive({get_event_dates_table()})
     lengths_table <- reactive({get_lengths_table(event_dates_table())})
+    lengths_two_way_table <- reactive({
+      get_lengths_two_way_table(lengths_table(), museum_grouping())
+    })
 
     example_museum_id <- reactive({
       filter(
@@ -164,7 +167,7 @@ lengthServer <- function(id) {
 
     output$mainPlot <- renderPlotly({
       if (currentMainPlot() == "lengthTileChart") {
-        length_tile_chart(lengths_table(), count_or_percentage(), museum_grouping())
+        length_tile_chart(lengths_two_way_table(), count_or_percentage(), museum_grouping())
       } else if (currentMainPlot() == "lengthLineChart") {
         length_line_chart(lengths_table(), count_or_percentage(), museum_grouping())
       } else if (currentMainPlot() == "lengthScatter") {
@@ -175,7 +178,7 @@ lengthServer <- function(id) {
     })
 
     output$lengthTileChartSmall <- renderPlot({
-      length_tile_chart_small(lengths_table(), museum_grouping())
+      length_tile_chart_small(lengths_two_way_table(), museum_grouping())
     })
     output$lengthLineChartSmall <- renderPlot({
       length_line_chart_small(lengths_table(), museum_grouping())
