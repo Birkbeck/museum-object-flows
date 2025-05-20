@@ -141,14 +141,16 @@ outcomesServer <- function(id) {
     output$mainPlot <- renderUI({
       if (mainPlot() == "outcomesBarChart") {
         ggplotly(
-          closure_outcomes_bar_chart(summary_table(), count_or_percentage(), outcome_type(), outcome_type_name()),
+          closure_outcomes_bar_chart(
+            summary_table(), count_or_percentage(), outcome_type(), outcome_type_name()
+          ),
           height=1000
         ) |>
           renderPlotly()
       } else if (mainPlot() == "outcomesHeatmap") {
         ggplotly(
           closure_outcomes_heatmap(
-            two_way_summary_table(), count_or_percentage(), outcome_type(), outcome_type_name(), museum_grouping(), museum_grouping_name()
+            two_way_summary_table(), count_or_percentage(), outcome_type_name(), museum_grouping_name()
           ),
           height=1000
         ) |>
@@ -208,7 +210,7 @@ outcomesServer <- function(id) {
     })
     output$outcomesHeatmapSmall <- renderPlot({
       closure_outcomes_heatmap_small(
-        two_way_summary_table(), outcome_type(), outcome_type_name(), museum_grouping(), museum_grouping_name()
+        two_way_summary_table(), outcome_type_name(), museum_grouping_name()
       )
     })
     output$outcomesLineChartSmall <- renderPlot({

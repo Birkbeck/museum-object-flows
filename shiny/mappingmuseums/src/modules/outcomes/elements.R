@@ -31,46 +31,11 @@ closure_outcomes_two_way_summary_table <- function(museums_table,
                                                    subject_filter,
                                                    specific_subject_filter,
                                                    region_filter) {
-  number_of_closed_museums <- museums_table |>
-    select(museum_id) |>
-    distinct() |>
-    nrow()
-
-  if(museum_grouping =="closure_reason_top_level") {
+  if (museum_grouping =="closure_reason_top_level") {
     museums_table <- museums_table |>
       left_join(closure_reasons, by="museum_id")
   }
-
-  number_of_closed_museums_by_outcome_type <- museums_table |>
-    filter(!is.na(.data[[outcome_type]])) |>
-    select(museum_id, .data[[outcome_type]]) |>
-    distinct() |>
-    group_by(.data[[outcome_type]]) |>
-    summarize(number_of_closures=n())
-
-  if(outcome_type==museum_grouping) {
-    return(
-      closure_outcomes_summary_table(
-        museums_table,
-        outcome_type,
-        outcome_filter,
-        size_filter,
-        governance_filter,
-        accreditation_filter,
-        subject_filter,
-        specific_subject_filter,
-        region_filter
-      ) |>
-        group_by(.data[[outcome_type]]) |>
-        mutate(
-          percentage_x=round(frequency / sum(frequency) * 100, 1),
-          percentage_y=round(frequency / sum(frequency) * 100, 1)
-        ) |>
-        ungroup()
-    )
-  }
-  
-  museums_table |>
+  closure_outcomes <- museums_table |>
     filter(.data[[outcome_type]] %in% outcome_filter) |>
     filter(size %in% size_filter) |>
     filter(governance %in% governance_filter | governance_main %in% governance_filter) |>
@@ -78,23 +43,79 @@ closure_outcomes_two_way_summary_table <- function(museums_table,
     filter(main_subject %in% subject_filter) |>
     filter(subject_matter %in% specific_subject_filter) |>
     filter(region %in% region_filter | nation %in% region_filter) |>
-    group_by(.data[[museum_grouping]], .data[[outcome_type]]) |>
+    mutate(
+      dimension_1=.data[[outcome_type]],
+      dimension_2=.data[[museum_grouping]]
+    )
+  number_of_closed_museums <- closure_outcomes |>
+    select(museum_id) |>
+    distinct() |>
+    nrow()
+  number_of_closed_museums_dimension_1 <- closure_outcomes |>
+    group_by(dimension_1) |>
+    summarize(number_of_closures_dimension_1=n_distinct(museum_id)) |>
+    ungroup()
+  number_of_closed_museums_dimension_2 <- closure_outcomes |>
+    group_by(dimension_2) |>
+    summarize(number_of_closures_dimension_2=n_distinct(museum_id)) |>
+    ungroup()
+  data_2_way <- closure_outcomes |>
+    group_by(dimension_1, dimension_2) |>
     summarize(
-      frequency=n(),
+      frequency=n_distinct(museum_id),
       percentage=round(frequency / number_of_closed_museums * 100, 1)
     ) |>
     ungroup() |>
-    left_join(number_of_closed_museums_by_outcome_type, by=outcome_type) |>
-    group_by(.data[[outcome_type]]) |>
+    left_join(number_of_closed_museums_dimension_1, by="dimension_1") |>
+    left_join(number_of_closed_museums_dimension_2, by="dimension_2") |>
+    group_by(dimension_1) |>
     mutate(
-      percentage_y=round(frequency / number_of_closures * 100, 1)
+      percentage_y=round(frequency / number_of_closures_dimension_1 * 100, 1)
     ) |>
     ungroup() |>
-    group_by(.data[[museum_grouping]]) |>
+    group_by(dimension_2) |>
     mutate(
-      percentage_x=round(frequency / sum(frequency) * 100, 1)
+      percentage_x=round(frequency / number_of_closures_dimension_2 * 100, 1)
     ) |>
-    ungroup()
+    ungroup() |>
+    select(-number_of_closures_dimension_1, -number_of_closures_dimension_2)
+  data_dimension_1_totals <- closure_outcomes |>
+    group_by(dimension_1) |>
+    left_join(number_of_closed_museums_dimension_1, by="dimension_1") |>
+    summarize(
+      dimension_2="All",
+      frequency=number_of_closures_dimension_1,
+      percentage=round(frequency / number_of_closed_museums * 100, 1),
+      percentage_x=percentage,
+      percentage_y=100
+    ) |>
+    ungroup() |>
+    distinct()
+  data_dimension_2_totals <- closure_outcomes |>
+    group_by(dimension_2) |>
+    left_join(number_of_closed_museums_dimension_2, by="dimension_2") |>
+    summarize(
+      dimension_1="All",
+      frequency=number_of_closures_dimension_2,
+      percentage=round(frequency / number_of_closed_museums * 100, 1),
+      percentage_x=100,
+      percentage_y=percentage
+    ) |>
+    ungroup() |>
+    distinct()
+  data_all_totals <- closure_outcomes |>
+    summarize(
+      dimension_1="All",
+      dimension_2="All",
+      frequency=number_of_closed_museums,
+      percentage=100,
+      percentage_x=100,
+      percentage_y=100
+    )
+  data_2_way |>
+    rbind(data_dimension_1_totals) |>
+    rbind(data_dimension_2_totals) |>
+    rbind(data_all_totals)
 }
 
 closure_outcomes_over_time_table <- function(museums_table,
@@ -179,12 +200,27 @@ closure_outcomes_bar_chart_small <- function(summary_table, outcome_type) {
     theme_minimal()
 }
 
-closure_outcomes_heatmap <- function(summary_table, count_or_percentage, outcome_type, outcome_type_name, museum_grouping, museum_grouping_name) {
-  ggplot(
+closure_outcomes_heatmap <- function(summary_table,
+                                     count_or_percentage,
+                                     outcome_type_name,
+                                     museum_grouping_name) {
+  x_lines <- data.frame(
+    x=seq_along(
+      unique(select(summary_table, dimension_2))$dimension_2
+    )
+  ) |>
+    mutate(x=x+0.5)
+  y_lines <- data.frame(
+    y=seq_along(
+      unique(select(summary_table, dimension_1))$dimension_1
+    )
+  ) |>
+    mutate(y=y+0.5)
+  heatmap <- ggplot(
     summary_table,
     aes(
-      x=fct_rev(factor(.data[[museum_grouping]], museum_attribute_ordering)),
-      y=.data[[outcome_type]],
+      x=dimension_2,
+      y=dimension_1,
       fill=.data[[count_or_percentage]]
     )
   ) +
@@ -201,14 +237,26 @@ closure_outcomes_heatmap <- function(summary_table, count_or_percentage, outcome
     theme(
       axis.text.x = element_text(angle=45, hjust=1, vjust=1)
     )
+  if (count_or_percentage == "percentage_y") {
+    heatmap <- heatmap + geom_hline(data=y_lines, aes(yintercept=y), colour="white")
+  }
+  if (count_or_percentage == "percentage_x") {
+    heatmap <- heatmap + geom_vline(data=x_lines, aes(xintercept=x), colour="white")
+  }
+  heatmap <- heatmap +
+    geom_hline(yintercept=1.5) +
+    geom_vline(xintercept=1.5)
+  heatmap
 }
 
-closure_outcomes_heatmap_small <- function(summary_table, outcome_type, outcome_type_name, museum_grouping, museum_grouping_name) {
+closure_outcomes_heatmap_small <- function(summary_table,
+                                           outcome_type_name,
+                                           museum_grouping_name) {
   ggplot(
     summary_table,
     aes(
-      x=fct_rev(factor(.data[[museum_grouping]], museum_attribute_ordering)),
-      y=.data[[outcome_type]],
+      x=dimension_2,
+      y=dimension_1,
       fill=frequency
     )
   ) +
