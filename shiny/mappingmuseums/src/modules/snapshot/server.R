@@ -3,6 +3,39 @@ source("src/modules/snapshot/elements.R")
 snapshotServer <- function(id) {
   moduleServer(id, function(input, output, session) {
 
+    observeEvent(input$reset, {
+      updateRadioButtons(session=session, inputId="yearOrRange", selected="Single year")
+      updateSliderInput(session=session, inputId="year", value=c(2025))
+      updateSelectInput(session=session, inputId="mainAxis", selected="Governance")
+      updateSelectInput(session=session, inputId="secondAxis", selected="Country/Region")
+      updateRadioButtons(session=session, inputId="countOrPercentage", selected="")
+      updatePickerInput(
+        session=session,
+        inputId="governanceFilter",
+        selected=filter(governance_labels, internal_label != "Independent")$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="sizeFilter",
+        selected=filter(size_labels, default_filter)$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="subjectFilter",
+        selected=filter(subject_broad_labels, default_filter)$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="regionFilter",
+        selected=filter(country_region_labels, internal_label != "England")$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="accreditationFilter",
+        selected=filter(accreditation_labels, default_filter)$tidy_label
+      )
+    })
+
     small_chart_size <- 300
       x_labels <- reactive({c(
         "start_total"=paste("Open Museums at start of", input$year_range[1]),
