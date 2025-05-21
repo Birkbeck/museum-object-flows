@@ -182,6 +182,7 @@ RETURN {
     recipient_accreditation: recipient.accreditation,
     recipient_subject_matter_broad: recipient.subject_matter_broad,
     recipient_region: recipient.region,
+    recipient_country: recipient.country,
     recipient_town: recipient_location.village_town_city,
     recipient_county: recipient_location.county,
     recipient_postcode: recipient_location.postcode,
