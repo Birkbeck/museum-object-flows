@@ -47,13 +47,50 @@ dispersalUI <- function(id) {
         h3("View"),
 
         form_item(
-          "Firepower",
+          "Display",
+          "<p><strong>Steps in path:</strong> View intermediate actors in the sequences of ownership and/or custody changes</p><p><strong>First and last actors:</strong> View only the initial museum and the last known actor in the sequence.</p>",
+          radioButtons(
+            NS(id, "stepsOrFirstLast"),
+            label="",
+            choices=c("Steps in path", "First and last actors"),
+            selected="Steps in path",
+            inline=TRUE
+          )
+        ),
+
+        form_item(
+          "Steps in path",
+          "<p>Select the start and end point of sequences. Step 1 shows the initial museums where collections originated.</p><p>Use the slider to increase the number of steps away from the museum shown on the diagram.</p>",
+          sliderInput(
+            NS(id, "stagesInOwnershipPath"),
+            label="",
+            value=2,
+            min=1,
+            max=7,
+            step=1,
+            ticks=FALSE,
+            width="50%"
+          )
+        ),
+
+        checkboxInput(
+          NS(id, "showTransactionCounts"),
+          label="Show Transaction Counts",
+          value=FALSE
+        ),
+
+        uiOutput(NS(id, "mainPlotOptions")),
+
+        form_item(
+          "!! Firepower",
           "Transactions involving collections originating from Firepower are automatically excluded from the diagrams. Switch on in order to include them.",
           switchInput(
             NS(id, "firepower"),
             value=FALSE
           )
         ),
+
+        h3("Grouping"),
 
         form_item(
           "Group actors by",
@@ -81,6 +118,8 @@ dispersalUI <- function(id) {
             selected="Governance"
           )
         ),
+
+        h3("Filters"),
 
         form_item(
           "Show transfer types",
@@ -298,42 +337,7 @@ dispersalUI <- function(id) {
             ), 
             multiple=TRUE
           )
-        ),
-
-        checkboxInput(
-          NS(id, "showTransactionCounts"),
-          label="Show Transaction Counts",
-          value=FALSE
-        ),
-
-        form_item(
-          "Display",
-          "<p><strong>Steps in path:</strong> View intermediate actors in the sequences of ownership and/or custody changes</p><p><strong>First and last actors:</strong> View only the initial museum and the last known actor in the sequence.</p>",
-          radioButtons(
-            NS(id, "stepsOrFirstLast"),
-            label="",
-            choices=c("Steps in path", "First and last actors"),
-            selected="Steps in path",
-            inline=TRUE
-          )
-        ),
-
-        form_item(
-          "Steps in path",
-          "<p>Select the start and end point of sequences. Step 1 shows the initial museums where collections originated.</p><p>Use the slider to increase the number of steps away from the museum shown on the diagram.</p>",
-          sliderInput(
-            NS(id, "stagesInOwnershipPath"),
-            label="",
-            value=2,
-            min=1,
-            max=7,
-            step=1,
-            ticks=FALSE,
-            width="50%"
-          )
-        ),
-
-        uiOutput(NS(id, "mainPlotOptions"))
+        )
 
       ),
 
