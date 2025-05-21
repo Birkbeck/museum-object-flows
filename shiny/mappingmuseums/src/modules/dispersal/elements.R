@@ -1,10 +1,12 @@
+grouping_dimension_map <- list(
+  "Actor Sector"="sector",
+  "Actor Type (Core Categories)"="core_type",
+  "Actor Type (Most General)"="general_type",
+  "Actor Type (Most Specific)"="type"
+) 
+
 get_actor_choices <- function(grouping_dimension, museum_grouping_dimension) {
-  grouping_dimension <- list(
-    "Actor Sector"="sector",
-    "Actor Type (Core Categories)"="core_type",
-    "Actor Type (Most General)"="general_type",
-    "Actor Type (Most Specific)"="type"
-  )[grouping_dimension]
+  grouping_dimension <- grouping_dimension_map[grouping_dimension]
   recipient_grouping_dimension <- paste0("recipient_", grouping_dimension)
   recipient_museum_grouping_dimension <- paste0("recipient_", museum_grouping_dimension)
   choices_table <- dispersal_events |>
@@ -36,12 +38,55 @@ grouping_dimension_and_governance_to_sector <- function(governance, grouping_dim
   )
 }
 
-all_sequence_data <- function(show_transaction_types) {
-  # find which events in the sequences to show
+get_filtered_sequences <- function(events_data,
+                                   show_transaction_types,
+                                   grouping_dimension,
+                                   museum_grouping_dimension,
+                                   event_type_filter,
+                                   event_type_uncertainty_filter,
+                                   collection_status_filter,
+                                   initial_museum_ids,
+                                   show_ending_points,
+                                   show_passes_through,
+                                   steps_or_first_last) {
+  sequences <- events_data |>
+    mutate(
+      initial_museum_all="all",
+      sender_all=ifelse(!is.na(sender_size), "all", NA),
+      recipient_all=ifelse(!is.na(recipient_size), "all", NA),
+      ) |>
+    filter(initial_museum_id %in% initial_museum_ids) |>
+    find_events_to_show(show_transaction_types) |>
+    find_previous_events() |>
+    filter(show_event) |>
+    assign_stages_in_path() |>
+    add_sender_details(
+      grouping_dimension, museum_grouping_dimension
+    ) |>
+    filter_by_final_recipient(
+      show_ending_points, grouping_dimension, museum_grouping_dimension
+    ) |>
+    filter_by_intermediary_recipient(
+      show_passes_through, grouping_dimension, museum_grouping_dimension
+    ) |>
+    filter(
+      collection_status %in% collection_status_filter,
+      event_core_type %in% c(event_type_filter),
+      event_type_uncertainty %in% c(event_type_uncertainty_filter),
+    )
+  if (steps_or_first_last == "First and last actors") {
+    sequences <- remove_sequence_middle(
+      sequences, grouping_dimension, museum_grouping_dimension
+    )
+  }
+  sequences
+}
+
+find_events_to_show <- function(events_data, show_transaction_types) {
   show_ownership_changes <- "Change of ownership" %in% show_transaction_types
   show_custody_changes <- "Change of custody" %in% show_transaction_types
   show_ends_of_existence <- "End of existence" %in% show_transaction_types
-  sequential_events <- dispersal_events |>
+  events_data |>
     mutate(
       show_event=show_ownership_changes & event_is_change_of_ownership |
         show_custody_changes & event_is_change_of_custody |
@@ -49,49 +94,14 @@ all_sequence_data <- function(show_transaction_types) {
     )
 }
 
-filtered_sequence_data <- function(
-    sequential_events,
-    grouping_dimension,
-    museum_grouping_dimension,
-    event_type_filter,
-    event_type_uncertainty_filter,
-    collection_status_filter,
-    initial_museum_ids,
-    show_ending_points,
-    show_passes_through,
-    steps_or_first_last
-) {
-
-  grouping_dimension <- list(
-    "Actor Sector"="sector",
-    "Actor Type (Core Categories)"="core_type",
-    "Actor Type (Most General)"="general_type",
-    "Actor Type (Most Specific)"="type"
-  )[grouping_dimension]
-  initial_museum_grouping_dimension <- paste0("initial_museum_", grouping_dimension)
-  sender_grouping_dimension <- paste0("sender_", grouping_dimension)
-  recipient_grouping_dimension <- paste0("recipient_", grouping_dimension)
-  final_filtering_dimension <- paste0("final_", grouping_dimension)
-
-  initial_museum_museum_grouping_dimension <- paste0("initial_museum_", museum_grouping_dimension)
-  sender_museum_grouping_dimension <- paste0("sender_", museum_grouping_dimension)
-  recipient_museum_grouping_dimension <- paste0("recipient_", museum_grouping_dimension)
-  final_museum_filtering_dimension <- paste0("final_", museum_grouping_dimension)
-
-  # find each event's previous event in the chain of shown events
-  sequential_events <- sequential_events |>
-    mutate(
-      initial_museum_all="all",
-      sender_all=ifelse(!is.na(sender_size), "all", NA),
-      recipient_all=ifelse(!is.na(recipient_size), "all", NA),
-    ) |>
-    filter(initial_museum_id %in% initial_museum_ids) |>
+find_previous_events <- function(events_data) {
+  events_data |>
     rowwise() |>
     mutate(
       previous_shown_event= {
         prev_event <- previous_event_id
         while (!is.na(prev_event)) {
-          prev_row <- sequential_events |>
+          prev_row <- events_data |>
             filter(event_id==prev_event)
           if (nrow(prev_row) == 0) {
             prev_event <- NA
@@ -107,21 +117,46 @@ filtered_sequence_data <- function(
         prev_event
       }
     ) |>
-    ungroup() |>
-    filter(show_event) |>
-    arrange(original_collection_id, collection_id, event_stage_in_path) |>
-    group_by(original_collection_id) |> # TODO: this does not account for collections that branch
+    ungroup()
+}
+
+assign_stages_in_path <- function(events_data) {
+  events_data |>
+    group_by(original_collection_id) |>
+    arrange(event_stage_in_path) |>
     mutate(
-      event_stage_in_path=dense_rank(event_stage_in_path),
+      event_stage_in_path={
+        event_id_to_event_stage_map <- list()
+        result <- integer(n())
+        for (i in seq_len(n())) {
+          current_id <- as.character(event_id[i])
+          previous_id <- previous_shown_event[i]
+          this_is_the_first_event_involving_the_collection <- is.na(previous_id)
+          if (this_is_the_first_event_involving_the_collection) {
+            stage <- 1L
+          } else {
+            stage <- event_id_to_event_stage_map[[as.character(previous_id)]] + 1L
+          }
+          result[i] <- stage
+          event_id_to_event_stage_map[[current_id]] <- stage
+        }
+        result
+      },
       sender_position=event_stage_in_path,
-      recipient_position=event_stage_in_path+1,
+      recipient_position=event_stage_in_path+1L,
     ) |>
     ungroup()
+}
 
-  # add details of the previous event to each event and determine the sender
-  sequential_events <- sequential_events |>
+add_sender_details <- function(events_data, grouping_dimension, museum_grouping_dimension) {
+  # It is necessary to re-infer the sender of events
+  # This is because the database records the sender as the recipient of the previous event
+  # But if there is a sequence of events which are mixtures of changes of custody and ownership,
+  # Then the sender of custody and sender of ownership are not necessarily the same
+  # If a filter has removed certain types of transaction, the relevant sender must be found
+  events_data |>
     left_join(
-      sequential_events |>
+      events_data |>
         mutate(
           previous_shown_event=event_id,
           from_name=recipient_name,
@@ -147,31 +182,70 @@ filtered_sequence_data <- function(
       by=c("previous_shown_event")
     ) |>
     mutate(
-      sender_name=ifelse(event_stage_in_path==1, initial_museum_name, from_name),
-      sender_type=ifelse(event_stage_in_path==1, initial_museum_type, from_type),
-      sender_core_type=ifelse(event_stage_in_path==1, initial_museum_core_type, from_core_type),
-      sender_general_type=ifelse(event_stage_in_path==1, initial_museum_general_type, from_general_type),
-      sender_sector=ifelse(event_stage_in_path==1, initial_museum_sector, from_sector),
-      sender_governance=ifelse(event_stage_in_path==1, initial_museum_governance, from_governance),
-      sender_governance_broad=ifelse(event_stage_in_path==1, initial_museum_governance_broad, from_governance_broad),
-      sender_town=ifelse(event_stage_in_path==1, initial_museum_town, from_town),
+      sender_name=ifelse(
+        event_stage_in_path==1, initial_museum_name, from_name
+      ),
+      sender_type=ifelse(
+        event_stage_in_path==1, initial_museum_type, from_type
+      ),
+      sender_core_type=ifelse(
+        event_stage_in_path==1, initial_museum_core_type, from_core_type
+      ),
+      sender_general_type=ifelse(
+        event_stage_in_path==1, initial_museum_general_type, from_general_type
+      ),
+      sender_sector=ifelse(
+        event_stage_in_path==1, initial_museum_sector, from_sector
+      ),
+      sender_governance=ifelse(
+        event_stage_in_path==1, initial_museum_governance, from_governance
+      ),
+      sender_governance_broad=ifelse(
+        event_stage_in_path==1, initial_museum_governance_broad, from_governance_broad
+      ),
+      sender_town=ifelse(
+        event_stage_in_path==1, initial_museum_town, from_town
+      ),
       from=ifelse(
         event_stage_in_path==1,
-        paste(.data[[initial_museum_museum_grouping_dimension]], .data[[initial_museum_grouping_dimension]], 1, sep="@"),
-        paste(.data[[sender_museum_grouping_dimension]], .data[[sender_grouping_dimension]], sender_position, sep="@")
+        paste(
+          .data[[paste0("initial_museum_", museum_grouping_dimension)]],
+          .data[[paste0("initial_museum_", grouping_dimension)]],
+          1,
+          sep="@"
+        ),
+        paste(
+          .data[[paste0("sender_", museum_grouping_dimension)]],
+          .data[[paste0("sender_", grouping_dimension)]],
+          sender_position,
+          sep="@"
+        )
       ),
-      to=paste(.data[[recipient_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], recipient_position, sep="@"),
+      to=paste(
+        .data[[paste0("recipient_", museum_grouping_dimension)]],
+        .data[[paste0("recipient_", grouping_dimension)]],
+        recipient_position,
+        sep="@"
+      ),
     )
+}
 
-  # find end points of events 
-  events_destinations <- sequential_events |>
+filter_by_final_recipient <- function(events_data,
+                                      show_ending_points,
+                                      grouping_dimension,
+                                      museum_grouping_dimension) {
+  events_final_recipients <- events_data |>
     group_by(event_id, ancestor_events) |>
     filter(recipient_position==max(recipient_position)) |>
     summarize(
-      destination=paste(.data[[recipient_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], sep="@")
+      final_recipient=paste(
+        .data[[paste0("recipient_", museum_grouping_dimension)]],
+        .data[[paste0("recipient_", grouping_dimension)]],
+        sep="@"
+      )
     ) |>
     ungroup()
-  ancestor_destinations <- events_destinations |>
+  ancestor_final_recipients <- events_final_recipients |>
     mutate(
       ancestor_events = str_remove_all(ancestor_events, "\\[|\\]"),
       ancestor_events = strsplit(as.character(ancestor_events), ", ")
@@ -180,16 +254,30 @@ filtered_sequence_data <- function(
     mutate(
       ancestor_events = str_remove_all(ancestor_events, "^'|'$")
     ) |>
-    select(event_id=ancestor_events, destination)
-  events_destinations <- rbind(
-    events_destinations |> select(event_id, destination),
-    ancestor_destinations
+    select(event_id=ancestor_events, final_recipient)
+  events_final_recipients <- rbind(
+    events_final_recipients |> select(event_id, final_recipient),
+    ancestor_final_recipients
   )
+  events_with_allowed_final_recipients <- events_final_recipients |>
+    filter(final_recipient %in% show_ending_points)
+  events_data |>
+    filter(
+      event_id %in% events_with_allowed_final_recipients$event_id
+    )
+}
 
-  # find all recipients before event
-  events_recipients <- sequential_events |>
+filter_by_intermediary_recipient <- function(events_data,
+                                             show_passes_through,
+                                             grouping_dimension,
+                                             museum_grouping_dimension) {
+  events_recipients <- events_data |>
     mutate(
-      recipient=paste(.data[[recipient_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], sep="@")
+      recipient=paste(
+        .data[[paste0("recipient_", museum_grouping_dimension)]],
+        .data[[paste0("recipient_", grouping_dimension)]],
+        sep="@"
+      )
     )
   ancestor_recipients <- events_recipients |>
     mutate(
@@ -205,49 +293,49 @@ filtered_sequence_data <- function(
     events_recipients |> select(event_id, recipient),
     ancestor_recipients
   )
-
-  # remove events that don't lead to end points and filter by collection status and event type
-  events_with_filtered_destinations <- events_destinations |>
-    filter(destination %in% show_ending_points)
-  events_with_filtered_recipients <- events_recipients |>
+  events_with_allowed_intermediary_recipients <- events_recipients |>
     filter(recipient %in% show_passes_through)
-
-  sequential_events <- sequential_events |>
+  events_data |>
     filter(
-      collection_status %in% collection_status_filter,
-      event_id %in% events_with_filtered_destinations$event_id,
-      event_id %in% events_with_filtered_recipients$event_id,
-      event_core_type %in% c(event_type_filter),
-      event_type_uncertainty %in% c(event_type_uncertainty_filter),
+      event_id %in% events_with_allowed_intermediary_recipients$event_id
     )
+}
 
-  if (steps_or_first_last == "First and last actors") {
-    sequential_events <- sequential_events |>
-      group_by(collection_id) |>
-      filter(recipient_position==max(recipient_position)) |>
-      mutate(
-        sender_id=initial_museum_id,
-        sender_name=initial_museum_name,
-        sender_type=initial_museum_type,
-        sender_core_type=initial_museum_core_type,
-        sender_general_type=initial_museum_general_type,
-        sender_sector=initial_museum_sector,
-        sender_size=initial_museum_size,
-        sender_governance=initial_museum_governance,
-        sender_governance_broad=initial_museum_governance_broad,
-        sender_subject_matter=initial_museum_subject_matter,
-        sender_subject_matter_broad=initial_museum_subject_matter_broad,
-        sender_accreditation=initial_museum_accreditation,
-        sender_town=initial_museum_town,
-        sender_position=1,
-        sender_quantity="1",
-        recipient_position=2,
-        from=paste(.data[[initial_museum_museum_grouping_dimension]], .data[[initial_museum_grouping_dimension]], sender_position, sep="@"),
-        to=paste(.data[[recipient_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], recipient_position, sep="@")
-      ) |>
-      ungroup()
-    }
-  sequential_events    
+remove_sequence_middle <- function(events_data, grouping_dimension, museum_grouping_dimension) {
+  events_data |>
+    group_by(collection_id) |>
+    filter(recipient_position==max(recipient_position)) |>
+    mutate(
+      sender_id=initial_museum_id,
+      sender_name=initial_museum_name,
+      sender_type=initial_museum_type,
+      sender_core_type=initial_museum_core_type,
+      sender_general_type=initial_museum_general_type,
+      sender_sector=initial_museum_sector,
+      sender_size=initial_museum_size,
+      sender_governance=initial_museum_governance,
+      sender_governance_broad=initial_museum_governance_broad,
+      sender_subject_matter=initial_museum_subject_matter,
+      sender_subject_matter_broad=initial_museum_subject_matter_broad,
+      sender_accreditation=initial_museum_accreditation,
+      sender_town=initial_museum_town,
+      sender_position=1,
+      sender_quantity="1",
+      recipient_position=2,
+      from=paste(
+        .data[[paste0("initial_museum_", museum_grouping_dimension)]],
+        .data[[paste0("initial_museum_", grouping_dimension)]],
+        sender_position,
+        sep="@"
+      ),
+      to=paste(
+        .data[[paste0("recipient_", museum_grouping_dimension)]],
+        .data[[paste0("recipient_", grouping_dimension)]],
+        recipient_position,
+        sep="@"
+      )
+    ) |>
+    ungroup()
 }
 
 pathway_table <- function(sequences, selected_columns) {
@@ -261,12 +349,7 @@ get_pathways_layout <- function(sequences,
                                 grouping_dimension,
                                 museum_grouping_dimension,
                                 steps_or_first_last) {
-  grouping_dimension_name <- list(
-    "Actor Sector"="sector",
-    "Actor Type (Core Categories)"="core_type",
-    "Actor Type (Most General)"="general_type",
-    "Actor Type (Most Specific)"="type"
-  )[grouping_dimension]
+  grouping_dimension_name <- grouping_dimension_map[grouping_dimension]
   sender_grouping_dimension <- paste0("sender_", grouping_dimension_name)
   recipient_grouping_dimension <- paste0("recipient_", grouping_dimension_name)
 
@@ -729,12 +812,7 @@ get_sequences_layout <- function(sequences,
                                  start_position,
                                  end_position,
                                  grouping_dimension) {
-  grouping_dimension <- list(
-    "Actor Sector"="sector",
-    "Actor Type (Core Categories)"="core_type",
-    "Actor Type (Most General)"="general_type",
-    "Actor Type (Most Specific)"="type"
-  )[grouping_dimension]
+  grouping_dimension <- grouping_dimension_map[grouping_dimension]
   sender_grouping_dimension <- paste0("sender_", grouping_dimension)
   recipient_grouping_dimension <- paste0("recipient_", grouping_dimension)
 
@@ -1170,12 +1248,7 @@ get_map_layout <- function(sequences,
                                    grouping_dimension,
                                    show_transaction_counts,
                                    steps_or_first_last) {
-  grouping_dimension <- list(
-    "Actor Sector"="sector",
-    "Actor Type (Core Categories)"="core_type",
-    "Actor Type (Most General)"="general_type",
-    "Actor Type (Most Specific)"="type"
-  )[grouping_dimension]
+  grouping_dimension <- grouping_dimension_map[grouping_dimension]
   sender_grouping_dimension <- paste0("sender_", grouping_dimension)
   recipient_grouping_dimension <- paste0("recipient_", grouping_dimension)
 
@@ -1299,7 +1372,6 @@ get_map_layout <- function(sequences,
 
 movements_map <- function(layout) {
   nodes <- layout$nodes
-  print(colnames(nodes))
   edges <- layout$edges
   transaction_map_plot <- ggplot(nodes, aes(x=x, y=y)) +
     geom_polygon(data=regions, aes(x=x, y=y, group=group), linewidth=0.1, label=NA, colour="black", fill=NA) +

@@ -3,6 +3,14 @@ source("src/modules/dispersal/elements.R")
 dispersalServer <- function(id) {
   moduleServer(id, function(input, output, session) {
     grouping_field <- reactive({input$grouping})
+    grouping_dimension <- reactive({
+      list(
+        "Actor Sector"="sector",
+        "Actor Type (Core Categories)"="core_type",
+        "Actor Type (Most General)"="general_type",
+        "Actor Type (Most Specific)"="type"
+      )[input$grouping]
+    })
 
     museum_grouping_field <- reactive({
       if (input$groupingMuseums == "All museums") {
@@ -191,10 +199,12 @@ dispersalServer <- function(id) {
         filter(
           input$firepower | initial_museum_id != "mm.domus.SE513",
           initial_museum_size %in% size_filter_choices(),
-          initial_museum_governance %in% governance_filter_choices() | initial_museum_governance_broad %in% governance_filter_choices(),
+          initial_museum_governance %in% governance_filter_choices()
+          | initial_museum_governance_broad %in% governance_filter_choices(),
           initial_museum_subject_matter_broad %in% subject_filter_choices(),
           initial_museum_subject_matter %in% specific_subject_filter_choices(),
-          initial_museum_region %in% region_filter_choices() | initial_museum_country %in% region_filter_choices(),
+          initial_museum_region %in% region_filter_choices()
+          | initial_museum_country %in% region_filter_choices(),
           initial_museum_accreditation %in% accreditation_filter_choices()
         ) |>
         mutate(
@@ -235,11 +245,11 @@ dispersalServer <- function(id) {
       )
     })
 
-    all_sequences <- reactive({all_sequence_data(transaction_type_filter())})
     filtered_sequences <- reactive({
-      filtered_data <- filtered_sequence_data(
-        all_sequences(),
-        input$grouping,
+      get_filtered_sequences(
+        dispersal_events,
+        transaction_type_filter(),
+        grouping_dimension(),
         museum_grouping_field(),
         event_type_filter(),
         event_type_uncertainty_filter(),
