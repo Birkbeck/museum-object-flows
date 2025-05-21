@@ -2,7 +2,44 @@ source("src/modules/changes/elements.R")
 
 changesServer <- function(id) {
   moduleServer(id, function(input, output, session) {
-    
+
+    observeEvent(input$reset, {
+      updateSliderInput(session=session, inputId="yearRange", value=c(2000, 2025))
+      updateSelectInput(session=session, inputId="mainAxis", selected="All")
+      updateSelectInput(session=session, inputId="secondAxis", selected="Country/Region")
+      updateRadioButtons(session=session, inputId="countOrPercentage", selected="")
+      updatePickerInput(
+        session=session,
+        inputId="governanceFilter",
+        selected=filter(governance_labels, internal_label != "Independent")$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="sizeFilter",
+        selected=filter(size_labels, default_filter)$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="subjectFilter",
+        selected=filter(subject_broad_labels, default_filter)$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="subjectSpecificFilter",
+        selected=subject_full_labels$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="regionFilter",
+        selected=filter(country_region_labels, internal_label != "England")$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="accreditationFilter",
+        selected=filter(accreditation_labels, default_filter)$tidy_label
+      )
+    })
+
     small_chart_size <- 300
     x_labels <- reactive({c(
       "start_total"=paste("Open Museums at start of", period_start()),

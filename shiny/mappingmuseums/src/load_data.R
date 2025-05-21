@@ -11,6 +11,41 @@ dispersal_events <- read_csv(dispersal_events_csv) |>
     event_stage_in_path = event_stage_in_path + 1
   )
 
+senders <- dispersal_events |>
+  select(
+    actor_id=sender_id,
+    name=sender_name,
+    quantity=sender_quantity,
+    sector=sender_sector,
+    type=sender_type,
+    size=sender_size,
+    governance=sender_governance,
+    accreditation=sender_accreditation,
+    town=sender_town,
+    county=sender_county,
+    postcode=sender_postcode,
+    region=sender_region,
+    country=sender_country
+  )
+recipients <- dispersal_events |>
+  select(
+    actor_id=recipient_id,
+    name=recipient_name,
+    quantity=recipient_quantity,
+    sector=recipient_sector,
+    type=recipient_type,
+    size=recipient_size,
+    governance=recipient_governance,
+    accreditation=recipient_accreditation,
+    town=recipient_town,
+    county=recipient_county,
+    postcode=recipient_postcode,
+    region=recipient_region,
+    country=recipient_country
+  )
+actors <- rbind(senders, recipients) |>
+  unique()
+
 collection_types <- dispersal_events |>
   mutate(
     collection_type = str_remove_all(collection_types, "\\[|\\]|'") |>
