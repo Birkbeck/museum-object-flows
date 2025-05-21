@@ -9,6 +9,11 @@ lengthUI <- function(id) {
         width=3,
         style = "height: 90vh; overflow-y: auto;",
 
+        div(
+          style = "text-align: right;",
+          actionButton(NS(id, "reset"), "Reset options")
+        ),
+
         h3("View"),
 
         div(uiOutput(NS(id, "mainPlotOptions"))),
@@ -19,10 +24,10 @@ lengthUI <- function(id) {
           tags$span(
             tags$strong("Group museums by:"),
             tags$i(
-              class = "fa fa-info-circle", # Font Awesome info icon
-              style = "color: #007bff; cursor: pointer;", # Style for visibility
-              `data-toggle` = "popover", # Bootstrap popover attribute
-              `data-placement` = "right", # Position above the icon
+              class = "fa fa-info-circle",
+              style = "color: #007bff; cursor: pointer;",
+              `data-toggle` = "popover",
+              `data-placement` = "right",
               title = "Group museums by",
               `data-content` = "<p>Select which attribute museums should be grouped by.</p>"
             )
@@ -54,8 +59,8 @@ lengthUI <- function(id) {
           pickerInput(
             NS(id, "governanceFilter"), 
             "",
-            choices=governance_labels$tidy_label,
-            selected=governance_labels$tidy_label,
+            choices=filter(governance_labels, internal_label != "Independent")$tidy_label,
+            selected=filter(governance_labels, internal_label != "Independent")$tidy_label,
             options=pickerOptions(
               actionsBox=TRUE, 
               size=10,
@@ -162,8 +167,8 @@ lengthUI <- function(id) {
           pickerInput(
             NS(id, "regionFilter"), 
             "",
-            choices=country_region_labels$tidy_label,
-            selected=filter(country_region_labels, default_filter)$tidy_label,
+            choices=filter(country_region_labels, internal_label != "England")$tidy_label,
+            selected=filter(country_region_labels, internal_label != "England")$tidy_label,
             options=pickerOptions(
               actionsBox=TRUE, 
               size=10,

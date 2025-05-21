@@ -52,7 +52,12 @@ eventsUI <- function(id) {
       sidebarPanel(
         width=3,
         style = "height: 90vh; overflow-y: auto;",
-        
+
+        div(
+          style = "text-align: right;",
+          actionButton(NS(id, "reset"), "Reset options")
+        ),
+
         h3("View"),
 
         tagList(
@@ -393,8 +398,8 @@ eventsUI <- function(id) {
           pickerInput(
             NS(id, "governanceFilter"), 
             "",
-            choices=governance_labels$tidy_label,
-            selected=governance_labels$tidy_label,
+            choices=filter(governance_labels, internal_label != "Independent")$tidy_label,
+            selected=filter(governance_labels, internal_label != "Independent")$tidy_label,
             options=pickerOptions(
               actionsBox=TRUE, 
               size=10,
@@ -501,8 +506,8 @@ eventsUI <- function(id) {
           pickerInput(
             NS(id, "regionFilter"), 
             "",
-            choices=country_region_labels$tidy_label,
-            selected=filter(country_region_labels, default_filter)$tidy_label,
+            choices=filter(country_region_labels, internal_label != "England")$tidy_label,
+            selected=filter(country_region_labels, internal_label != "England")$tidy_label,
             options=pickerOptions(
               actionsBox=TRUE, 
               size=10,

@@ -2,6 +2,53 @@ source("src/modules/outcomes/elements.R")
 
 outcomesServer <- function(id) {
   moduleServer(id, function(input, output, session) {
+
+    observeEvent(input$reset, {
+      updateSelectInput(session=session, inputId="outcomeType", selected="Outcome event type")
+      updateSelectInput(session=session, inputId="museumGrouping", selected="Governance")
+      updatePickerInput(
+        session=session,
+        inputId="outcomeFilter",
+        selected=distinct(
+          filter(
+            select(closure_outcomes, .data[[outcome_type()]]),
+            !is.na(.data[[outcome_type()]])
+          )
+        )[[outcome_type()]]
+      )
+      updateRadioButtons(session=session, inputId="countOrPercentage", selected="frequency")
+      updatePickerInput(
+        session=session,
+        inputId="governanceFilter",
+        selected=filter(governance_labels, internal_label != "Independent")$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="sizeFilter",
+        selected=filter(size_labels, default_filter)$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="subjectFilter",
+        selected=filter(subject_broad_labels, default_filter)$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="subjectSpecificFilter",
+        selected=subject_full_labels$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="regionFilter",
+        selected=filter(country_region_labels, internal_label != "England")$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="accreditationFilter",
+        selected=filter(accreditation_labels, default_filter)$tidy_label
+      )
+    })
+
     outcome_type_name <- reactive({input$outcomeType})
     outcome_type <- reactive({
       req(input$outcomeType)

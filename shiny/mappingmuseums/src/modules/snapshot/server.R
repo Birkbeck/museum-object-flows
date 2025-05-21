@@ -26,6 +26,11 @@ snapshotServer <- function(id) {
       )
       updatePickerInput(
         session=session,
+        inputId="subjectSpecificFilter",
+        selected=subject_full_labels$tidy_label
+      )
+      updatePickerInput(
+        session=session,
         inputId="regionFilter",
         selected=filter(country_region_labels, internal_label != "England")$tidy_label
       )

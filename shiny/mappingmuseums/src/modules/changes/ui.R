@@ -10,6 +10,11 @@ changesUI <- function(id) {
         width=3,
         style = "height: 90vh; overflow-y: auto;",
 
+        div(
+          style = "text-align: right;",
+          actionButton(NS(id, "reset"), "Reset options")
+        ),
+
         h3("View"),
 
         tagList(

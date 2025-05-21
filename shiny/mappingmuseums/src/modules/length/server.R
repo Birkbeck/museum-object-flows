@@ -2,6 +2,50 @@ source("src/modules/length/elements.R")
 
 lengthServer <- function(id) {
   moduleServer(id, function(input, output, session) {
+
+    observeEvent(input$reset, {
+      updateSelectInput(session=session, inputId="museumGrouping", selected="All")
+      updateRadioButtons(session=session, inputId="countOrPercentage", selected="count")
+      updatePickerInput(
+        session=session,
+        inputId="governanceFilter",
+        selected=filter(governance_labels, internal_label != "Independent")$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="sizeFilter",
+        selected=filter(size_labels, default_filter)$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="subjectFilter",
+        selected=filter(subject_broad_labels, default_filter)$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="subjectSpecificFilter",
+        selected=subject_full_labels$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="regionFilter",
+        selected=filter(country_region_labels, internal_label != "England")$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="accreditationFilter",
+        selected=filter(accreditation_labels, default_filter)$tidy_label
+      )
+      becm <- "mm.domus.SW043"
+      example_museum_name <- filter(museums_list, museum_id == becm)$name
+      updateVirtualSelect(
+        session=session,
+        inputId="exampleMuseum",
+        choices=museums_list$name,
+        selected=example_museum_name
+      )
+    })
+
     museum_grouping <- reactive({
       filter(field_names, name==input$museumGrouping)$value[1]
     })

@@ -3,6 +3,76 @@ source("src/modules/events/elements.R")
 eventsServer <- function(id) {
   moduleServer(id, function(input, output, session) {
 
+    observeEvent(input$reset, {
+      updateSelectInput(session=session, inputId="yAxis", selected="Sender type")
+      updateSelectInput(session=session, inputId="xAxis", selected="Event type")
+      updateRadioButtons(session=session, inputId="stepsOrLast", selected="Stepwise events")
+      updatePickerInput(
+        session=session,
+        inputId="stagesInPath",
+        selected=c(1)
+      )
+      updateRadioButtons(session=session, inputId="countOrPercentage", selected="count")
+      updateSelectInput(session=session, inputId="eventGrouping", selected="Core categories")
+      updateSelectInput(session=session, inputId="actorGrouping", selected="Core categories")
+      updateSelectInput(session=session, inputId="museumGrouping", selected="Governance")
+      updatePickerInput(
+        session=session,
+        inputId="eventTypeFilter",
+        selected=unique(select(dispersal_events, event_core_type))$event_core_type
+      )
+      updatePickerInput(
+        session=session,
+        inputId="senderTypeFilter",
+        selected=unique(select(dispersal_events, sender_core_type))$sender_core_type
+      )
+      updatePickerInput(
+        session=session,
+        inputId="recipientTypeFilter",
+        selected=unique(select(dispersal_events, recipient_core_type))$recipient_core_type
+      )
+      updatePickerInput(
+        session=session,
+        inputId="collectionTypeFilter",
+        selected=collection_types$collection_type
+      )
+      updatePickerInput(
+        session=session,
+        inputId="collectionStatusFilter",
+        selected=filter(collection_status_labels, default_filter)$tidy_label,
+      )
+      updatePickerInput(
+        session=session,
+        inputId="governanceFilter",
+        selected=filter(governance_labels, internal_label != "Independent")$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="sizeFilter",
+        selected=filter(size_labels, default_filter)$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="subjectFilter",
+        selected=filter(subject_broad_labels, default_filter)$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="subjectSpecificFilter",
+        selected=subject_full_labels$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="regionFilter",
+        selected=filter(country_region_labels, internal_label != "England")$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="accreditationFilter",
+        selected=filter(accreditation_labels, default_filter)$tidy_label
+      )
+    })
+
     museum_grouping <- reactive({
       req(input$museumGrouping)
       switch(

@@ -10,16 +10,21 @@ outcomesUI <- function(id) {
         width=3,
         style = "height: 90vh; overflow-y: auto;",
 
+        div(
+          style = "text-align: right;",
+          actionButton(NS(id, "reset"), "Reset options")
+        ),
+
         h3("View"),
 
         tagList(
           tags$span(
             tags$strong("Main axis: "),
             tags$i(
-              class = "fa fa-info-circle", # Font Awesome info icon
-              style = "color: #007bff; cursor: pointer;", # Style for visibility
-              `data-toggle` = "popover", # Bootstrap popover attribute
-              `data-placement` = "right", # Position above the icon
+              class = "fa fa-info-circle",
+              style = "color: #007bff; cursor: pointer;",
+              `data-toggle` = "popover",
+              `data-placement` = "right",
               title = "Outcome type",
               `data-content` = "<p>Select how outcomes should be displayed on the diagrams.</p><p><strong>Main event:</strong> Show outcomes of closure in terms of events</p><p><strong>Main actor:</strong> Show outcomes of closure in terms of recipients</p>"
             )
@@ -37,10 +42,10 @@ outcomesUI <- function(id) {
           tags$span(
             tags$strong("Secondary axis: "),
             tags$i(
-              class = "fa fa-info-circle", # Font Awesome info icon
-              style = "color: #007bff; cursor: pointer;", # Style for visibility
-              `data-toggle` = "popover", # Bootstrap popover attribute
-              `data-placement` = "right", # Position above the icon
+              class = "fa fa-info-circle",
+              style = "color: #007bff; cursor: pointer;",
+              `data-toggle` = "popover",
+              `data-placement` = "right",
               title = "Second axis",
               `data-content` = "<p>For the 2-dimensional heatmap.</p><p>Select which museum attribute to show on the <i>x</i>-axis.</p>"
             )
@@ -64,10 +69,10 @@ outcomesUI <- function(id) {
           tags$span(
             tags$strong("Show only outcomes: "),
             tags$i(
-              class = "fa fa-info-circle", # Font Awesome info icon
-              style = "color: #007bff; cursor: pointer;", # Style for visibility
-              `data-toggle` = "popover", # Bootstrap popover attribute
-              `data-placement` = "right", # Position above the icon
+              class = "fa fa-info-circle",
+              style = "color: #007bff; cursor: pointer;",
+              `data-toggle` = "popover",
+              `data-placement` = "right",
               title = "Show only outcomes",
               `data-content` = "<p>Select which outcomes should appear in the visualizations. Removing some outcomes could improve the readability of charts.</p>"
             )
@@ -107,8 +112,8 @@ outcomesUI <- function(id) {
           pickerInput(
             NS(id, "governanceFilter"), 
             "",
-            choices=governance_labels$tidy_label,
-            selected=governance_labels$tidy_label,
+            choices=filter(governance_labels, internal_label != "Independent")$tidy_label,
+            selected=filter(governance_labels, internal_label != "Independent")$tidy_label,
             options=pickerOptions(
               actionsBox=TRUE, 
               size=10,
@@ -215,8 +220,8 @@ outcomesUI <- function(id) {
           pickerInput(
             NS(id, "regionFilter"), 
             "",
-            choices=country_region_labels$tidy_label,
-            selected=filter(country_region_labels, default_filter)$tidy_label,
+            choices=filter(country_region_labels, internal_label != "England")$tidy_label,
+            selected=filter(country_region_labels, internal_label != "England")$tidy_label,
             options=pickerOptions(
               actionsBox=TRUE, 
               size=10,

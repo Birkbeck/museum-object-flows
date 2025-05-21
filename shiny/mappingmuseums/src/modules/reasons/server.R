@@ -2,6 +2,50 @@ source("src/modules/reasons/elements.R")
 
 reasonsServer <- function(id) {
   moduleServer(id, function(input, output, session) {
+
+    observeEvent(input$reset, {
+      updateSelectInput(session=session, inputId="reasonLevel", selected="Core categories")
+      updateSelectInput(session=session, inputId="museumGrouping", selected="Governance")
+      updateRadioButtons(session=session, inputId="countOrPercentage", selected="frequency")
+      closure_reasons <- closure_reasons_table()
+      reason_choices <- distinct(select(closure_reasons, reason_core))$reason_core
+      updatePickerInput(
+        session=session,
+        inputId="reasonFilter",
+        selected=reason_choices
+      )
+      updatePickerInput(
+        session=session,
+        inputId="governanceFilter",
+        selected=filter(governance_labels, internal_label != "Independent")$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="sizeFilter",
+        selected=filter(size_labels, default_filter)$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="subjectFilter",
+        selected=filter(subject_broad_labels, default_filter)$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="subjectSpecificFilter",
+        selected=subject_full_labels$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="regionFilter",
+        selected=filter(country_region_labels, internal_label != "England")$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="accreditationFilter",
+        selected=filter(accreditation_labels, default_filter)$tidy_label
+      )
+    })
+
     reason_level <- reactive({
       req(input$reasonLevel)
       if (input$reasonLevel == "Core categories") {
