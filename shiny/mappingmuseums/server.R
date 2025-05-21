@@ -43,7 +43,8 @@ source("src/modules/outcomes/server.R")
 source("src/modules/events/ui.R")
 source("src/modules/events/server.R")
 
-source("src/modules/dispersal.R")
+source("src/modules/dispersal/ui.R")
+source("src/modules/dispersal/server.R")
 
 PRODUCTION <- as.logical(Sys.getenv("PRODUCTION"))
 
