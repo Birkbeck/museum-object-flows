@@ -324,7 +324,8 @@ dispersalServer <- function(id) {
         filtered_sequences(),
         ownershipChangesStart(),
         ownershipChangesEnd(),
-        input$grouping
+        actor_grouping(),
+        museum_grouping()
       )
     })
     map_layout <- reactive({

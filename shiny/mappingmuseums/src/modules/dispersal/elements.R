@@ -387,21 +387,21 @@ get_pathways_layout <- function(sequences,
   if (grouping_dimension == "sector") {
     nodes <- nodes |>
       mutate(
-        name=paste(museum_grouping_dimension, grouping_dimension, sep="@"),
+        name=paste(museum_group, actor_group, sep="@"),
         label = ifelse(
-          !is.na(museum_grouping_dimension), 
-          paste(gsub("_", " ", museum_grouping_dimension), "museum"),
-          paste(grouping_dimension, "sector")
+          !is.na(museum_group), 
+          paste(gsub("_", " ", museum_group), "museum"),
+          paste(actor_group, "sector")
         )
       )
   } else {
     nodes <- nodes |>
       mutate(
-        name=paste(museum_grouping_dimension, grouping_dimension, sep="@"),
+        name=paste(museum_group, actor_group, sep="@"),
         label = ifelse(
-          !is.na(museum_grouping_dimension), 
-          paste(gsub("_", " ", museum_grouping_dimension), "museum"),
-          grouping_dimension
+          !is.na(museum_group), 
+          paste(gsub("_", " ", museum_group), "museum"),
+          actor_group
         )
       )
   }
@@ -435,6 +435,108 @@ get_pathways_layout <- function(sequences,
     )
 
   list("nodes"=nodes, "edges"=edges)
+}
+
+get_sequences_layout <- function(sequences,
+                                 start_position,
+                                 end_position,
+                                 grouping_dimension,
+                                 museum_grouping_dimension) {
+
+  sender_grouping_dimension <- paste0("sender_", grouping_dimension)
+  recipient_grouping_dimension <- paste0("recipient_", grouping_dimension)
+  sender_museum_grouping_dimension <- paste0("sender_", museum_grouping_dimension)
+  recipient_museum_grouping_dimension <- paste0("recipient_", museum_grouping_dimension)
+
+  from_nodes <- get_nodes(
+    sequences,
+    "from",
+    "sender",
+    sender_grouping_dimension,
+    sender_museum_grouping_dimension
+  )
+  to_nodes <- get_nodes(
+    sequences,
+    "to",
+    "recipient",
+    recipient_grouping_dimension,
+    recipient_museum_grouping_dimension
+  )
+  nodes <- merge_from_and_to_nodes(from_nodes, to_nodes) |>
+    mutate(name=paste(museum_group, actor_group, sep="@")) |>
+    # TODO: move filtering to datatable creation
+    filter(position >= start_position & position <= end_position)
+
+  name_mapping <- nodes |>
+    select(name) |>
+    distinct() |>
+    mutate(
+      name_numeric = row_number()
+    )
+  
+  if (grouping_dimension == "sector") {
+    name_mapping <- name_mapping |> 
+      mutate(
+        museum_type = sapply(strsplit(name, "@"), `[`, 1),
+        sector = sapply(strsplit(name, "@"), `[`, 2),
+        label = ifelse(
+          museum_type != "NA", 
+          paste(museum_type, "museum"), 
+          paste("Other", sector, "sector")
+        )
+      ) |> 
+      select(-museum_type, -sector)
+  } else {
+    name_mapping <- name_mapping |> 
+      mutate(
+        museum_type = sapply(strsplit(name, "@"), `[`, 1),
+        actor_type = sapply(strsplit(name, "@"), `[`, 2),
+        label = ifelse(
+          museum_type != "NA", 
+          paste(museum_type, "museum"), 
+          actor_type
+        )
+      ) |> 
+      select(-museum_type, -actor_type)
+  }
+  
+  nodes <- nodes |>
+    left_join(name_mapping, by = "name")
+
+  edges <- get_edges(
+    sequences,
+    nodes,
+    sender_grouping_dimension,
+    sender_museum_grouping_dimension,
+    recipient_grouping_dimension,
+    recipient_museum_grouping_dimension
+  ) |>
+    mutate(
+      from_name=paste(.data[[sender_museum_grouping_dimension]], .data[[sender_grouping_dimension]], sep="@"),
+      to_name=paste(.data[[recipient_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], sep="@"),
+      label=ifelse(!is.na(label), as.character(label), ""),
+      from_position=as.numeric(sapply(str_split(from, "@"), function(x) if(length(x) > 2) x[3] else NA)),
+      to_position=as.numeric(sapply(str_split(to, "@"), function(x) if(length(x) > 2) x[3] else NA)),
+    ) |>
+    filter(from_position >= start_position & to_position <= end_position) |>
+    left_join(name_mapping |> select(-label), by = c("from_name" = "name")) |>
+    rename(from_name_numeric = name_numeric) |>
+    left_join(name_mapping |> select(-label), by = c("to_name" = "name")) |>
+    rename(to_name_numeric = name_numeric) |>
+    rowwise() |>
+    mutate(
+      random_offset = runif(n(), min=-0.1, max=0.1),
+      gradient = (to_position - from_position) / (to_name_numeric - from_name_numeric),
+      label_position_x = mean(c(from_name_numeric, to_name_numeric)),
+      label_position_x = ifelse(
+          gradient == Inf,
+          label_position_x,
+          label_position_x + random_offset * (1 / gradient)
+      ),
+      label_position_y = mean(c(from_position, to_position)) + random_offset,
+    )
+
+  list("nodes"=nodes, "edges"=edges, "name_mapping"=name_mapping)
 }
 
 give_individual_names_to_nodes_in_different_paths <- function(sequences, steps_or_first_last) {
@@ -772,271 +874,6 @@ pathway_dendrogram_small <- function(layout) {
     )
 }
 
-get_sequences_layout <- function(sequences,
-                                 start_position,
-                                 end_position,
-                                 grouping_dimension) {
-  grouping_dimension <- grouping_dimension_map[grouping_dimension]
-  sender_grouping_dimension <- paste0("sender_", grouping_dimension)
-  recipient_grouping_dimension <- paste0("recipient_", grouping_dimension)
-
-  from_nodes_counts <- sequences |>
-    mutate(
-      id=from,
-      governance_broad=sender_governance_broad,
-      grouping_dimension=.data[[sender_grouping_dimension]],
-      position=sender_position
-    ) |>
-    select(sender_id, sender_quantity, id, governance_broad, grouping_dimension, position, sender_sector) |>
-    distinct() |>
-    mutate(
-      sender_count=ifelse(sender_quantity=="many",2,as.numeric(sender_quantity))
-    ) |>
-    group_by(id, governance_broad, grouping_dimension, position) |>
-    summarize(
-      from_count=sum(sender_count),
-      from_count_suffix=ifelse("many" %in% sender_quantity, "+", ""),
-      from_count_label=paste0(from_count, from_count_suffix),
-      public_instances=sum(ifelse(sender_sector=="public", sender_count, 0)),
-      university_instances=sum(ifelse(sender_sector=="university", sender_count, 0)),
-      third_instances=sum(ifelse(sender_sector=="third", sender_count, 0)),
-      private_instances=sum(ifelse(sender_sector=="private", sender_count, 0)),
-      hybrid_instances=sum(ifelse(sender_sector=="hybrid", sender_count, 0)),
-      public_proportion = public_instances / from_count,
-      university_proportion = university_instances / from_count,
-      third_proportion = third_instances / from_count,
-      private_proportion = private_instances / from_count,
-      hybrid_proportion = hybrid_instances / from_count,
-      from_sector = case_when(
-        public_proportion == 1 ~ "public",
-        university_proportion == 1 ~ "university",
-        third_proportion == 1 ~ "third",
-        private_proportion == 1 ~ "private",
-        hybrid_proportion == 1 ~ "hybrid",
-        public_proportion >= 0.5 ~ "mostly public",
-        university_proportion >= 0.5 ~ "mostly university",
-        third_proportion >= 0.5 ~ "mostly third",
-        private_proportion >= 0.5 ~ "mostly private",
-        hybrid_proportion >= 0.5 ~ "mostly hybrid",
-        TRUE ~ "unknown"
-      )
-    ) |>
-    ungroup()
-
-  to_nodes_counts <- sequences |>
-    mutate(
-      id=to,
-      governance_broad=recipient_governance_broad,
-      grouping_dimension=.data[[recipient_grouping_dimension]],
-      position=recipient_position,
-    ) |>
-    select(recipient_id, recipient_quantity, id, governance_broad, grouping_dimension, position, recipient_sector) |>
-    distinct() |>
-    mutate(
-      recipient_count=ifelse(recipient_quantity=="many",2,as.numeric(recipient_quantity))
-    ) |>
-    group_by(id, governance_broad, grouping_dimension, position) |>
-    summarize(
-      to_count=sum(recipient_count),
-      to_count_suffix=ifelse("many" %in% recipient_quantity, "+", ""),
-      to_count_label=paste0(to_count, to_count_suffix),
-      public_instances=sum(ifelse(recipient_sector=="public", recipient_count, 0)),
-      university_instances=sum(ifelse(recipient_sector=="university", recipient_count, 0)),
-      third_instances=sum(ifelse(recipient_sector=="third", recipient_count, 0)),
-      private_instances=sum(ifelse(recipient_sector=="private", recipient_count, 0)),
-      hybrid_instances=sum(ifelse(recipient_sector=="hybrid", recipient_count, 0)),
-      public_proportion = public_instances / to_count,
-      university_proportion = university_instances / to_count,
-      third_proportion = third_instances / to_count,
-      private_proportion = private_instances / to_count,
-      hybrid_proportion = hybrid_instances / to_count,
-      to_sector = case_when(
-        public_proportion == 1 ~ "public",
-        university_proportion == 1 ~ "university",
-        third_proportion == 1 ~ "third",
-        private_proportion == 1 ~ "private",
-        hybrid_proportion == 1 ~ "hybrid",
-        public_proportion >= 0.5 ~ "mostly public",
-        university_proportion >= 0.5 ~ "mostly university",
-        third_proportion >= 0.5 ~ "mostly third",
-        private_proportion >= 0.5 ~ "mostly private",
-        hybrid_proportion >= 0.5 ~ "mostly hybrid",
-        TRUE ~ "unknown"
-      )
-    ) |>
-    ungroup()
-
-  node_counts <- from_nodes_counts |>
-    full_join(to_nodes_counts, by=c("id", "governance_broad", "grouping_dimension", "position")) |>
-    mutate(
-      count = ifelse(
-        is.na(to_count),
-        from_count,
-        ifelse(
-          is.na(from_count), 
-          to_count,
-          ifelse(
-            from_count > to_count,
-            from_count,
-            to_count
-          )
-        )
-      ),
-      count_label = ifelse(
-        is.na(to_count),
-        from_count_label,
-        ifelse(
-          is.na(from_count), 
-          to_count_label,
-          ifelse(
-            from_count > to_count,
-            from_count_label,
-            to_count_label
-          )
-        )
-      ),
-      name = paste(governance_broad, grouping_dimension, sep="@"),
-      sector_label = ifelse(
-        is.na(to_count),
-        from_sector,
-        ifelse(
-          is.na(from_count), 
-          to_sector,
-          ifelse(
-            from_count > to_count,
-            from_sector,
-            to_sector
-          )
-        )
-      )
-    ) |>
-    filter(position >= start_position & position <= end_position)
-
-  name_mapping <- node_counts |>
-    select(name) |>
-    distinct() |>
-    mutate(
-      name_numeric = as.numeric(factor(name, sector_type_ordering[sector_type_ordering %in% node_counts$name]))
-    )
-  
-  if (grouping_dimension == "sector") {
-    name_mapping <- name_mapping |> 
-      mutate(
-        governance = sapply(strsplit(name, "@"), `[`, 1),
-        sector = sapply(strsplit(name, "@"), `[`, 2),
-        label = ifelse(
-          governance != "NA", 
-          paste(governance, "museum"), 
-          paste("Other", sector, "sector")
-        )
-      ) |> 
-      select(-governance, -sector)
-  } else {
-    name_mapping <- name_mapping |> 
-      mutate(
-        governance = sapply(strsplit(name, "@"), `[`, 1),
-        actor_type = sapply(strsplit(name, "@"), `[`, 2),
-        label = ifelse(
-          governance != "NA", 
-          paste(governance, "museum"), 
-          actor_type
-        )
-      ) |> 
-      select(-governance, -actor_type)
-  }
-  
-  node_counts <- node_counts |>
-    left_join(name_mapping, by = "name")
-  
-  count_edges <- sequences |>
-    select(from, to, .data[[sender_grouping_dimension]], sender_governance_broad, .data[[recipient_grouping_dimension]], recipient_governance_broad) |>
-    group_by(from, to, .data[[sender_grouping_dimension]], sender_governance_broad, .data[[recipient_grouping_dimension]], recipient_governance_broad) |>
-    summarize(count = n()) |>
-    ungroup() |>
-    mutate(
-      label=count
-    )
-
-  size_edges <- sequences |>
-    mutate(
-      collection_estimated_size = ifelse(is.na(collection_estimated_size), 1, collection_estimated_size)
-    ) |>
-    select(from, to, .data[[sender_grouping_dimension]], sender_governance_broad, .data[[recipient_grouping_dimension]], recipient_governance_broad, collection_estimated_size) |>
-    group_by(from, to, .data[[sender_grouping_dimension]], sender_governance_broad, .data[[recipient_grouping_dimension]], recipient_governance_broad) |>
-    summarize(count = sum(collection_estimated_size)) |>
-    ungroup() |>
-    mutate(
-      label=""
-    )
-  
-  max_size_edges <- sequences |>
-    mutate(
-      collection_estimated_size = ifelse(is.na(collection_estimated_size_max), 1, collection_estimated_size_max)
-    ) |>
-    select(from, to, .data[[sender_grouping_dimension]], sender_governance_broad, .data[[recipient_grouping_dimension]], recipient_governance_broad, collection_estimated_size) |>
-    group_by(from, to, .data[[sender_grouping_dimension]], sender_governance_broad, .data[[recipient_grouping_dimension]], recipient_governance_broad) |>
-    summarize(count = sum(collection_estimated_size)) |>
-    ungroup() |>
-    mutate(
-      label=""
-    )
-  
-  min_size_edges <- sequences |>
-    mutate(
-      collection_estimated_size = ifelse(is.na(collection_estimated_size_min), 1, collection_estimated_size_min)
-    ) |>
-    select(from, to, .data[[sender_grouping_dimension]], sender_governance_broad, .data[[recipient_grouping_dimension]], recipient_governance_broad, collection_estimated_size) |>
-    group_by(from, to, .data[[sender_grouping_dimension]], sender_governance_broad, .data[[recipient_grouping_dimension]], recipient_governance_broad) |>
-    summarize(count = sum(collection_estimated_size)) |>
-    ungroup() |>
-    mutate(
-      label=""
-    )
-  
-  edges <- rbind(
-    count_edges,
-    min_size_edges |> mutate(count = count * 0.25),
-    min_size_edges |> mutate(count = count * 0.5),
-    min_size_edges |> mutate(count = count * 0.75),
-    min_size_edges,
-    size_edges |> mutate(count = count * 0.25),
-    size_edges |> mutate(count = count * 0.5),
-    size_edges |> mutate(count = count * 0.75),
-    size_edges,
-    max_size_edges |> mutate(count = count * 0.25),
-    max_size_edges |> mutate(count = count * 0.5),
-    max_size_edges |> mutate(count = count * 0.75),
-    max_size_edges
-  ) |>
-    mutate(
-      from_name=paste(sender_governance_broad, .data[[sender_grouping_dimension]], sep="@"),
-      to_name=paste(recipient_governance_broad, .data[[recipient_grouping_dimension]], sep="@"),
-      label=ifelse(!is.na(label), as.character(label), ""),
-      from_position=as.numeric(sapply(str_split(from, "@"), function(x) if(length(x) > 2) x[3] else NA)),
-      to_position=as.numeric(sapply(str_split(to, "@"), function(x) if(length(x) > 2) x[3] else NA)),
-    ) |>
-    filter(from_position >= start_position & to_position <= end_position) |>
-    left_join(name_mapping |> select(-label), by = c("from_name" = "name")) |>
-    rename(from_name_numeric = name_numeric) |>
-    left_join(name_mapping |> select(-label), by = c("to_name" = "name")) |>
-    rename(to_name_numeric = name_numeric) |>
-    rowwise() |>
-    mutate(
-      random_offset = runif(n(), min=-0.1, max=0.1),
-      gradient = (to_position - from_position) / (to_name_numeric - from_name_numeric),
-      label_position_x = mean(c(from_name_numeric, to_name_numeric)),
-      label_position_x = ifelse(
-          gradient == Inf,
-          label_position_x,
-          label_position_x + random_offset * (1 / gradient)
-      ),
-      label_position_y = mean(c(from_position, to_position)) + random_offset,
-    ) |>
-    left_join(node_counts |> select(from=id, from_sector_label=sector_label), by="from")
-
-  list("nodes"=node_counts, "edges"=edges, "name_mapping"=name_mapping)
-}
-
 sequence_network <- function(layout, start_position, end_position, show_transaction_counts) {
   node_counts <- layout$nodes
   edges <- layout$edges
@@ -1115,9 +952,9 @@ sequence_network <- function(layout, start_position, end_position, show_transact
 }
   
 sequence_network_small <- function(layout, start_position, end_position) {
-  node_counts <- layout$nodes
+  nodes <- layout$nodes
   edges <- layout$edges
-  ggplot(node_counts, aes(x=name_numeric, y=position)) +
+  ggplot(nodes, aes(x=name_numeric, y=position)) +
     geom_segment(
       data=edges,
       aes(
