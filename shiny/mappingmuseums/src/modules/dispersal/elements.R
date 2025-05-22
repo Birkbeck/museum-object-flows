@@ -1020,27 +1020,6 @@ get_sequences_layout <- function(sequences,
     rename(from_name_numeric = name_numeric) |>
     left_join(name_mapping |> select(-label), by = c("to_name" = "name")) |>
     rename(to_name_numeric = name_numeric) |>
-    mutate(
-      # Calculate direction vector
-      dx = to_name_numeric - from_name_numeric,
-      dy = to_position - from_position,
-      
-      # Normalize the direction vector to unit length
-      length = sqrt(dx^2 + dy^2),
-      ux = dx / length,
-      uy = dy / length,
-      
-      # Calculate perpendicular vectors for control points
-      perp_x = -uy,  # Perpendicular vector x component
-      perp_y = ux,   # Perpendicular vector y component
-      
-      # Control points
-      control1_x = from_name_numeric + (dx / 3) + (perp_x * 0.5),  # Shift control point 1 perpendicular to the line
-      control1_y = from_position + (dy / 3) + (perp_y * 0.5),
-      
-      control2_x = from_name_numeric + 2 * (dx / 3) - (perp_x * 0.5),  # Shift control point 2 in the opposite perpendicular direction
-      control2_y = from_position + 2 * (dy / 3) - (perp_y * 0.5)
-    ) |>
     rowwise() |>
     mutate(
       random_offset = runif(n(), min=-0.1, max=0.1),
@@ -1054,21 +1033,6 @@ get_sequences_layout <- function(sequences,
       label_position_y = mean(c(from_position, to_position)) + random_offset,
     ) |>
     left_join(node_counts |> select(from=id, from_sector_label=sector_label), by="from")
-
-
-  edges_bezier <- edges %>%
-    select(from_name_numeric, from_position, control1_x, control1_y, control2_x, control2_y, to_name_numeric, to_position, count, .data[[sender_grouping_dimension]], label) %>%
-    pivot_longer(cols = c(from_name_numeric, control1_x, control2_x, to_name_numeric), names_to = "point", values_to = "x") %>%
-    pivot_longer(cols = c(from_position, control1_y, control2_y, to_position), names_to = "point_y", values_to = "y") %>%
-    filter(
-      (point == "from_name_numeric" & point_y == "from_position") |
-        (point == "control1_x" & point_y == "control1_y") |
-        (point == "control2_x" & point_y == "control2_y") |
-        (point == "to_name_numeric" & point_y == "to_position")
-    ) %>%
-    arrange(.data[[sender_grouping_dimension]], count, label) %>%
-    group_by(interaction(count, .data[[sender_grouping_dimension]], label)) %>%
-    filter(n() == 4) 
 
   list("nodes"=node_counts, "edges"=edges, "name_mapping"=name_mapping)
 }
@@ -1090,11 +1054,6 @@ sequence_network <- function(layout, start_position, end_position, show_transact
       ),
       alpha=0.1
     ) +
-    # geom_bezier(
-    #   data=edges_bezier,
-    #   aes(x=x, y=y, group=interaction(count, sender_core_type, label), linewidth=count, colour=sender_core_type),
-    #   alpha=0.1
-    # ) +
     geom_point(
       aes(
         fill=sector_label,
