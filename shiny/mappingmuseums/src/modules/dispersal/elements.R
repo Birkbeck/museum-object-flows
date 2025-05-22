@@ -705,7 +705,14 @@ get_edges <- function(sequences,
                       sender_museum_grouping_dimension,
                       recipient_grouping_dimension,
                       recipient_museum_grouping_dimension) {
-  sequences_grouped <- sequences |>
+  museum_sizes = c(
+    "huge"=3e6,
+    "large"=5e5,
+    "medium"=3e4,
+    "small"=5e3,
+    "unknown"=5e3
+  )
+  count_edges <- sequences |>
     mutate(
       size_mid = ifelse(is.na(collection_estimated_size), 1, collection_estimated_size),
       size_max = ifelse(is.na(collection_estimated_size_max), 1, collection_estimated_size_max),
@@ -718,38 +725,66 @@ get_edges <- function(sequences,
       .data[[sender_museum_grouping_dimension]],
       .data[[recipient_grouping_dimension]],
       .data[[recipient_museum_grouping_dimension]]
-    )
-  count_edges <- sequences_grouped |>
+    ) |>
     summarize(count = n()) |>
     ungroup() |>
     mutate(label=count)
-  mid_size_edges <- sequences_grouped |>
-    summarize(count = sum(size_mid)) |>
+  sequences |>
+    mutate(
+      size_mid = ifelse(is.na(collection_estimated_size), 1, collection_estimated_size),
+      size_max = ifelse(is.na(collection_estimated_size_max), 1, collection_estimated_size_max),
+      size_min = ifelse(is.na(collection_estimated_size_min), 1, collection_estimated_size_min)
+    ) |>
+    group_by(
+      sender_id,
+      from,
+      to,
+      .data[[sender_grouping_dimension]],
+      .data[[sender_museum_grouping_dimension]],
+      .data[[recipient_grouping_dimension]],
+      .data[[recipient_museum_grouping_dimension]]
+    ) |>
+    summarize(
+      # this initial summing of transaction sizes is from each individual sender to each recipient type
+      # the sums must not add up to more than 100% of the initial museum.
+      transaction_total_size_mid = min(sum(size_mid), museum_sizes[initial_museum_size]),
+      transaction_total_size_max = min(sum(size_max), museum_sizes[initial_museum_size]),
+      transaction_total_size_min = min(sum(size_min), museum_sizes[initial_museum_size])
+    ) |>
+    group_by(
+      from,
+      to,
+      .data[[sender_grouping_dimension]],
+      .data[[sender_museum_grouping_dimension]],
+      .data[[recipient_grouping_dimension]],
+      .data[[recipient_museum_grouping_dimension]]
+    ) |>
+    summarize(
+      # the totals can now be summed for edges from each sender type to each recipient type
+      transaction_total_size_mid = sum(transaction_total_size_mid),
+      transaction_total_size_max = sum(transaction_total_size_max),
+      transaction_total_size_min = sum(transaction_total_size_min),
+      # extra counts are added in order to give edges a blurry line
+      transaction_total_size_min_1_4 = transaction_total_size_min * 0.25,
+      transaction_total_size_min_1_2 = transaction_total_size_min * 0.5,
+      transaction_total_size_min_3_4 = transaction_total_size_min * 0.75,
+      transaction_total_size_mid_1_4 = transaction_total_size_mid * 0.25,
+      transaction_total_size_mid_1_2 = transaction_total_size_mid * 0.5,
+      transaction_total_size_mid_3_4 = transaction_total_size_mid * 0.75,
+      transaction_total_size_max_1_4 = transaction_total_size_max * 0.25,
+      transaction_total_size_max_1_2 = transaction_total_size_max * 0.5,
+      transaction_total_size_max_3_4 = transaction_total_size_max * 0.75
+    ) |>
     ungroup() |>
-    mutate(label="")
-  max_size_edges <- sequences_grouped |>
-    summarize(count = sum(size_max)) |>
-    ungroup() |>
-    mutate(label="")
-  min_size_edges <- sequences_grouped |>
-    summarize(count = sum(size_min)) |>
-    ungroup() |>
-    mutate(label="")
-  rbind(
-    count_edges,
-    min_size_edges |> mutate(count = count * 0.25),
-    min_size_edges |> mutate(count = count * 0.5),
-    min_size_edges |> mutate(count = count * 0.75),
-    min_size_edges,
-    mid_size_edges |> mutate(count = count * 0.25),
-    mid_size_edges |> mutate(count = count * 0.5),
-    mid_size_edges |> mutate(count = count * 0.75),
-    mid_size_edges,
-    max_size_edges |> mutate(count = count * 0.25),
-    max_size_edges |> mutate(count = count * 0.5),
-    max_size_edges |> mutate(count = count * 0.75),
-    max_size_edges
-  ) |>
+    pivot_longer(
+      # each transaction size measure is moved onto a separate row
+      # so that a separate edge with different thickness can be drawn on the plot
+      cols=starts_with("transaction_"),
+      values_to="count"
+    ) |>
+    select(-name) |>
+    mutate(label="") |>
+    rbind(count_edges) |>
     left_join(nodes |> select(from=id, from_sector_label=sector_label), by="from")
 }
 
