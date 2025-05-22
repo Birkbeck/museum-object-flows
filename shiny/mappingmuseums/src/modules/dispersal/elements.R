@@ -349,40 +349,96 @@ get_pathways_layout <- function(sequences,
                                 grouping_dimension,
                                 museum_grouping_dimension,
                                 steps_or_first_last) {
-  grouping_dimension_name <- grouping_dimension_map[grouping_dimension]
-  sender_grouping_dimension <- paste0("sender_", grouping_dimension_name)
-  recipient_grouping_dimension <- paste0("recipient_", grouping_dimension_name)
 
+  sender_grouping_dimension <- paste0("sender_", grouping_dimension)
+  recipient_grouping_dimension <- paste0("recipient_", grouping_dimension)
   sender_museum_grouping_dimension <- paste0("sender_", museum_grouping_dimension)
   recipient_museum_grouping_dimension <- paste0("recipient_", museum_grouping_dimension)
 
- dendrogram_data <-  sequences |>
+ dendrogram_data <- sequences |>
+   # TODO: move filtering to datatable creation
    filter(recipient_position <= end_position) |>
-   select(
-     event_id,
-     event_stage_in_path,
-     previous_shown_event,
-     from,
-     to,
-     sender_id,
-     recipient_id,
-     .data[[sender_museum_grouping_dimension]],
-     .data[[recipient_museum_grouping_dimension]],
-     .data[[sender_grouping_dimension]],
-     .data[[recipient_grouping_dimension]],
-     sender_sector,
-     recipient_sector,
-     sender_position,
-     recipient_position,
-     sender_quantity,
-     recipient_quantity,
-     collection_estimated_size,
-     collection_estimated_size_max,
-     collection_estimated_size_min
+   give_individual_names_to_nodes_in_different_paths(steps_or_first_last) |>
+   add_central_node_if_there_are_many_starting_points(
+     sender_grouping_dimension,
+     sender_museum_grouping_dimension,
+     recipient_grouping_dimension,
+     recipient_museum_grouping_dimension
    )
 
+  from_nodes <- get_nodes(
+    dendrogram_data,
+    "from",
+    "sender",
+    sender_grouping_dimension,
+    sender_museum_grouping_dimension
+  )
+  to_nodes <- get_nodes(
+    dendrogram_data,
+    "to",
+    "recipient",
+    recipient_grouping_dimension,
+    recipient_museum_grouping_dimension
+  )
+  nodes <- merge_from_and_to_nodes(from_nodes, to_nodes) |>
+    # TODO: move filtering to datatable creation
+    filter(position >= start_position & position <= end_position)
+
+  if (grouping_dimension == "sector") {
+    nodes <- nodes |>
+      mutate(
+        name=paste(museum_grouping_dimension, grouping_dimension, sep="@"),
+        label = ifelse(
+          !is.na(museum_grouping_dimension), 
+          paste(gsub("_", " ", museum_grouping_dimension), "museum"),
+          paste(grouping_dimension, "sector")
+        )
+      )
+  } else {
+    nodes <- nodes |>
+      mutate(
+        name=paste(museum_grouping_dimension, grouping_dimension, sep="@"),
+        label = ifelse(
+          !is.na(museum_grouping_dimension), 
+          paste(gsub("_", " ", museum_grouping_dimension), "museum"),
+          grouping_dimension
+        )
+      )
+  }
+
+  edges <- get_edges(
+    dendrogram_data,
+    nodes,
+    sender_grouping_dimension,
+    sender_museum_grouping_dimension,
+    recipient_grouping_dimension,
+    recipient_museum_grouping_dimension
+  )
+  count_edges <- edges |> filter(label != "")
+
+  dendrogram_graph <- graph_from_data_frame(count_edges)
+  dendrogram_layout <- create_layout(dendrogram_graph, layout="dendrogram", circular=TRUE) |>
+    mutate(id=name) |>
+    select(id, x, y)
+
+  nodes <- nodes |> left_join(dendrogram_layout, by="id")
+  start_positions <- nodes |>
+    select(from=id, x, y)
+  end_positions <- nodes |>
+    select(to=id, xend=x, yend=y)
+  edges <- edges |>
+    left_join(start_positions, by="from") |>
+    left_join(end_positions, by="to") |>
+    mutate(
+      label_position_x=(x + xend) / 2,
+      label_position_y=(y + yend) / 2
+    )
+
+  list("nodes"=nodes, "edges"=edges)
+}
+
+give_individual_names_to_nodes_in_different_paths <- function(sequences, steps_or_first_last) {
   build_chains <- function(data) {
-    # give stages in each type of path a unique id
     data <- data |>
       mutate(
         from_label=from,
@@ -403,22 +459,30 @@ get_pathways_layout <- function(sequences,
       select(-from, -to) |>
       rename(from = full_from, to = full_to)
   }
-
   if (steps_or_first_last == "Steps in path") {
-    dendrogram_data <- build_chains(dendrogram_data)
+    sequences <- build_chains(sequences)
   } else {
-    dendrogram_data <- dendrogram_data |>
+    sequences <- sequences |>
       mutate(
         to = paste(from, "->", to)
       )
   }
+  sequences
+}
 
-  initial_senders <- dendrogram_data |>
+add_central_node_if_there_are_many_starting_points <- function(sequences,
+                                                               sender_grouping_dimension,
+                                                               sender_museum_grouping_dimension,
+                                                               recipient_grouping_dimension,
+                                                               recipient_museum_grouping_dimension) {
+  # because a dendrogram layout is being used, a single root node is needed so that paths form a tree.
+  # if there are many starting points, a dummy root node is created as an invisible starting point.
+  initial_senders <- sequences |>
     filter(event_stage_in_path == 1) |>
     select(.data[[sender_museum_grouping_dimension]], .data[[sender_grouping_dimension]]) |>
     distinct()
   if(nrow(initial_senders) > 1) {
-    dummy_rows <- dendrogram_data |>
+    dummy_rows <- sequences |>
       filter(event_stage_in_path == 1) |>
       mutate(
         event_id = "",
@@ -438,37 +502,46 @@ get_pathways_layout <- function(sequences,
         recipient_quantity = sender_quantity,
         sender_quantity = "1"
       )
-    dendrogram_data <- bind_rows(dendrogram_data, dummy_rows)
+    sequences <- bind_rows(sequences, dummy_rows)
   }
+  sequences
+}
 
-  from_nodes_counts <- dendrogram_data |>
+get_nodes <- function(sequences, endpoint, actor_role, grouping_dimension, museum_grouping_dimension) {
+  endpoint_count <- paste0(endpoint, "_count")
+  endpoint_count_suffix <- paste0(endpoint, "_count_suffix")
+  endpoint_count_label <- paste0(endpoint, "_count_label")
+  sequences |>
     mutate(
-      id=from,
-      museum_grouping_dimension=.data[[sender_museum_grouping_dimension]],
-      grouping_dimension=.data[[sender_grouping_dimension]],
-      position=sender_position
+      id=.data[[endpoint]],
+      actor_id=.data[[paste0(actor_role, "_id")]],
+      quantity=.data[[paste0(actor_role, "_quantity")]],
+      count=ifelse(quantity=="many", 2, as.numeric(quantity)),
+      sector=.data[[paste0(actor_role, "_sector")]],
+      museum_group=.data[[museum_grouping_dimension]],
+      actor_group=.data[[grouping_dimension]],
+      position=.data[[paste0(actor_role, "_position")]]
     ) |>
-    select(sender_id, sender_quantity, id, museum_grouping_dimension, grouping_dimension, position, sender_sector) |>
+    select(id, actor_id, quantity, count, sector, museum_group, actor_group, position) |>
     distinct() |>
-    mutate(
-      sender_count=ifelse(sender_quantity=="many",2,as.numeric(sender_quantity))
-    ) |>
-    group_by(id, museum_grouping_dimension, grouping_dimension, position) |>
+    group_by(id, museum_group, actor_group, position) |>
     summarize(
-      from_count=sum(sender_count),
-      from_count_suffix=ifelse("many" %in% sender_quantity, "+", ""),
-      from_count_label=paste0(from_count, from_count_suffix),
-      public_instances=sum(ifelse(sender_sector=="public", sender_count, 0)),
-      university_instances=sum(ifelse(sender_sector=="university", sender_count, 0)),
-      third_instances=sum(ifelse(sender_sector=="third", sender_count, 0)),
-      private_instances=sum(ifelse(sender_sector=="private", sender_count, 0)),
-      hybrid_instances=sum(ifelse(sender_sector=="hybrid", sender_count, 0)),
-      public_proportion = public_instances / from_count,
-      university_proportion = university_instances / from_count,
-      third_proportion = third_instances / from_count,
-      private_proportion = private_instances / from_count,
-      hybrid_proportion = hybrid_instances / from_count,
-      from_sector = case_when(
+      !!sym(endpoint_count):=sum(count),
+      !!sym(endpoint_count_suffix):=ifelse("many" %in% quantity, "+", ""),
+      !!sym(endpoint_count_label):=paste0(
+        .data[[endpoint_count]], .data[[endpoint_count_suffix]]
+      ),
+      public_instances=sum(ifelse(sector=="public", count, 0)),
+      university_instances=sum(ifelse(sector=="university", count, 0)),
+      third_instances=sum(ifelse(sector=="third", count, 0)),
+      private_instances=sum(ifelse(sector=="private", count, 0)),
+      hybrid_instances=sum(ifelse(sector=="hybrid", count, 0)),
+      public_proportion = public_instances / .data[[endpoint_count]],
+      university_proportion = university_instances / .data[[endpoint_count]],
+      third_proportion = third_instances / .data[[endpoint_count]],
+      private_proportion = private_instances / .data[[endpoint_count]],
+      hybrid_proportion = hybrid_instances / .data[[endpoint_count]],
+      !!sym(paste0(endpoint, "_sector")):=case_when(
         public_proportion == 1 ~ "public",
         university_proportion == 1 ~ "university",
         third_proportion == 1 ~ "third",
@@ -483,194 +556,85 @@ get_pathways_layout <- function(sequences,
       )
     ) |>
     ungroup()
+}
 
-  to_nodes_counts <- dendrogram_data |>
+merge_from_and_to_nodes <- function(from_nodes, to_nodes) {
+  from_nodes |>
+    full_join(to_nodes, by=c("id", "museum_group", "actor_group", "position")) |>
     mutate(
-      id=to,
-      museum_grouping_dimension=.data[[recipient_museum_grouping_dimension]],
-      grouping_dimension=.data[[recipient_grouping_dimension]],
-      position=recipient_position,
-    ) |>
-    select(recipient_id, recipient_quantity, id, museum_grouping_dimension, grouping_dimension, position, recipient_sector) |>
-    distinct() |>
-    mutate(
-      recipient_count=ifelse(recipient_quantity=="many",2,as.numeric(recipient_quantity))
-    ) |>
-    group_by(id, museum_grouping_dimension, grouping_dimension, position) |>
-    summarize(
-      to_count=sum(recipient_count),
-      to_count_suffix=ifelse("many" %in% recipient_quantity, "+", ""),
-      to_count_label=paste0(to_count, to_count_suffix),
-      public_instances=sum(ifelse(recipient_sector=="public", recipient_count, 0)),
-      university_instances=sum(ifelse(recipient_sector=="university", recipient_count, 0)),
-      third_instances=sum(ifelse(recipient_sector=="third", recipient_count, 0)),
-      private_instances=sum(ifelse(recipient_sector=="private", recipient_count, 0)),
-      hybrid_instances=sum(ifelse(recipient_sector=="hybrid", recipient_count, 0)),
-      public_proportion = public_instances / to_count,
-      university_proportion = university_instances / to_count,
-      third_proportion = third_instances / to_count,
-      private_proportion = private_instances / to_count,
-      hybrid_proportion = hybrid_instances / to_count,
-      to_sector = case_when(
-        public_proportion == 1 ~ "public",
-        university_proportion == 1 ~ "university",
-        third_proportion == 1 ~ "third",
-        private_proportion == 1 ~ "private",
-        hybrid_proportion == 1 ~ "hybrid",
-        public_proportion >= 0.5 ~ "mostly public",
-        university_proportion >= 0.5 ~ "mostly university",
-        third_proportion >= 0.5 ~ "mostly third",
-        private_proportion >= 0.5 ~ "mostly private",
-        hybrid_proportion >= 0.5 ~ "mostly hybrid",
-        TRUE ~ "unknown"
-      )
-    ) |>
-    ungroup()
-
-  node_counts <- from_nodes_counts |>
-    full_join(to_nodes_counts, by=c("id", "museum_grouping_dimension", "grouping_dimension", "position")) |>
-    mutate(
-      count = ifelse(
-        is.na(to_count),
-        from_count,
-        ifelse(
-          is.na(from_count), 
-          to_count,
-          ifelse(
-            from_count > to_count,
-            from_count,
-            to_count
-          )
-        )
+      count=case_when(
+        is.na(to_count) ~ from_count,
+        is.na(from_count) ~ to_count,
+        from_count > to_count ~ from_count,
+        TRUE ~ to_count
       ),
-      count_label = ifelse(
-        is.na(to_count),
-        from_count_label,
-        ifelse(
-          is.na(from_count), 
-          to_count_label,
-          ifelse(
-            from_count > to_count,
-            from_count_label,
-            to_count_label
-          )
-        )
+      count_label=case_when(
+        is.na(to_count) ~ from_count_label,
+        is.na(from_count) ~ to_count_label,
+        from_count > to_count ~ from_count_label,
+        TRUE ~ to_count_label
       ),
-      sector_label = ifelse(
-        is.na(to_count),
-        from_sector,
-        ifelse(
-          is.na(from_count), 
-          to_sector,
-          ifelse(
-            from_count > to_count,
-            from_sector,
-            to_sector
-          )
-        )
+      sector_label=case_when(
+        is.na(to_count) ~ from_sector,
+        is.na(from_count) ~ to_sector,
+        from_count > to_count ~ from_sector,
+        TRUE ~ to_sector
       )
+    )
+}
+
+get_edges <- function(sequences,
+                      nodes,
+                      sender_grouping_dimension,
+                      sender_museum_grouping_dimension,
+                      recipient_grouping_dimension,
+                      recipient_museum_grouping_dimension) {
+  sequences_grouped <- sequences |>
+    mutate(
+      size_mid = ifelse(is.na(collection_estimated_size), 1, collection_estimated_size),
+      size_max = ifelse(is.na(collection_estimated_size_max), 1, collection_estimated_size_max),
+      size_min = ifelse(is.na(collection_estimated_size_min), 1, collection_estimated_size_min)
     ) |>
-    filter(position >= start_position & position <= end_position)
-
-  if (grouping_dimension_name == "sector") {
-    node_counts <- node_counts |>
-      mutate(
-        name=paste(museum_grouping_dimension, grouping_dimension, sep="@"),
-        label = ifelse(
-          !is.na(museum_grouping_dimension), 
-          paste(gsub("_", " ", museum_grouping_dimension), "museum"),
-          paste(grouping_dimension, "sector")
-        )
-      )
-  } else {
-    node_counts <- node_counts |>
-      mutate(
-        name=paste(museum_grouping_dimension, grouping_dimension, sep="@"),
-        label = ifelse(
-          !is.na(museum_grouping_dimension), 
-          paste(gsub("_", " ", museum_grouping_dimension), "museum"),
-          grouping_dimension
-        )
-      )
-  }
-
-  count_edges <- dendrogram_data |>
-    select(from, to, .data[[sender_grouping_dimension]], .data[[sender_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], .data[[recipient_museum_grouping_dimension]]) |>
-    group_by(from, to, .data[[sender_grouping_dimension]], .data[[sender_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], .data[[recipient_museum_grouping_dimension]]) |>
+    group_by(
+      from,
+      to,
+      .data[[sender_grouping_dimension]],
+      .data[[sender_museum_grouping_dimension]],
+      .data[[recipient_grouping_dimension]],
+      .data[[recipient_museum_grouping_dimension]]
+    )
+  count_edges <- sequences_grouped |>
     summarize(count = n()) |>
     ungroup() |>
-    mutate(
-      label=count
-    )
-  size_edges <- dendrogram_data |>
-    mutate(
-      collection_estimated_size = ifelse(is.na(collection_estimated_size), 1, collection_estimated_size)
-    ) |>
-    select(from, to, .data[[sender_grouping_dimension]], .data[[sender_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], .data[[recipient_museum_grouping_dimension]], collection_estimated_size) |>
-    group_by(from, to, .data[[sender_grouping_dimension]], .data[[sender_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], .data[[recipient_museum_grouping_dimension]]) |>
-    summarize(count = sum(collection_estimated_size)) |>
+    mutate(label=count)
+  mid_size_edges <- sequences_grouped |>
+    summarize(count = sum(size_mid)) |>
     ungroup() |>
-    mutate(
-      label=""
-    )
-  max_size_edges <- dendrogram_data |>
-    mutate(
-      collection_estimated_size = ifelse(is.na(collection_estimated_size_max), 1, collection_estimated_size_max)
-    ) |>
-    select(from, to, .data[[sender_grouping_dimension]], .data[[sender_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], .data[[recipient_museum_grouping_dimension]], collection_estimated_size) |>
-    group_by(from, to, .data[[sender_grouping_dimension]], .data[[sender_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], .data[[recipient_museum_grouping_dimension]]) |>
-    summarize(count = sum(collection_estimated_size)) |>
+    mutate(label="")
+  max_size_edges <- sequences_grouped |>
+    summarize(count = sum(size_max)) |>
     ungroup() |>
-    mutate(
-      label=""
-    )
-  min_size_edges <- dendrogram_data |>
-    mutate(
-      collection_estimated_size = ifelse(is.na(collection_estimated_size_min), 1, collection_estimated_size_min)
-    ) |>
-    select(from, to, .data[[sender_grouping_dimension]], .data[[sender_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], .data[[recipient_museum_grouping_dimension]], collection_estimated_size) |>
-    group_by(from, to, .data[[sender_grouping_dimension]], .data[[sender_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], .data[[recipient_museum_grouping_dimension]]) |>
-    summarize(count = sum(collection_estimated_size)) |>
+    mutate(label="")
+  min_size_edges <- sequences_grouped |>
+    summarize(count = sum(size_min)) |>
     ungroup() |>
-    mutate(
-      label=""
-    )
-  edges <- rbind(
+    mutate(label="")
+  rbind(
     count_edges,
     min_size_edges |> mutate(count = count * 0.25),
     min_size_edges |> mutate(count = count * 0.5),
     min_size_edges |> mutate(count = count * 0.75),
     min_size_edges,
-    size_edges |> mutate(count = count * 0.25),
-    size_edges |> mutate(count = count * 0.5),
-    size_edges |> mutate(count = count * 0.75),
-    size_edges,
+    mid_size_edges |> mutate(count = count * 0.25),
+    mid_size_edges |> mutate(count = count * 0.5),
+    mid_size_edges |> mutate(count = count * 0.75),
+    mid_size_edges,
     max_size_edges |> mutate(count = count * 0.25),
     max_size_edges |> mutate(count = count * 0.5),
     max_size_edges |> mutate(count = count * 0.75),
     max_size_edges
   ) |>
-    left_join(node_counts |> select(from=id, from_sector_label=sector_label), by="from")
-
-  dendrogram_graph <- graph_from_data_frame(count_edges)
-  dendrogram_layout <- create_layout(dendrogram_graph, layout="dendrogram", circular=TRUE) |>
-    mutate(id=name) |>
-    select(id, x, y)
-
-  node_counts <- node_counts |> left_join(dendrogram_layout, by="id")
-  start_positions <- node_counts |>
-    select(from=id, x, y)
-  end_positions <- node_counts |>
-    select(to=id, xend=x, yend=y)
-  edges <- edges |>
-    left_join(start_positions, by="from") |>
-    left_join(end_positions, by="to") |>
-    mutate(
-      label_position_x=(x + xend) / 2,
-      label_position_y=(y + yend) / 2
-    )
-
-  list("nodes"=node_counts, "edges"=edges)
+    left_join(nodes |> select(from=id, from_sector_label=sector_label), by="from")
 }
 
 pathway_dendrogram <- function(layout, show_transaction_counts) {

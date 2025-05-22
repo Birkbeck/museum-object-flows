@@ -2,14 +2,24 @@ source("src/modules/dispersal/elements.R")
 
 dispersalServer <- function(id) {
   moduleServer(id, function(input, output, session) {
+
     grouping_field <- reactive({input$grouping})
-    grouping_dimension <- reactive({
+    actor_grouping <- reactive({
       list(
         "Actor Sector"="sector",
         "Actor Type (Core Categories)"="core_type",
         "Actor Type (Most General)"="general_type",
         "Actor Type (Most Specific)"="type"
       )[input$grouping]
+    })
+    sender_grouping <- reactive({
+      paste0("sender_", actor_grouping())
+    })
+    recipient_grouping <- reactive({
+      paste0("recipient_", actor_grouping())
+    })
+    initial_museum_grouping <- reactive({
+      paste0("initial_museum_", actor_grouping())
     })
 
     museum_grouping_field <- reactive({
@@ -249,7 +259,7 @@ dispersalServer <- function(id) {
       get_filtered_sequences(
         dispersal_events,
         transaction_type_filter(),
-        grouping_dimension(),
+        actor_grouping(),
         museum_grouping_field(),
         event_type_filter(),
         event_type_uncertainty_filter(),
@@ -304,7 +314,7 @@ dispersalServer <- function(id) {
         filtered_sequences(),
         ownershipChangesStart(),
         ownershipChangesEnd(),
-        input$grouping,
+        actor_grouping(),
         museum_grouping(),
         steps_or_first_last()
       )
