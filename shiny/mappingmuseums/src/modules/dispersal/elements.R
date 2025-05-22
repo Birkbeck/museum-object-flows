@@ -157,33 +157,32 @@ add_sender_details <- function(events_data, grouping_dimension, museum_grouping_
   events_data |>
     left_join(
       events_data |>
-        mutate(
+        select(
           previous_shown_event=event_id,
           from_name=recipient_name,
+          from_quantity=recipient_quantity,
           from_type=recipient_type,
           from_core_type=recipient_core_type,
           from_general_type=recipient_general_type,
           from_sector=recipient_sector,
+          # TODO: all museum attributes need to be updated
+          from_size=recipient_size,
           from_governance=recipient_governance,
           from_governance_broad=recipient_governance_broad,
+          from_accreditation=recipient_accreditation,
+          from_subject_matter_broad=recipient_subject_matter_broad,
+          from_country=recipient_country,
+          from_region=recipient_region,
           from_town=recipient_town
-        ) |>
-        select(
-          previous_shown_event,
-          from_name,
-          from_type,
-          from_core_type,
-          from_general_type,
-          from_sector,
-          from_governance,
-          from_governance_broad,
-          from_town
         ),
       by=c("previous_shown_event")
     ) |>
     mutate(
       sender_name=ifelse(
         event_stage_in_path==1, initial_museum_name, from_name
+      ),
+      sender_quantity=ifelse(
+        event_stage_in_path==1, 1, from_quantity
       ),
       sender_type=ifelse(
         event_stage_in_path==1, initial_museum_type, from_type
@@ -197,11 +196,26 @@ add_sender_details <- function(events_data, grouping_dimension, museum_grouping_
       sender_sector=ifelse(
         event_stage_in_path==1, initial_museum_sector, from_sector
       ),
+      sender_size=ifelse(
+        event_stage_in_path==1, initial_museum_size, from_size
+      ),
       sender_governance=ifelse(
         event_stage_in_path==1, initial_museum_governance, from_governance
       ),
       sender_governance_broad=ifelse(
         event_stage_in_path==1, initial_museum_governance_broad, from_governance_broad
+      ),
+      sender_accreditation=ifelse(
+        event_stage_in_path==1, initial_museum_accreditation, from_accreditation
+      ),
+      sender_subject_matter_broad=ifelse(
+        event_stage_in_path==1, initial_museum_subject_matter_broad, from_subject_matter_broad
+      ),
+      sender_country=ifelse(
+        event_stage_in_path==1, initial_museum_country, from_country
+      ),
+      sender_region=ifelse(
+        event_stage_in_path==1, initial_museum_region, from_region
       ),
       sender_town=ifelse(
         event_stage_in_path==1, initial_museum_town, from_town
