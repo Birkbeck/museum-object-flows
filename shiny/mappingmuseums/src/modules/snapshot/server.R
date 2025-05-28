@@ -351,7 +351,18 @@ snapshotServer <- function(id) {
     )
     
     output$openMuseumsTable <- renderDT({
-      filtered_museums()
+      filtered_museums() |>
+        select(
+          museum_id,
+          name_of_museum,
+          size,
+          governance,
+          accreditation,
+          subject_matter,
+          region,
+          year_opened,
+          year_closed
+        )
     })
   })
 }

@@ -394,7 +394,7 @@ dispersalUI <- function(id) {
         NS(id, "tableSelect"),
         label="show columns:",
         choices=sequences_table_choices,
-        selected=sequences_table_choices,
+        selected=sequences_table_selected,
         options = pickerOptions(
           actionsBox = TRUE, 
           size = 10,

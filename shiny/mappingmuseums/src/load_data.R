@@ -87,7 +87,19 @@ closure_reasons <- dispersal_events |>
 closure_outcomes <- get_outcomes_by_museum(dispersal_events)
 museums_including_crown_dependencies <- read_csv("data/all_museums_data.csv") |>
   left_join(closure_outcomes, by="museum_id") |>
-  mutate(all="All")
+  mutate(
+    all="All",
+    year_opened = ifelse(
+      year_opened_1 == year_opened_2,
+      year_opened_1,
+      paste(year_opened_1, year_opened_2, sep=":")
+    ),
+    year_closed = case_when(
+      year_closed_1 == 9999 ~ "N/A",
+      year_closed_1 == year_closed_2 ~ as.character(year_closed_1),
+      TRUE ~ paste(year_closed_1, year_closed_2, sep=":")
+    )
+  )
 museums <- museums_including_crown_dependencies |>
   filter(!nation %in% c("Channel Islands", "Isle of Man")) |>
   mutate(`No filter`="All") |>

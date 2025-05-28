@@ -1,47 +1,3 @@
-sequences_table_choices <- c(
-  "event_stage_in_path",
-  "event_date",
-  "event_date_from",
-  "event_date_to",
-  "collection_id",
-  "collection_status",
-  "collection_description",
-  "collection_types",
-  "collection_size",
-  "initial_museum_governance",
-  "initial_museum_size",
-  "initial_museum_subject_matter",
-  "initial_museum_subject_matter_broad",
-  "initial_museum_region",
-  "sender_name",
-  "event_type",
-  "event_core_type",
-  "event_type_uncertainty",
-  "recipient_name",
-  "event_is_change_of_custody",
-  "event_is_change_of_ownership",
-  #"sender_position",
-  "sender_quantity",
-  "sender_type",
-  "sender_sector",
-  "sender_governance",
-  "sender_size",
-  "sender_subject_matter_broad",
-  "sender_accreditation",
-  "sender_region",
-  "sender_town",
-  #"recipient_position",
-  "recipient_quantity",
-  "recipient_type",
-  "recipient_sector",
-  "recipient_governance",
-  "recipient_size",
-  "recipient_subject_matter_broad",
-  "recipient_accreditation",
-  "recipient_region",
-  "recipient_town"
-)
-
 eventsUI <- function(id) {
   fluidPage(
 
@@ -557,8 +513,8 @@ eventsUI <- function(id) {
       pickerInput(
         NS(id, "tableSelect"),
         label="show columns:",
-        choices=sequences_table_choices,
-        selected=sequences_table_choices,
+        choices=events_table_choices,
+        selected=events_table_selected,
         options = pickerOptions(
           actionsBox = TRUE, 
           size = 10,
