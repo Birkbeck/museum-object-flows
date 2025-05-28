@@ -1,10 +1,8 @@
 outcomesUI <- function(id) {
   fluidPage(
-    fluidRow(
-      p("What do museums do with their collections when they close? See below for a summary of what initially happens to collections, who initially receives them and how this varies across different types of museum."),
-      p("See the table at the bottom of this page for details of each museum and the outcomes of its closure."),
-      p("Outcome categories were determined by clustering museums according to the approximate proportion of their collections involved in events of each event type or received by actors of each actor type."),
-    ),
+
+    text_box("OUTCOMES-TOP"),
+
     sidebarLayout(
       sidebarPanel(
         width=3,
@@ -263,7 +261,7 @@ outcomesUI <- function(id) {
         div(uiOutput(NS(id, "mainPlot")), style = "height: 1200px; width: 100%;"),
         div(uiOutput(NS(id, "mainPlotExplanation")), style = "margin-top: 20px;"),
         fluidRow(
-          p("Click on one of the small charts below to see it enlarged in the main panel above.")
+          text_box("OUTCOMES-BOTTOM Click on one of the small charts below to see it enlarged in the main panel above.")
         ),
         fluidRow(
           column(

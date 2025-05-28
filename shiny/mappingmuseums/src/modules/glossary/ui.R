@@ -1,6 +1,6 @@
 glossaryUI <- function(id) {
   fluidPage(
-    p("Below is a glossary of the terms used in visualizations."),
+    text_box("GLOSSARY-TOP"),
 
     h3("Museum Attributes"),
     p("In the visualizations, museums can be grouped according to their attributes: size, governance, subject matter, and accreditation."),

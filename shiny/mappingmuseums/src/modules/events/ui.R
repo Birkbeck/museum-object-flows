@@ -44,9 +44,8 @@ sequences_table_choices <- c(
 
 eventsUI <- function(id) {
   fluidPage(
-    fluidRow(
-      p("What happens to museum collections?")
-    ),
+
+    text_box("EVENTS-TOP"),
     
     sidebarLayout(
       sidebarPanel(

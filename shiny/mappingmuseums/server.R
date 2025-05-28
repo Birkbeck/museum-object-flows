@@ -18,12 +18,16 @@ source("src/mapping_museums_tables.R")
 source("src/themes.R")
 source("src/calculate_outcomes.R")
 source("src/load_data.R")
+source("src/ui_elements.R")
 
 source("src/modules/home/ui.R")
 source("src/modules/home/server.R")
 
 source("src/modules/glossary/ui.R")
 source("src/modules/glossary/server.R")
+
+source("src/modules/data/ui.R")
+source("src/modules/data/server.R")
 
 source("src/modules/snapshot/ui.R")
 source("src/modules/snapshot/server.R")
@@ -108,6 +112,10 @@ function(input, output, session) {
               lengthUI("length"),
             ),
             tabPanel(
+              "About the data",
+              dataUI("data"),
+            ),
+            tabPanel(
               "Outcomes of Closure",
               outcomesUI("outcomes"),
             ),
@@ -168,6 +176,7 @@ function(input, output, session) {
       changesServer("changes")
       reasonsServer("reasons")
       lengthServer("length")
+      dataServer("data")
       outcomesServer("outcomes")
       eventsServer("events")
       dispersalServer("dispersal")

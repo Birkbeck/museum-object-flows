@@ -1,9 +1,8 @@
 lengthUI <- function(id) {
   fluidPage(
-    fluidRow(
-      p("How long does it take for museums to close? See the charts below to see how length of closure varies by museum type and over time."),
-      p("See the table at the bottom of this page for details of each museum and how long its closure took.")
-    ),
+
+    text_box("LENGTH-TOP"),
+
     sidebarLayout(
       sidebarPanel(
         width=3,
@@ -233,7 +232,7 @@ lengthUI <- function(id) {
         plotlyOutput(NS(id, "mainPlot"), height="720px", width="100%"),
         uiOutput(NS(id, "mainPlotExplanation")),
         fluidRow(
-          p("Click on one of the small charts below to see it enlarged in the main panel above.")
+          text_box("LENGTH-BOTTOM Click on one of the small charts below to see it enlarged in the main panel above.")
         ),
         fluidRow(
           column(

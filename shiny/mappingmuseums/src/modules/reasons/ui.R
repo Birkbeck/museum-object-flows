@@ -1,9 +1,7 @@
 reasonsUI <- function(id) {
   fluidPage(
-    fluidRow(
-      p("Why do museums close? We have categorized museum closures in the period 2000-2024 according to a hierarchy of reasons for closure. See the charts below to see reasons given for museum closure and how the prevalence of reasons varies by museum type and over time."),
-      p("See the table at the bottom of this page for details of each museum and its reasons for closure.")
-    ),
+
+    text_box("REASONS-TOP"),
 
     sidebarLayout(
       sidebarPanel(
@@ -259,7 +257,7 @@ reasonsUI <- function(id) {
         div(uiOutput(NS(id, "mainPlot")), style = "height: 1200px; width: 100%;"),
         div(uiOutput(NS(id, "mainPlotExplanation")), style = "margin-top: 20px;"),
         fluidRow(
-          p("Click on one of the small charts below to see it enlarged in the main panel above.")
+          text_box("REASONS-BOTTOM Click on one of the small charts below to see it enlarged in the main panel above.")
         ),
         fluidRow(
           column(

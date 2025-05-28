@@ -1,9 +1,7 @@
 changesUI <- function(id) {
   fluidPage(
-    fluidRow(
-      p("Changes in the museum sector across the UK during a selected time period (between the start of the first year and the end of the last year). The numbers in the charts below show estimated numbers which take into account uncertain opening and closure dates."),
-      p("Click on a smaller chart to view it enlarged in the main panel.")
-    ),
+
+    text_box("CHANGES-TOP"),
 
     sidebarLayout(
       sidebarPanel(
@@ -257,7 +255,7 @@ changesUI <- function(id) {
         plotlyOutput(NS(id, "mainPlot"), height="720px", width="100%"),
         uiOutput(NS(id, "mainPlotExplanation")),
         fluidRow(
-          p("Click on one of the small charts below to see it enlarged in the main panel above.")
+          text_box("CHANGES-BOTTOM Click on one of the small charts below to see it enlarged in the main panel above.")
         ),
         fluidRow(
           column(

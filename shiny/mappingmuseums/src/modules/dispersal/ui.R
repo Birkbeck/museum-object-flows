@@ -27,13 +27,9 @@ form_item <- function(title, content, item) {
 
 dispersalUI <- function(id) {
   fluidPage(
-    fluidRow(
-      p("The transfer of museum collections after closure. The diagram below summarizes categorizes the pathways that collections follow when leaving a closed museum."),
-      p("Nodes are labelled with the number of actors belonging to the category at that time step. The width of lines is proportional to the possible number of objects involved in transfers."),
-      p("Use the options to alter the way that museums and other actors are grouped together and to filter transactions according to type or collection source/destination."),
-      p("Find out more about actor and event types in the actor and event types tab."),
-      p("The table below the diagram provides details of the depicted transfers."),
-      ),
+
+    text_box("DISPERSAL-TOP"),
+
     sidebarLayout(
       sidebarPanel(
         width=3,
@@ -345,7 +341,7 @@ dispersalUI <- function(id) {
         plotlyOutput(NS(id, "mainPlot"), width="100%", height="850px"),
         img(src='actor-sector-key.png', align="left", width="150px"),
         fluidRow(
-          p("Click on one of the small charts below to see it enlarged in the main panel above.")
+          text_box("DISPERSAL-BOTTOM Click on one of the small charts below to see it enlarged in the main panel above.")
         ),
         fluidRow(
           column(

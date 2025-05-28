@@ -1,17 +1,7 @@
 snapshotUI <- function(id) {
   fluidPage(
 
-    fluidRow(
-      p(
-        "The distribution of different types of museum across the UK in a single year or during a selected time period."
-      ),
-      p(
-        "If viewing museums in a single year, charts display the number of museums open at the end of that year. If viewing museums during a time period, charts display the number of museums open for at least some of the period."
-      ),
-      p(
-        "The numbers in the charts show the estimated number of museums. Estimates take into account uncertain opening and closure dates."
-      ),
-    ),
+    text_box("SNAPSHOT-TOP"),
 
     sidebarLayout(
       sidebarPanel(
@@ -263,7 +253,7 @@ snapshotUI <- function(id) {
         plotlyOutput(NS(id, "mainPlot"), height="800px", width="100%"),
         uiOutput(NS(id, "mainPlotExplanation")),
         fluidRow(
-          p("Click on one of the small charts below to see it enlarged in the main panel above.")
+          text_box("SNAPSHOT-BOTTOM Click on one of the small charts below to see it enlarged in the main panel above.")
         ),
         fluidRow(
           column(
