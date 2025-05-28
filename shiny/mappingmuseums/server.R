@@ -23,6 +23,9 @@ source("src/ui_elements.R")
 source("src/modules/home/ui.R")
 source("src/modules/home/server.R")
 
+source("src/modules/about/ui.R")
+source("src/modules/about/server.R")
+
 source("src/modules/glossary/ui.R")
 source("src/modules/glossary/server.R")
 
@@ -90,6 +93,10 @@ function(input, output, session) {
             tabPanel(
               "Home",
               homeUI("home"),
+            ),
+            tabPanel(
+              "About",
+              aboutUI("about"),
             ),
             tabPanel(
               "Glossary",
