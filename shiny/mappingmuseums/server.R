@@ -82,13 +82,16 @@ function(input, output, session) {
     req(credentials()$user_auth)
     credentials()$info
   })
-  
+
   observeEvent(credentials()$user_auth, {
     if (!PRODUCTION || credentials()$user_auth) {
       output$appContent <- renderUI({
         fluidPage(
           actionButton("logout", "Logout"),
           titlePanel(generate_title("Mapping Museums & Museum Closure")),
+          tags$head(
+            tags$style(type="text/css", ".nav-tabs {font-size: 16px}")
+          ),
           tabsetPanel(
             tabPanel(
               "Home",
