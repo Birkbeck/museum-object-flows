@@ -15,44 +15,23 @@ snapshotUI <- function(id) {
 
         h3("View"),
 
-        tagList(
-          tags$span(
-            tags$strong("Single year or range of years: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Single year or range of years",
-              `data-content` = "<p><strong>Single year:</strong> Select to view the museums that were open at the end of the specified year.</p><p><strong>Range of years:</strong> Select to view the museums that were open during at least part of the specified range of years.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Single year or range of years",
+          "<p><strong>Single year:</strong> Select to view the museums that were open at the end of the specified year.</p><p><strong>Range of years:</strong> Select to view the museums that were open during at least part of the specified range of years.</p>",
           radioButtons(
             NS(id, "yearOrRange"),
             label="",
             choices=c("Single year", "Range of years"),
             selected="Single year",
             inline=TRUE
-          ),
+          )
         ),
-
 
         uiOutput(NS(id, "yearSlider")),
 
-        tagList(
-          tags$span(
-            tags$strong("Main museum attribute: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Main museum attribute",
-              `data-content` = "<p>Select which attribute to group museums by</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Main museum attribute",
+          "<p>Select which attribute to group museums by</p>",
           selectInput(
             NS(id, "mainAxis"),
             label="",
@@ -61,19 +40,26 @@ snapshotUI <- function(id) {
           )
         ),
 
-        tagList(
-          tags$span(
-            tags$strong("Secondary museum attribute: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Secondary museum attribute",
-              `data-content` = "<p>Select a second museum attribute to group museums by on the horizontal axis of the heatmap.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "!! Show only",
+          "<p>Add or remove values from the chart</p>",
+          pickerInput(
+            NS(id, "mainAxisShowOnly"),
+            "", 
+            choices=NULL,
+            selected=NULL,
+            options=pickerOptions(
+              actionsBox=TRUE, 
+              size=10,
+              selectedTextFormat="count > 3"
+            ), 
+            multiple=TRUE
+          )
+        ),
+
+        form_item(
+          "Secondary museum attribute",
+          "<p>Select a second museum attribute to group museums by on the horizontal axis of the heatmap.</p>",
           selectInput(
             NS(id, "secondAxis"),
             label="",
@@ -82,23 +68,30 @@ snapshotUI <- function(id) {
           )
         ),
 
+        form_item(
+          "!! Show only",
+          "<p>Add or remove values from the chart</p>",
+          pickerInput(
+            NS(id, "secondAxisShowOnly"),
+            "", 
+            choices=NULL,
+            selected=NULL,
+            options=pickerOptions(
+              actionsBox=TRUE, 
+              size=10,
+              selectedTextFormat="count > 3"
+            ), 
+            multiple=TRUE
+          )
+        ),
+
         uiOutput(NS(id, "mainPlotOptions")),
 
         h3("Filters"),
 
-        tagList(
-          tags$span(
-            tags$strong("Museum governance: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum governance",
-              `data-content` = "<p>The governance structure of the museum</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum governance",
+          "<p>The governance structure of the museum</p>",
           pickerInput(
             NS(id, "governanceFilter"), 
             "",
@@ -113,19 +106,9 @@ snapshotUI <- function(id) {
           ) 
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum size: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum size",
-              `data-content` = "<p>The size of the museum. Museum sizes are based on approximate annual visitor numbers:</p><p><strong>Small: </strong>0 - 10,000 annual visitors.</p><p><strong>Medium: </strong>10,000 - 50,000 annual visitors</p><p><strong>Large: </strong>50,000 - 1,000,000 annual visitors.</p><p><strong>Huge: </strong>More than 1,000,000 annual visitors.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum size",
+          "<p>The size of the museum. Museum sizes are based on approximate annual visitor numbers:</p><p><strong>Small: </strong>0 - 10,000 annual visitors.</p><p><strong>Medium: </strong>10,000 - 50,000 annual visitors</p><p><strong>Large: </strong>50,000 - 1,000,000 annual visitors.</p><p><strong>Huge: </strong>More than 1,000,000 annual visitors.</p>",
           pickerInput(
             NS(id, "sizeFilter"), 
             "",
@@ -140,19 +123,9 @@ snapshotUI <- function(id) {
           ) 
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum subject: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum subject",
-              `data-content` = "<p>The subject matter of the museum.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum subject",
+          "<p>The subject matter of the museum.</p>",
           pickerInput(
             NS(id, "subjectFilter"), 
             "",
@@ -167,19 +140,9 @@ snapshotUI <- function(id) {
           )  
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum subject (specific): "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum subject (specific)",
-              `data-content` = "<p>Specific categories of museum subject matter.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum subject (specific)",
+          "<p>Specific categories of museum subject matter.</p>",
           pickerInput(
             NS(id, "subjectSpecificFilter"), 
             "",
@@ -194,19 +157,9 @@ snapshotUI <- function(id) {
           )
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum country/region: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum country or region",
-              `data-content` = "<p>Where in the United Kingdom the museum is located.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum country or region",
+          "<p>Where in the United Kingdom the museum is located.</p>",
           pickerInput(
             NS(id, "regionFilter"), 
             "",
@@ -221,19 +174,9 @@ snapshotUI <- function(id) {
           )   
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum accreditation: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum accreditation",
-              `data-content` = "<p>Whether or not the museum was accredited at the time of closure.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum accreditation",
+          "<p>Whether or not the museum was accredited at the time of closure.</p>",
           pickerInput(
             NS(id, "accreditationFilter"), 
             "",

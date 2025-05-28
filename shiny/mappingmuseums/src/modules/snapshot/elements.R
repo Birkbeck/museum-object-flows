@@ -22,7 +22,7 @@ get_museums_in_snapshot <- function(museums,
     )
 }
 
-museum_map <- function(museums, dimension, year_or_range, start, end) {
+museum_map <- function(museums, dimension, year_or_range, start, end, main_axis_filter) {
   if (year_or_range == "Single year") {
     period <- end 
   } else {
@@ -33,7 +33,7 @@ museum_map <- function(museums, dimension, year_or_range, start, end) {
   min_y <- min(museums$bng_y)
   max_y <- max(museums$bng_y)
   padding <- 10000
-  map <- ggplot(museums) +
+  map <- ggplot(museums |> filter(.data[[dimension]] %in% main_axis_filter)) +
     geom_polygon(data=regions, aes(x=x, y=y, group=group), linewidth=0.1, label=NA, colour="black", fill=NA) +
     geom_point(aes(label=name_of_museum, x=bng_x, y=bng_y, colour=.data[[dimension]]), size=0.5) +
     scale_x_continuous(limits=c(min_x - padding, max_x + padding)) +
@@ -54,13 +54,13 @@ museum_map <- function(museums, dimension, year_or_range, start, end) {
   map |> ggplotly(tooltip=c("label", "colour"))
 }
 
-museum_map_small <- function(museums, dimension, year_or_range, start, end) {
+museum_map_small <- function(museums, dimension, year_or_range, start, end, main_axis_filter) {
   if (year_or_range == "Single year") {
     period <- end 
   } else {
     period <- paste0(start, "-", end)
   }
-  ggplot(museums) +
+  ggplot(museums |> filter(.data[[dimension]] %in% main_axis_filter)) +
     geom_polygon(data=regions, aes(x=x, y=y, group=group), linewidth=0.1, label=NA, colour="black", fill=NA) +
     geom_point(aes(label=name_of_museum, x=bng_x, y=bng_y, colour=.data[[dimension]]), size=0.5) +
     scale_colour_manual(values=museum_attribute_colours, labels=tidy_labels) +
@@ -79,10 +79,10 @@ museum_map_small <- function(museums, dimension, year_or_range, start, end) {
     )
 }
 
-snapshot_bar_chart <- function(data, dimension, measure, title, y_label, x_label) {
+snapshot_bar_chart <- function(data, dimension, measure, title, y_label, x_label, main_axis_filter) {
   fill_scale <- scale_fill_manual(values=c("TRUE"=blue, "FALSE"=red))
   bar_chart <- ggplot(
-    data,
+    data |> filter(.data[[dimension]] %in% main_axis_filter),
     aes(
       x=.data[[measure]],
       y=.data[[dimension]],
@@ -108,7 +108,7 @@ snapshot_bar_chart <- function(data, dimension, measure, title, y_label, x_label
   bar_chart |> ggplotly(tooltip=c("label", "x"))
 }
 
-snapshot_bar_chart_small <- function(data, dimension, measure, title, x_label) {
+snapshot_bar_chart_small <- function(data, dimension, measure, title, x_label, main_axis_filter) {
   fill_scale <- scale_fill_manual(values=c("TRUE"=blue, "FALSE"=red))
   if (measure == "end_total") {
     axis_max <- max(c(max(data$start_total), max(data$end_total)))
@@ -139,7 +139,7 @@ snapshot_bar_chart_small <- function(data, dimension, measure, title, x_label) {
     breaks <- c(0, axis_max)
   }
   ggplot(
-    data,
+    data |> filter(.data[[dimension]] %in% main_axis_filter),
     aes(
       x=.data[[measure]],
       y=.data[[dimension]],
@@ -169,7 +169,15 @@ snapshot_bar_chart_small <- function(data, dimension, measure, title, x_label) {
     )
 }
 
-snapshot_heatmap <- function(data, metric, year_or_range, start, end, x_label, y_label) {
+snapshot_heatmap <- function(data,
+                             metric,
+                             year_or_range,
+                             start,
+                             end,
+                             x_label,
+                             y_label,
+                             main_axis_filter,
+                             second_axis_filter) {
   if (year_or_range == "Single year") {
     period <- end 
   } else {
@@ -188,7 +196,11 @@ snapshot_heatmap <- function(data, metric, year_or_range, start, end, x_label, y
   ) |>
     mutate(y=y+0.5)
   heatmap <- ggplot(
-    data,
+    data |>
+      filter(
+        dimension_1 == "All" | dimension_1 %in% main_axis_filter,
+        dimension_2 == "All" | dimension_2 %in% second_axis_filter
+      ),
     aes(
       x=dimension_2,
       y=dimension_1,
@@ -224,14 +236,26 @@ snapshot_heatmap <- function(data, metric, year_or_range, start, end, x_label, y
 }
 
 
-snapshot_heatmap_small <- function(data, metric, year_or_range, start, end, x_label, y_label) {
+snapshot_heatmap_small <- function(data,
+                                   metric,
+                                   year_or_range,
+                                   start,
+                                   end,
+                                   x_label,
+                                   y_label,
+                                   main_axis_filter,
+                                   second_axis_filter) {
   if (year_or_range == "Single year") {
     period <- end 
   } else {
     period <- paste0(start, "-", end)
   }
   ggplot(
-    data,
+    data |>
+      filter(
+        dimension_1 == "All" | dimension_1 %in% main_axis_filter,
+        dimension_2 == "All" | dimension_2 %in% second_axis_filter
+      ),
     aes(
       x=dimension_2,
       y=dimension_1,
