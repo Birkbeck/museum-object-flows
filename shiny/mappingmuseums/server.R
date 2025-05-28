@@ -94,61 +94,49 @@ function(input, output, session) {
           ),
           tabsetPanel(
             tabPanel(
-              "Home",
+              tags$span("Home", title="Go back to the home page"),
               homeUI("home"),
             ),
             tabPanel(
-              "About",
+              tags$span("About", title="About the project"),
               aboutUI("about"),
             ),
             tabPanel(
-              "Glossary",
+              tags$span("Glossary", title="Definitions of key terms and type hierarchies"),
               glossaryUI("glossary"),
             ),
             tabPanel(
-              "Sector Snapshot",
+              tags$span("Sector Snapshot", title="Data on museums open in a chosen time period"),
               snapshotUI("snapshot"),
             ),
             tabPanel(
-              "Sector Changes",
+              tags$span("Sector Changes", title="Changes in museum numbers over a chosen time period"),
               changesUI("changes"),
             ),
             tabPanel(
-              "Reasons for Closure",
+              tags$span("Reasons for Closure", title="Reasons why museums have closed"),
               reasonsUI("reasons"),
             ),
             tabPanel(
-              "Length of Closure",
+              tags$span("Length of Closure", title="How long it takes for museums to close"),
               lengthUI("length"),
             ),
             tabPanel(
-              "About the data",
+              tags$span("About the data", title="An introduction to data concerning collection dispersal"),
               dataUI("data"),
             ),
             tabPanel(
-              "Outcomes of Closure",
+              tags$span("Outcomes of Closure", title="What museums do after closure"),
               outcomesUI("outcomes"),
             ),
             tabPanel(
-              "Post-closure Events",
+              tags$span("Post-closure Events", title="What happens after closure"),
               eventsUI("events"),
             ),
             tabPanel(
-              "Collections Dispersal",
+              tags$span("Collections Dispersal", title="The flow of collections away from closed museums"),
               dispersalUI("dispersal"),
-            ),
-            #tabPanel(
-            #  "Dispersal: Pathways",
-            #  pathwaysUI("pathways"),
-            #),
-            #tabPanel(
-            #  "Dispersal: Sequences",
-            #  sequencesUI("sequences")
-            #),
-            #tabPanel(
-            #  "Dispersal: Movements",
-            #  movementsUI("movements")
-            #),
+            )
           )
         )
       })
