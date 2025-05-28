@@ -390,17 +390,14 @@ dispersalUI <- function(id) {
 
     fluidRow(
       h3("Sequences Data"),
-      pickerInput(
+      virtualSelectInput(
         NS(id, "tableSelect"),
         label="show columns:",
         choices=sequences_table_choices,
         selected=sequences_table_selected,
-        options = pickerOptions(
-          actionsBox = TRUE, 
-          size = 10,
-          selectedTextFormat = "count > 3"
-        ), 
-        multiple = TRUE
+        multiple=TRUE,
+        disableSelectAll=FALSE,
+        search=TRUE
       ), 
       downloadButton(NS(id, "downloadSequencesTable"), label="Download table as CSV")
     ),
