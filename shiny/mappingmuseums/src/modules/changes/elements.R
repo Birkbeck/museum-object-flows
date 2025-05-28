@@ -2,10 +2,6 @@ openings_vs_closures_scatter <- function(data, dimension) {
   data <- data |>
     mutate(`total openings and closures`=turnover)
   ggplot(data, aes(x=closure_rate, y=opening_rate)) +
-    annotate("text", x=3, y=2, size=6, label="Stasis", alpha=0.5) +
-    annotate("text", x=3, y=77, size=6, label="Growth", alpha=0.5) +
-    annotate("text", x=75, y=2, size=6, label="Decline", alpha=0.5) +
-    annotate("text", x=75, y=77, size=6, label="Churn", alpha=0.5) +
     geom_point(aes(colour=.data[[dimension]], size=`total openings and closures`), alpha=0.7) +
     geom_abline(colour="grey") +
     geom_text(aes(label=tidy_labels[.data[[dimension]]]), size=6, nudge_y=3) +
