@@ -3,6 +3,82 @@ source("src/modules/dispersal/elements.R")
 dispersalServer <- function(id) {
   moduleServer(id, function(input, output, session) {
 
+    observeEvent(input$reset, {
+      updateRadioButtons(session=session, inputId="stepsOrFirstLast", selected="Steps in path")
+      updateSliderInput(session=session, inputId="stagesInOwnershipPath", value=2)
+      updateCheckboxInput(session=session, inputId="showTransactionCounts", value=FALSE)
+      updateRadioButtons(session=session, inputId="countOrPercentage", selected="count")
+      updateSwitchInput(session=session, inputId="firepower", value=FALSE)
+      updateSelectInput(session=session, inputId="grouping", selected="Actor Sector")
+      updateSelectInput(session=session, inputId="groupingMuseums", selected="Governance")
+      updatePickerInput(
+        session=session,
+        inputId="transactionTypeFilter",
+        selected=c("Change of ownership", "Change of custody", "End of existence")
+      )
+      updatePickerInput(
+        session=session,
+        inputId="eventTypeUncertaintyFilter",
+        selected=c("certain", "?+", "?", "?-")
+      )
+      updatePickerInput(
+        session=session,
+        inputId="collectionStatusFilter",
+        selected=filter(collection_status_labels, default_filter)$tidy_label,
+      )
+      updateVirtualSelect(
+        session=session,
+        inputId="initialMuseum",
+        choices=filtered_museums()$name,
+        selected=filtered_museums()$name
+      )
+      updatePickerInput(
+        session=session,
+        inputId="startGovernanceFilter",
+        selected="Local Authority"
+      )
+      updatePickerInput(
+        session=session,
+        inputId="startSizeFilter",
+        selected=filter(size_labels, default_filter)$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="startSubjectFilter",
+        selected=filter(subject_broad_labels, default_filter)$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="startSubjectSpecificFilter",
+        selected=subject_full_labels$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="startRegionFilter",
+        selected=filter(country_region_labels, internal_label != "England")$tidy_label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="startAccreditationFilter",
+        selected=filter(accreditation_labels, default_filter)$tidy_label
+      )
+      print(actor_choices_table())
+      updatePickerInput(
+        session=session,
+        inputId="sequenceEnd",
+        label=paste0("(", actor_grouping(), ")"),
+        choices=actor_choices_table()$label,
+        selected=actor_choices_table()$label
+      )
+      updatePickerInput(
+        session=session,
+        inputId="sequencePassesThrough",
+        label=paste0("(", actor_grouping(), ")"),
+        choices=actor_choices_table()$label,
+        selected=actor_choices_table()$label
+      )
+    })
+
     grouping_field <- reactive({input$grouping})
     actor_grouping <- reactive({
       list(
@@ -203,9 +279,8 @@ dispersalServer <- function(id) {
       sapply(input$initialMuseum, function(text) sub(".*\\(([^()]*)\\)$", "\\1", text))
     })
 
-    observeEvent(initial_museum_filters(), {
-      freezeReactiveValue(input, "initialMuseum")
-      museums_list <- dispersal_events |>
+    filtered_museums <- reactive({
+      dispersal_events |>
         filter(
           input$firepower | initial_museum_id != "mm.domus.SE513",
           initial_museum_size %in% size_filter_choices(),
@@ -224,32 +299,30 @@ dispersalServer <- function(id) {
         arrange(name) |>
         select(name, museum_id, initial_museum_size) |>
         distinct()
+    })
+
+    observeEvent(initial_museum_filters(), {
+      freezeReactiveValue(input, "initialMuseum")
       updateVirtualSelect(
         session=session,
         inputId="initialMuseum",
-        choices=museums_list$name,
-        selected=museums_list$name
+        choices=filtered_museums()$name,
+        selected=filtered_museums()$name
       )
     })
 
     observeEvent(grouping_filters(), {
-      grouping_label <- list(
-        "Actor Sector"="sector",
-        "Actor Type (Core Categories)"="core type",
-        "Actor Type (Most General)"="most general type",
-        "Actor Type (Most Specific)"="most specific type"
-      )[grouping_field()]
       updatePickerInput(
         session=session,
         inputId="sequenceEnd",
-        label=paste0("(", grouping_label, ")"),
+        label=paste0("(", actor_grouping(), ")"),
         choices=actor_choices_table()$label,
         selected=actor_choices_table()$label
       )
       updatePickerInput(
         session=session,
         inputId="sequencePassesThrough",
-        label=paste0("(", grouping_label, ")"),
+        label=paste0("(", actor_grouping(), ")"),
         choices=actor_choices_table()$label,
         selected=actor_choices_table()$label
       )
