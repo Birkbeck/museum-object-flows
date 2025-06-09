@@ -159,7 +159,17 @@ lengthServer <- function(id) {
     })
 
     event_dates_table <- reactive({get_event_dates_table()})
-    lengths_table <- reactive({get_lengths_table(event_dates_table())})
+    lengths_table <- reactive({
+      get_lengths_table(
+        event_dates_table(),
+        size_filter_choices(),
+        governance_filter_choices(),
+        accreditation_filter_choices(),
+        subject_filter_choices(),
+        specific_subject_filter_choices(),
+        region_filter_choices()
+      )
+    })
     lengths_two_way_table <- reactive({
       get_lengths_two_way_table(lengths_table(), museum_grouping())
     })

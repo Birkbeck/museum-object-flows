@@ -120,10 +120,24 @@ get_event_dates_table <- function() {
     )
 }
 
-get_lengths_table <- function(event_dates_table) {
+get_lengths_table <- function(event_dates_table,
+                              size_filter,
+                              governance_filter,
+                              accreditation_filter,
+                              subject_filter,
+                              specific_subject_filter,
+                              region_filter) {
   event_dates_table |>
     filter(event_level=="super") |>
     left_join(museums_including_crown_dependencies, by="museum_id") |>
+    filter(
+      size %in% size_filter,
+      governance_main %in% governance_filter,
+      accreditation %in% accreditation_filter,
+      main_subject %in% subject_filter,
+      subject_matter %in% specific_subject_filter,
+      region %in% region_filter | nation %in% region_filter
+    ) |>
     select(
       museum_id,
       museum,
