@@ -59,8 +59,6 @@ dispersalUI <- function(id) {
           )
         ),
 
-        h3("Grouping"),
-
         form_item(
           "Group actors by",
           "<p>Select how to group and display actors on the diagram.</p><p>Museums from the Mapping Museums Database are always grouped according to governance.</p><p>Other actors can be grouped according to:</p><p><strong>Actor sector:</strong> The sector of the economy (<i>public</i>, <i>private</i>, <i>third</i>, <i>etc.</i>) that they belong to.</p><p><strong>Most specific actor type:</strong> The most specific actor type that actors are known to belong to.</p><p><strong>Core category actor type:</strong> The core category that they belong to. Refer to the actor types hierarchy to see which types are included as core categories.</p><p><strong>Most general actor type:</strong> The most general actor type that actors are known to belong to (<i>organisation</i>, <i>individual</i>, or <i>historic house</i>).</p>",

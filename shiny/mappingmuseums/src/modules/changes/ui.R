@@ -15,19 +15,9 @@ changesUI <- function(id) {
 
         h3("View"),
 
-        tagList(
-          tags$span(
-            tags$strong("Time Period: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Time Period",
-              `data-content` = "<p>Move the slider to adjust the date range under consideration. Data in the charts reflects museum closures and new museum openings between 1st January of the year at the start of the range and 31st December of the year at the end of the range.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Time Period",
+          "<p>Move the slider to adjust the date range under consideration. Data in the charts reflects museum closures and new museum openings between 1st January of the year at the start of the range and 31st December of the year at the end of the range.</p>",
           sliderInput(
             NS(id, "yearRange"),
             label="",
@@ -41,19 +31,9 @@ changesUI <- function(id) {
           )
         ),
 
-        tagList(
-          tags$span(
-            tags$strong("Main museum attribute: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Main museum attribute",
-              `data-content` = "<p>Select which attribute to group museums by</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Main museum attribute",
+          "<p>Select which attribute to group museums by</p>",
           selectInput(
             NS(id, "mainAxis"),
             label="",
@@ -62,19 +42,9 @@ changesUI <- function(id) {
           )
         ),
 
-        tagList(
-          tags$span(
-            tags$strong("Secondary museum attribute: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Secondary museum attribute",
-              `data-content` = "<p>Select a second museum attribute to group museums by on the horizontal axis of the heatmap.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Secondary museum attribute (for heatmaps only)",
+          "<p>Select a second museum attribute to group museums by on the horizontal axis of the heatmap.</p>",
           selectInput(
             NS(id, "secondAxis"),
             label="",
@@ -87,19 +57,9 @@ changesUI <- function(id) {
 
         h3("Filters"),
 
-        tagList(
-          tags$span(
-            tags$strong("Museum governance: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum governance",
-              `data-content` = "<p>The governance structure of the museum</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum governance",
+          "<p>The governance structure of the museum</p>",
           pickerInput(
             NS(id, "governanceFilter"), 
             "",
@@ -114,19 +74,9 @@ changesUI <- function(id) {
           ) 
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum size: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum size",
-              `data-content` = "<p>The size of the museum. Museum sizes are based on approximate annual visitor numbers:</p><p><strong>Small: </strong>0 - 10,000 annual visitors.</p><p><strong>Medium: </strong>10,000 - 50,000 annual visitors</p><p><strong>Large: </strong>50,000 - 1,000,000 annual visitors.</p><p><strong>Huge: </strong>More than 1,000,000 annual visitors.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum size",
+          "<p>The size of the museum. Museum sizes are based on approximate annual visitor numbers:</p><p><strong>Small: </strong>0 - 10,000 annual visitors.</p><p><strong>Medium: </strong>10,000 - 50,000 annual visitors</p><p><strong>Large: </strong>50,000 - 1,000,000 annual visitors.</p><p><strong>Huge: </strong>More than 1,000,000 annual visitors.</p>",
           pickerInput(
             NS(id, "sizeFilter"), 
             "",
@@ -141,19 +91,9 @@ changesUI <- function(id) {
           ) 
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum subject: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum subject",
-              `data-content` = "<p>The subject matter of the museum.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum subject",
+          "<p>The subject matter of the museum.</p>",
           pickerInput(
             NS(id, "subjectFilter"), 
             "",
@@ -168,19 +108,9 @@ changesUI <- function(id) {
           )  
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum subject (specific): "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum subject (specific)",
-              `data-content` = "<p>Specific categories of museum subject matter.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum subject (specific)",
+          "<p>Specific categories of museum subject matter.</p>",
           pickerInput(
             NS(id, "subjectSpecificFilter"), 
             "",
@@ -195,19 +125,9 @@ changesUI <- function(id) {
           )
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum country/region: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum country or region",
-              `data-content` = "<p>Where in the United Kingdom the museum is located.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum country/region",
+          "<p>Where in the United Kingdom the museum is located.</p>",
           pickerInput(
             NS(id, "regionFilter"), 
             "",
@@ -222,19 +142,9 @@ changesUI <- function(id) {
           )   
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum accreditation: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum accreditation",
-              `data-content` = "<p>Whether or not the museum was accredited at the time of closure.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum accreditation",
+          "<p>Whether or not the museum was accredited at the time of closure.</p>",
           pickerInput(
             NS(id, "accreditationFilter"), 
             "",

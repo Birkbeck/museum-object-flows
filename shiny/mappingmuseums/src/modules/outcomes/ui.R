@@ -15,19 +15,9 @@ outcomesUI <- function(id) {
 
         h3("View"),
 
-        tagList(
-          tags$span(
-            tags$strong("Main axis: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Outcome type",
-              `data-content` = "<p>Select how outcomes should be displayed on the diagrams.</p><p><strong>Main event:</strong> Show outcomes of closure in terms of events</p><p><strong>Main actor:</strong> Show outcomes of closure in terms of recipients</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Main axis",
+          "<p>Select how outcomes should be displayed on the diagrams.</p><p><strong>Main event:</strong> Show outcomes of closure in terms of events</p><p><strong>Main actor:</strong> Show outcomes of closure in terms of recipients</p>",
           selectInput(
             NS(id, "outcomeType"),
             label="",
@@ -36,19 +26,9 @@ outcomesUI <- function(id) {
           )
         ),
 
-        tagList(
-          tags$span(
-            tags$strong("Secondary axis: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Second axis",
-              `data-content` = "<p>For the 2-dimensional heatmap.</p><p>Select which museum attribute to show on the <i>x</i>-axis.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Secondary axis (for heatmaps only)",
+          "<p>For the 2-dimensional heatmap.</p><p>Select which museum attribute to show on the <i>x</i>-axis.</p>",
           selectInput(
             NS(id, "museumGrouping"),
             label="",
@@ -63,19 +43,9 @@ outcomesUI <- function(id) {
           )
         ),
 
-        tagList(
-          tags$span(
-            tags$strong("Show only outcomes: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Show only outcomes",
-              `data-content` = "<p>Select which outcomes should appear in the visualizations. Removing some outcomes could improve the readability of charts.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Show only outcomes",
+          "<p>Select which outcomes should appear in the visualizations. Removing some outcomes could improve the readability of charts.</p>",
           pickerInput(
             NS(id, "outcomeFilter"),
             label="",
@@ -94,19 +64,9 @@ outcomesUI <- function(id) {
 
         h3("Filters"),
 
-        tagList(
-          tags$span(
-            tags$strong("Museum governance: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum governance",
-              `data-content` = "<p>The governance structure of the museum</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum governance",
+          "<p>The governance structure of the museum</p>",
           pickerInput(
             NS(id, "governanceFilter"), 
             "",
@@ -121,19 +81,9 @@ outcomesUI <- function(id) {
           ) 
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum size: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum size",
-              `data-content` = "<p>The size of the museum. Museum sizes are based on approximate annual visitor numbers:</p><p><strong>Small: </strong>0 - 10,000 annual visitors.</p><p><strong>Medium: </strong>10,000 - 50,000 annual visitors</p><p><strong>Large: </strong>50,000 - 1,000,000 annual visitors.</p><p><strong>Huge: </strong>More than 1,000,000 annual visitors.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum size",
+          "<p>The size of the museum. Museum sizes are based on approximate annual visitor numbers:</p><p><strong>Small: </strong>0 - 10,000 annual visitors.</p><p><strong>Medium: </strong>10,000 - 50,000 annual visitors</p><p><strong>Large: </strong>50,000 - 1,000,000 annual visitors.</p><p><strong>Huge: </strong>More than 1,000,000 annual visitors.</p>",
           pickerInput(
             NS(id, "sizeFilter"), 
             "",
@@ -148,19 +98,9 @@ outcomesUI <- function(id) {
           ) 
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum subject: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum subject",
-              `data-content` = "<p>The subject matter of the museum.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum subject",
+          "<p>The subject matter of the museum.</p>",
           pickerInput(
             NS(id, "subjectFilter"), 
             "",
@@ -175,19 +115,9 @@ outcomesUI <- function(id) {
           )  
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum subject (specific): "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum subject (specific)",
-              `data-content` = "<p>Specific categories of museum subject matter.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum subject (specific)",
+          "<p>Specific categories of museum subject matter.</p>",
           pickerInput(
             NS(id, "subjectSpecificFilter"), 
             "",
@@ -202,19 +132,9 @@ outcomesUI <- function(id) {
           )
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum country/region: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum country or region",
-              `data-content` = "<p>Where in the United Kingdom the museum is located.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum country/region",
+          "<p>Where in the United Kingdom the museum is located.</p>",
           pickerInput(
             NS(id, "regionFilter"), 
             "",
@@ -229,19 +149,9 @@ outcomesUI <- function(id) {
           )   
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum accreditation: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum accreditation",
-              `data-content` = "<p>Whether or not the museum was accredited at the time of closure.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum accreditation",
+          "<p>Whether or not the museum was accredited at the time of closure.</p>",
           pickerInput(
             NS(id, "accreditationFilter"), 
             "",

@@ -15,19 +15,9 @@ eventsUI <- function(id) {
 
         h3("View"),
 
-        tagList(
-          tags$span(
-            tags$strong("Main axis: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Main axis",
-              `data-content` = "<p>Select which part of the event to view on the y-axis</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Main axis",
+          "<p>Select which part of the event to view on the y-axis</p>",
           selectInput(
             NS(id, "yAxis"),
             label="",
@@ -36,19 +26,9 @@ eventsUI <- function(id) {
           )
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Secondary axis: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Secondary axis",
-              `data-content` = "<p>Select which part of the event to view on the x-axis</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Secondary axis",
+          "<p>Select which part of the event to view on the x-axis</p>",
           selectInput(
             NS(id, "xAxis"),
             label="",
@@ -57,19 +37,9 @@ eventsUI <- function(id) {
           )
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Display: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Display steps or first and last actors",
-              `data-content` = "<p><strong>Steps in path:</strong> View intermediate actors in the sequences of ownership and/or custody changes</p><p><strong>First and last actors:</strong> View only the initial museum and the last known actor in the sequence.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Display",
+          "<p><strong>Steps in path:</strong> View intermediate actors in the sequences of ownership and/or custody changes</p><p><strong>First and last actors:</strong> View only the initial museum and the last known actor in the sequence.</p>",
           radioButtons(
             NS(id, "stepsOrLast"),
             label="",
@@ -78,19 +48,10 @@ eventsUI <- function(id) {
             inline=TRUE
           )
         ),
-        tagList(
-          tags$span(
-            tags$strong("Stepwise events: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Stepwise events",
-              `data-content` = "<p>Select the start and end point of sequences. Step 1 shows the initial museums where collections originated.</p><p>Use the slider to increase the number of steps away from the museum shown on the diagram.</p>"
-            )
-          ),
-          tags$script(popover_js),
+
+        form_item(
+          "Stepwise events",
+          "<p>Select the start and end point of sequences. Step 1 shows the initial museums where collections originated.</p><p>Use the slider to increase the number of steps away from the museum shown on the diagram.</p>",
           pickerInput(
             NS(id, "stagesInPath"),
             "",
@@ -105,24 +66,13 @@ eventsUI <- function(id) {
           )
         ),
 
-        tagList(
-          tags$span(
-            tags$strong("Counts or percentages: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Display counts or percentages",
-              `data-content` = "
-<p><strong>Number of events:</strong> The number of events with the event/participant types</p>
+        form_item(
+          "Counts or percentages",
+          "<p><strong>Number of events:</strong> The number of events with the event/participant types</p>
 <p><strong>Percentage of events:</strong> The percentage of all events with the event/participant types.</p>
 <p><strong>Rowwise percentages:</strong> The percentage of all events with each y-axis attribute that have each x-axis attribute</p>
 <p><strong>Columnwise percentages:</strong> The percentage of all events with each x-axis attribute that have each y-axis attribute</p>
-"
-            )
-          ),
-          tags$script(popover_js),
+",
           radioButtons(
             inputId = NS(id, "countOrPercentage"),
             label = "",
@@ -135,21 +85,9 @@ eventsUI <- function(id) {
           )
         ),
 
-        h3("Grouping"),
-
-        tagList(
-          tags$span(
-            tags$strong("Group events by: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Event Hierarchy Level",
-              `data-content` = "<p>Select which level of the event hierarchy should be used to classify events.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Group events by",
+          "<p>Select which level of the event hierarchy should be used to classify events.</p>",
           selectInput(
             NS(id, "eventGrouping"),
             label="",
@@ -158,19 +96,9 @@ eventsUI <- function(id) {
           )
         ),
 
-        tagList(
-          tags$span(
-            tags$strong("Group actors by: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Actor Hierarchy Level",
-              `data-content` = "<p>Select which level of the actor hierarchy should be used to classify actors.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Group actors by",
+          "<p>Select which level of the actor hierarchy should be used to classify actors.</p>",
           selectInput(
             NS(id, "actorGrouping"),
             label="",
@@ -179,19 +107,9 @@ eventsUI <- function(id) {
           )
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Group museums by: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Group museums",
-              `data-content` = "<p>Select which attribute museums should be grouped by</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Group museums by",
+          "<p>Select which attribute museums should be grouped by</p>",
           selectInput(
             NS(id, "museumGrouping"),
             label="",
@@ -202,19 +120,9 @@ eventsUI <- function(id) {
         
         h3("Filters"),
         
-        tagList(
-          tags$span(
-            tags$strong("Event type: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Event type",
-              `data-content` = "<p>Show only events of a specified type.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Event type",
+          "<p>Show only events of a specified type.</p>",
           pickerInput(
             NS(id, "eventTypeFilter"), 
             "",
@@ -229,19 +137,9 @@ eventsUI <- function(id) {
           ) 
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Sender type: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Sender type",
-              `data-content` = "<p>Show only events with a sender of a specified type.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Sender type",
+          "<p>Show only events with a sender of a specified type.</p>",
           pickerInput(
             NS(id, "senderTypeFilter"), 
             "",
@@ -256,19 +154,9 @@ eventsUI <- function(id) {
           ) 
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Recipient type: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Recipient type",
-              `data-content` = "<p>Show only events with a recipient of a specified type.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Recipient type",
+          "<p>Show only events with a recipient of a specified type.</p>",
           pickerInput(
             NS(id, "recipientTypeFilter"), 
             "",
@@ -283,19 +171,9 @@ eventsUI <- function(id) {
           ) 
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Collection type: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Collection type",
-              `data-content` = "<p>Show only events with a collection of a specified type.</p><p>Some collections have more than one type. Any collection which has at least one of the types selected in this filter will contribute to the chart.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Collection type",
+          "<p>Show only events with a collection of a specified type.</p><p>Some collections have more than one type. Any collection which has at least one of the types selected in this filter will contribute to the chart.</p>",
           pickerInput(
             NS(id, "collectionTypeFilter"), 
             "",
@@ -310,19 +188,9 @@ eventsUI <- function(id) {
           ) 
         ),
 
-        tagList(
-          tags$span(
-            tags$strong("Collection status: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Collection status",
-              `data-content` = "<p>Show only events with a collection of a specified status.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Collection status",
+          "<p>Show only events with a collection of a specified status.</p>",
           pickerInput(
             NS(id, "collectionStatusFilter"), 
             "",
@@ -337,19 +205,9 @@ eventsUI <- function(id) {
           ) 
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Initial museum governance: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum governance",
-              `data-content` = "<p>The governance structure of the museum</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Initial museum governance",
+          "<p>The governance structure of the museum</p>",
           pickerInput(
             NS(id, "governanceFilter"), 
             "",
@@ -364,19 +222,9 @@ eventsUI <- function(id) {
           ) 
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Initial museum size: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum size",
-              `data-content` = "<p>The size of the museum. Museum sizes are based on approximate annual visitor numbers:</p><p><strong>Small: </strong>0 - 10,000 annual visitors.</p><p><strong>Medium: </strong>10,000 - 50,000 annual visitors</p><p><strong>Large: </strong>50,000 - 1,000,000 annual visitors.</p><p><strong>Huge: </strong>More than 1,000,000 annual visitors.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Initial museum size",
+          "<p>The size of the museum. Museum sizes are based on approximate annual visitor numbers:</p><p><strong>Small: </strong>0 - 10,000 annual visitors.</p><p><strong>Medium: </strong>10,000 - 50,000 annual visitors</p><p><strong>Large: </strong>50,000 - 1,000,000 annual visitors.</p><p><strong>Huge: </strong>More than 1,000,000 annual visitors.</p>",
           pickerInput(
             NS(id, "sizeFilter"), 
             "",
@@ -391,19 +239,9 @@ eventsUI <- function(id) {
           ) 
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Initial museum subject: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum subject",
-              `data-content` = "<p>The subject matter of the museum.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Initial museum subject",
+          "<p>The subject matter of the museum.</p>",
           pickerInput(
             NS(id, "subjectFilter"), 
             "",
@@ -418,19 +256,9 @@ eventsUI <- function(id) {
           )  
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Initial museum subject (specific): "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum subject (specific)",
-              `data-content` = "<p>Specific categories of museum subject matter.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Initial museum subject (specific)",
+          "<p>Specific categories of museum subject matter.</p>",
           pickerInput(
             NS(id, "subjectSpecificFilter"), 
             "",
@@ -445,19 +273,9 @@ eventsUI <- function(id) {
           )
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Initial museum country/region: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum country or region",
-              `data-content` = "<p>Where in the United Kingdom the museum is located.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Initial museum country/region",
+          "<p>Where in the United Kingdom the museum is located.</p>",
           pickerInput(
             NS(id, "regionFilter"), 
             "",
@@ -472,19 +290,9 @@ eventsUI <- function(id) {
           )   
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Initial museum accreditation: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum accreditation",
-              `data-content` = "<p>Whether or not the museum was accredited at the time of closure.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Initial museum accreditation",
+          "<p>Whether or not the museum was accredited at the time of closure.</p>",
           pickerInput(
             NS(id, "accreditationFilter"), 
             "",
@@ -497,9 +305,8 @@ eventsUI <- function(id) {
             ), 
             multiple=TRUE
           )   
-        ),
+        )
         
-        div(uiOutput(NS(id, "mainPlotOptions")))
       ),
       
       mainPanel(

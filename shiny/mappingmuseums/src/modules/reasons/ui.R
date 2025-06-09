@@ -17,21 +17,9 @@ reasonsUI <- function(id) {
 
         div(uiOutput(NS(id, "mainPlotOptions"))),
 
-        h3("Grouping"),
-
-        tagList(
-          tags$span(
-            tags$strong("Reason type level: "),
-            tags$i(
-              class = "fa fa-info-circle", # Font Awesome info icon
-              style = "color: #007bff; cursor: pointer;", # Style for visibility
-              `data-toggle` = "popover", # Bootstrap popover attribute
-              `data-placement` = "right", # Position above the icon
-              title = "Reason type level",
-              `data-content` = "<p>Select how reasons for closure should be displayed on the diagrams.</p><p><strong>Top-level:</strong> the most general categories for closure reasons.</p><p><strong>Mid-level:</strong> Categories in between the most general and most specific categories for closure reasons.</p> <p><strong>Low-level:</strong> the most specific categories for closure reasons.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Reason type level",
+          "<p>Select how reasons for closure should be displayed on the diagrams.</p><p><strong>Top-level:</strong> the most general categories for closure reasons.</p><p><strong>Mid-level:</strong> Categories in between the most general and most specific categories for closure reasons.</p> <p><strong>Low-level:</strong> the most specific categories for closure reasons.</p>",
           selectInput(
             NS(id, "reasonLevel"),
             label="",
@@ -40,19 +28,9 @@ reasonsUI <- function(id) {
           )
         ),
 
-        tagList(
-          tags$span(
-            tags$strong("Group museums by: "),
-            tags$i(
-              class = "fa fa-info-circle", # Font Awesome info icon
-              style = "color: #007bff; cursor: pointer;", # Style for visibility
-              `data-toggle` = "popover", # Bootstrap popover attribute
-              `data-placement` = "right", # Position above the icon
-              title = "Group museums by",
-              `data-content` = "<p>For the 2-dimensional heatmap.</p><p>Select which museum attribute to show on the <i>x</i>-axis.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Group museums by (for heatmaps only)",
+          "<p>For the 2-dimensional heatmap.</p><p>Select which museum attribute to show on the <i>x</i>-axis.</p>",
           selectInput(
             NS(id, "museumGrouping"),
             label="",
@@ -63,19 +41,9 @@ reasonsUI <- function(id) {
 
         h3("Filters"),
 
-        tagList(
-          tags$span(
-            tags$strong("Reason core category: "),
-            tags$i(
-              class = "fa fa-info-circle", # Font Awesome info icon
-              style = "color: #007bff; cursor: pointer;", # Style for visibility
-              `data-toggle` = "popover", # Bootstrap popover attribute
-              `data-placement` = "right", # Position above the icon
-              title = "Reason core category",
-              `data-content` = "<p>Show only museums where at least one of their reasons for closure belongs to the selected reason core categories.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Reason core category",
+          "<p>Show only museums where at least one of their reasons for closure belongs to the selected reason core categories.</p>",
           pickerInput(
             NS(id, "reasonFilter"),
             label="",
@@ -90,19 +58,9 @@ reasonsUI <- function(id) {
           ) 
         ),
 
-        tagList(
-          tags$span(
-            tags$strong("Museum governance: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum governance",
-              `data-content` = "<p>The governance structure of the museum</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum governance",
+          "<p>The governance structure of the museum</p>",
           pickerInput(
             NS(id, "governanceFilter"), 
             "",
@@ -117,19 +75,9 @@ reasonsUI <- function(id) {
           ) 
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum size: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum size",
-              `data-content` = "<p>The size of the museum. Museum sizes are based on approximate annual visitor numbers:</p><p><strong>Small: </strong>0 - 10,000 annual visitors.</p><p><strong>Medium: </strong>10,000 - 50,000 annual visitors</p><p><strong>Large: </strong>50,000 - 1,000,000 annual visitors.</p><p><strong>Huge: </strong>More than 1,000,000 annual visitors.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum size",
+          "<p>The size of the museum. Museum sizes are based on approximate annual visitor numbers:</p><p><strong>Small: </strong>0 - 10,000 annual visitors.</p><p><strong>Medium: </strong>10,000 - 50,000 annual visitors</p><p><strong>Large: </strong>50,000 - 1,000,000 annual visitors.</p><p><strong>Huge: </strong>More than 1,000,000 annual visitors.</p>",
           pickerInput(
             NS(id, "sizeFilter"), 
             "",
@@ -144,19 +92,9 @@ reasonsUI <- function(id) {
           ) 
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum subject: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum subject",
-              `data-content` = "<p>The subject matter of the museum.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum subject",
+          "<p>The subject matter of the museum.</p>",
           pickerInput(
             NS(id, "subjectFilter"), 
             "",
@@ -171,19 +109,9 @@ reasonsUI <- function(id) {
           )  
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum subject (specific): "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum subject (specific)",
-              `data-content` = "<p>Specific categories of museum subject matter.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum subject (specific)",
+          "<p>Specific categories of museum subject matter.</p>",
           pickerInput(
             NS(id, "subjectSpecificFilter"), 
             "",
@@ -198,19 +126,9 @@ reasonsUI <- function(id) {
           )
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum country/region: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum country or region",
-              `data-content` = "<p>Where in the United Kingdom the museum is located.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum country/region",
+          "<p>Where in the United Kingdom the museum is located.</p>",
           pickerInput(
             NS(id, "regionFilter"), 
             "",
@@ -225,19 +143,9 @@ reasonsUI <- function(id) {
           )   
         ),
         
-        tagList(
-          tags$span(
-            tags$strong("Museum accreditation: "),
-            tags$i(
-              class = "fa fa-info-circle",
-              style = "color: #007bff; cursor: pointer;",
-              `data-toggle` = "popover",
-              `data-placement` = "right",
-              title = "Museum accreditation",
-              `data-content` = "<p>Whether or not the museum was accredited at the time of closure.</p>"
-            )
-          ),
-          tags$script(popover_js),
+        form_item(
+          "Museum accreditation",
+          "<p>Whether or not the museum was accredited at the time of closure.</p>",
           pickerInput(
             NS(id, "accreditationFilter"), 
             "",
