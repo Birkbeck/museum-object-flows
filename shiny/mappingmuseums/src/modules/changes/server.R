@@ -88,7 +88,7 @@ changesServer <- function(id) {
       )
     })
     
-    current_main_plot <- reactiveVal("openingsVsClosuresScatter")
+    current_main_plot <- reactiveVal("openingsClosures")
     # Update the current plot based on user clicks
     observeEvent(input$openingsVsClosuresScatter, {
       disable("secondAxis")
@@ -106,6 +106,10 @@ changesServer <- function(id) {
       disable("secondAxis")
       current_main_plot("openingRateLine")
     })
+    observeEvent(input$openingClosureRateLine, {
+      disable("secondAxis")
+      current_main_plot("openingClosureRateLine")
+    })
     observeEvent(input$openingsClosures, {
       disable("secondAxis")
       current_main_plot("openingsClosures")
@@ -122,21 +126,13 @@ changesServer <- function(id) {
       enable("secondAxis")
       current_main_plot("closures.2Way")
     })
-    observeEvent(input$absoluteChange, {
+    observeEvent(input$change, {
       disable("secondAxis")
       current_main_plot("change")
     })
-    observeEvent(input$percentageChange, {
-      disable("secondAxis")
-      current_main_plot("change_pc")
-    })
-    observeEvent(input$absoluteChange2Way, {
+    observeEvent(input$change2Way, {
       enable("secondAxis")
       current_main_plot("change.2Way")
-    })
-    observeEvent(input$percentageChange2Way, {
-      enable("secondAxis")
-      current_main_plot("change_pc.2Way")
     })
     observeEvent(input$openStart2Way, {
       enable("secondAxis")
@@ -172,7 +168,7 @@ changesServer <- function(id) {
           label = "",
           choices = list(
             "Show number of openings" = "opening_count",
-            "Show openings rate" = "opening_rate"
+            "Show rate of openings" = "opening_rate"
           )
         )
       } else if(current_main_plot() == "closureRateLine") {
@@ -181,7 +177,16 @@ changesServer <- function(id) {
           label = "",
           choices = list(
             "Show number of closures" = "closure_count",
-            "Show closure rate" = "closure_rate"
+            "Show rate of closures" = "closure_rate"
+          )
+        )
+      } else if(current_main_plot() == "openingClosureRateLine") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show number of openings/closures" = "count",
+            "Show rate of openings/closures" = "rate"
           )
         )
       } else if(current_main_plot() == "openingsClosures") {
@@ -190,7 +195,7 @@ changesServer <- function(id) {
           label = "",
           choices = list(
             "Show number of openings/closures" = "",
-            "Show openings/closure rate" = "_rate"
+            "Show rate of openings/closure" = "_rate"
           )
         )
       } else if(current_main_plot() == "startEnd") {
@@ -200,6 +205,15 @@ changesServer <- function(id) {
           choices = list(
             "Show number of museums" = "",
             "Show percentage of museums" = "_pc"
+          )
+        )
+      } else if(current_main_plot() == "change") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show change in museum numbers" = "",
+            "Show percentage change in museum numbers" = "_pc"
           )
         )
       } else if(current_main_plot() == "openings.2Way") {
@@ -242,6 +256,15 @@ changesServer <- function(id) {
             "Show columnwise percentages" = "_pc_y"
           )
         )
+      } else if(current_main_plot() == "change.2Way") {
+        radioButtons(
+          inputId = NS(id, "countOrPercentage"),
+          label = "",
+          choices = list(
+            "Show change in museum numbers" = "",
+            "Show percentage change in museum numbers" = "_pc"
+          )
+        )
       }
     })
 
@@ -250,12 +273,15 @@ changesServer <- function(id) {
         "timeSeriesLine",
         "openingRateLine",
         "closureRateLine",
+        "openingClosureRateLine",
         "openingsClosures",
         "startEnd",
+        "change",
         "openings.2Way",
         "closures.2Way",
         "start_total.2Way",
-        "end_total.2Way"
+        "end_total.2Way",
+        "change.2Way"
       )) {
         return("")
       } else if (is.na(input$countOrPercentage)) {
@@ -417,6 +443,25 @@ changesServer <- function(id) {
           period_start(),
           period_end()
         )
+      } else if (current_main_plot() == "openingClosureRateLine") {
+        if (count_or_percentage() == "count") {
+          title <- "Annual Museum Openings and Closures"
+          y_title <- "Number of Openings/Closures"
+          measures <- c("opening_count", "closure_count")
+        } else {
+          title <- "Annual Rate of Museum Openings and Closures"
+          y_title <- "Openings/Closures per 100 Museums"
+          measures <- c("opening_rate", "closure_rate")
+        }
+        time_series_line_double(
+          museum_cumulative_counts(),
+          main_axis(),
+          measures,
+          title,
+          y_title,
+          period_start(),
+          period_end()
+        )
       } else if (current_main_plot() == "openingsClosures") {
         if (count_or_percentage()=="_rate") {
           measures <- c("openings per 100 museums", "closures per 100 museums")
@@ -515,12 +560,13 @@ changesServer <- function(id) {
         )
       } else {
         x_label <- x_labels()[current_main_plot()]
+        x_measure <- paste0(current_main_plot(), count_or_percentage())
         y_label <- input$filterField
         title <- paste(x_label, "by", y_label)
         bar_chart(
           museum_type_summary(),
           main_axis(),
-          current_main_plot(),
+          x_measure,
           title,
           y_label,
           x_label
@@ -567,6 +613,17 @@ changesServer <- function(id) {
         "closure_count",
         "Closures over Time",
         "Number of Closures",
+        period_start(),
+        period_end()
+      )
+    }, width=small_chart_size, height=small_chart_size)
+    output$openingClosureRatesSmall <- renderPlot({
+      time_series_line_double_small(
+        museum_cumulative_counts(),
+        main_axis(),
+        c("opening_count", "closure_count"),
+        "Openings and Closures over Time",
+        "Number of Openings/Closures",
         period_start(),
         period_end()
       )
@@ -621,7 +678,7 @@ changesServer <- function(id) {
         paste0("Closures ", period_start(), "-", period_end())
       )
     }, width=small_chart_size, height=small_chart_size)
-    output$absoluteChangeSmall <- renderPlot({
+    output$changeSmall <- renderPlot({
       bar_chart_small(
         museum_type_summary(),
         main_axis(),
@@ -639,7 +696,7 @@ changesServer <- function(id) {
         "Change (%)"
       )
     }, width=small_chart_size, height=small_chart_size)
-    output$absoluteChangeSmall2Way <- renderPlot({
+    output$changeSmall2Way <- renderPlot({
       heatmap_small(
         museum_type_two_way_summary(),
         main_axis(),

@@ -146,6 +146,18 @@ purple = "#E4A8F0"
 #heatmap_fill_scale <- scale_fill_continuous(transform="pseudo_log", low=white, high=purple)
 heatmap_fill_scale <- scale_fill_continuous(low=white, high=purple)
 
+open_close_line_type_scale <- scale_linetype_manual(
+  values=c(
+    "total"="solid",
+    "change"="solid",
+    "percentage_change"="solid",
+    "opening_count"="dotted",
+    "opening_rate"="dotted",
+    "closure_count"="longdash",
+    "closure_rate"="longdash"
+  )
+)
+
 title_size <- 22
 subtitle_size <- 18
 axis_title_size <- 18

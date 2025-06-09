@@ -174,12 +174,43 @@ changesUI <- function(id) {
             3,
             style=card_style,
             plotOutput(
+              NS(id, "openingsClosuresSmall"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "openingsClosures")
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            plotOutput(
+              NS(id, "startEndSmall"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "startEnd")
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            plotOutput(
+              NS(id, "changeSmall"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "change")
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            plotOutput(
               NS(id, "openingsVsClosuresScatterSmall"),
               width=small_chart_size_px,
               height=small_chart_size_px,
               click=NS(id, "openingsVsClosuresScatter")
             )
           ),
+
           column(
             3,
             style=card_style,
@@ -214,22 +245,13 @@ changesUI <- function(id) {
             3,
             style=card_style,
             plotOutput(
-              NS(id, "openingsMap"),
+              NS(id, "openingClosureRatesSmall"),
               width=small_chart_size_px,
               height=small_chart_size_px,
-              click=NS(id, "openingsMap")
+              click=NS(id, "openingClosureRateLine")
             )
           ),
-          column(
-            3,
-            style=card_style,
-            plotOutput(
-              NS(id, "closuresMap"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "closuresMap")
-            )
-          ),
+
           column(
             3,
             style=card_style,
@@ -248,26 +270,6 @@ changesUI <- function(id) {
               width=small_chart_size_px,
               height=small_chart_size_px,
               click=NS(id, "closures2Way")
-            )
-          ),
-          column(
-            3,
-            style=card_style,
-            plotOutput(
-              NS(id, "openingsClosuresSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "openingsClosures")
-            )
-          ),
-          column(
-            3,
-            style=card_style,
-            plotOutput(
-              NS(id, "startEndSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "startEnd")
             )
           ),
           column(
@@ -294,40 +296,31 @@ changesUI <- function(id) {
             3,
             style=card_style,
             plotOutput(
-              NS(id, "absoluteChangeSmall"),
+              NS(id, "changeSmall2Way"),
               width=small_chart_size_px,
               height=small_chart_size_px,
-              click=NS(id, "absoluteChange")
+              click=NS(id, "change2Way")
+            )
+          ),
+
+          column(
+            3,
+            style=card_style,
+            plotOutput(
+              NS(id, "openingsMap"),
+              width=small_chart_size_px,
+              height=small_chart_size_px,
+              click=NS(id, "openingsMap")
             )
           ),
           column(
             3,
             style=card_style,
             plotOutput(
-              NS(id, "percentageChangeSmall"),
+              NS(id, "closuresMap"),
               width=small_chart_size_px,
               height=small_chart_size_px,
-              click=NS(id, "percentageChange")
-            )
-          ),
-          column(
-            3,
-            style=card_style,
-            plotOutput(
-              NS(id, "absoluteChangeSmall2Way"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "absoluteChange2Way")
-            )
-          ),
-          column(
-            3,
-            style=card_style,
-            plotOutput(
-              NS(id, "percentageChangeSmall2Way"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "percentageChange2Way")
+              click=NS(id, "closuresMap")
             )
           )
         )

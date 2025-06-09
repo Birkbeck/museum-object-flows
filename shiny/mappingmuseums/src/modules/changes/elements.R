@@ -470,20 +470,27 @@ cumulative_counts_by_dimension <- function(df, dimension) {
 }
 
 time_series_line <- function(data, dimension, measure, title, y_label, start_year, end_year) {
+  data <- data |>
+    filter(
+      year >= start_year,
+      year <= end_year
+    ) |>
+    pivot_longer(cols=c(measure), names_to="measure", values_to="value")
   ggplot(
     data,
-    aes(x=year, y=.data[[measure]], colour=.data[[dimension]])
+    aes(x=year, y=value, colour=.data[[dimension]], linetype=measure)
   ) + 
     geom_hline(yintercept=0, colour="black") +
     geom_line(alpha=0.6 , size=1) +
     geom_text(
       data=data |> filter(year==floor(mean(c(start_year, end_year)))),
-      aes(y=.data[[measure]]*1.1, label=tidy_labels[.data[[dimension]]]),
+      aes(y=value*1.1, label=tidy_labels[.data[[dimension]]]),
       size=6
     ) +
     scale_x_continuous(limits=c(start_year, end_year)) +
     scale_y_continuous(limits=function(x){c(min(0, min(x)), max(x))}) +
     scale_colour_manual(values=museum_attribute_colours) +
+    open_close_line_type_scale +
     labs(
       title=title,
       y=y_label,
@@ -521,18 +528,127 @@ time_series_line_small <- function(data, dimension, measure, title, y_label, sta
     limits <- c(0, axis_max*1.1)
     breaks <- c(0, axis_max)
   }
+  data <- data |>
+    filter(
+      year >= start_year,
+      year <= end_year
+    ) |>
+    pivot_longer(cols=c(measure), names_to="measure", values_to="value")
   ggplot(
     data,
-    aes(x=year, y=.data[[measure]], colour=.data[[dimension]])
+    aes(x=year, y=value, colour=.data[[dimension]], linetype=measure)
   ) + 
     geom_line(alpha=0.6 , size=1) +
     geom_text(
       data=data|> filter(year==floor(mean(c(start_year, end_year)))),
-      aes(y=.data[[measure]]*1.1, label=tidy_labels[.data[[dimension]]])
+      aes(y=value*1.1, label=tidy_labels[.data[[dimension]]])
     ) +
     scale_x_continuous(expand=c(0, 0), limits=c(start_year, end_year)) +
     scale_y_continuous(expand=c(0,0), limits=limits, breaks=breaks) +
     scale_colour_manual(values=museum_attribute_colours) +
+    open_close_line_type_scale +
+    labs(
+      title=title,
+      y=y_label,
+      x="Year"
+    ) +
+    theme_minimal() +
+    theme(
+      legend.position = "None",
+      plot.title = element_text(size=14),
+      axis.title = element_text(size=14),
+      axis.text = element_text(size=11),
+      axis.line.x.bottom = element_line(colour="black"),
+      axis.line.y.left = element_line(colour="black")
+    )
+}
+
+time_series_line_double <- function(data,
+                                    dimension,
+                                    measures,
+                                    title,
+                                    y_label,
+                                    start_year,
+                                    end_year) {
+  data <- data |>
+    filter(
+      year >= start_year,
+      year <= end_year
+    ) |>
+    pivot_longer(cols=measures, names_to="measure", values_to="value")
+  ggplot(
+    data,
+    aes(x=year, y=value, colour=.data[[dimension]], linetype=measure)
+  ) + 
+    geom_line(alpha=0.6, size=1) +
+    geom_text(
+      data=data|> filter(year==floor(mean(c(start_year, end_year)))),
+      aes(y=value*1.1, label=tidy_labels[.data[[dimension]]])
+    ) +
+    scale_x_continuous(expand=c(0, 0), limits=c(start_year, end_year)) +
+    scale_y_continuous(limits=function(x){c(min(0, min(x)), max(x))}) +
+    scale_colour_manual(values=museum_attribute_colours) +
+    open_close_line_type_scale +
+    labs(
+      title=title,
+      y=y_label,
+      x="Year"
+    ) +
+    theme_minimal() +
+    theme(
+      legend.position = "None",
+      plot.title = element_text(size=14),
+      axis.title = element_text(size=14),
+      axis.text = element_text(size=11),
+      axis.line.x.bottom = element_line(colour="black"),
+      axis.line.y.left = element_line(colour="black")
+    )
+}
+
+time_series_line_double_small <- function(data,
+                                          dimension,
+                                          measures,
+                                          title,
+                                          y_label,
+                                          start_year,
+                                          end_year) {
+  if ("opening_count" %in% measures) {
+    axis_max <- max(c(max(data$opening_count), max(data$closure_count)))
+    axis_min <- 0
+  } else {
+    axis_max <- max(data[[measure]])
+    axis_min <- min(data[[measure]])
+  }
+  largest_magnitude <- max(axis_max, abs(axis_min))
+  if (largest_magnitude > 100) {
+    scaling_factor <- 0.01
+  } else {
+    scaling_factor <- 0.1
+  }
+  axis_max <- ceiling(axis_max * scaling_factor) / scaling_factor
+  axis_min <- floor(axis_min * scaling_factor) / scaling_factor
+  if (axis_min < 0) {
+    limits <- c(axis_min*1.1, axis_max*1.1)
+    breaks <- c(axis_min, 0, axis_max)
+  } else {
+    limits <- c(0, axis_max*1.1)
+    breaks <- c(0, axis_max)
+  }
+  data <- data |>
+    pivot_longer(cols=measures, names_to="measure", values_to="value")
+  ggplot(
+    data,
+    aes(x=year, y=value, colour=.data[[dimension]], linetype=measure)
+  ) + 
+    geom_line(alpha=0.6 , size=1) +
+    geom_text(
+      data=data|> filter(year==floor(mean(c(start_year, end_year)))),
+      aes(y=value*1.1, label=tidy_labels[.data[[dimension]]])
+    ) +
+    scale_x_continuous(expand=c(0, 0), limits=c(start_year, end_year)) +
+    scale_y_continuous(expand=c(0,0), limits=limits, breaks=breaks) +
+    scale_colour_manual(values=museum_attribute_colours) +
+    open_close_line_type_scale +
     labs(
       title=title,
       y=y_label,
