@@ -29,17 +29,19 @@ outcomesUI <- function(id) {
         form_item(
           "Secondary axis (for heatmaps only)",
           "<p>For the 2-dimensional heatmap.</p><p>Select which museum attribute to show on the <i>x</i>-axis.</p>",
-          selectInput(
-            NS(id, "museumGrouping"),
-            label="",
-            choices=c(
-              field_names$name,
-              "Core reason for closure",
-              "Outcome event type",
-              "Outcome recipient type",
-              "Outcome destination type"
-            ),
-            selected="Governance"
+          disabled(
+            selectInput(
+              NS(id, "museumGrouping"),
+              label="",
+              choices=c(
+                field_names$name,
+                "Core reason for closure",
+                "Outcome event type",
+                "Outcome recipient type",
+                "Outcome destination type"
+              ),
+              selected="Governance"
+            )
           )
         ),
 

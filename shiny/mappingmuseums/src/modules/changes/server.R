@@ -90,22 +90,70 @@ changesServer <- function(id) {
     
     current_main_plot <- reactiveVal("openingsVsClosuresScatter")
     # Update the current plot based on user clicks
-    observeEvent(input$openingsVsClosuresScatter, { current_main_plot("openingsVsClosuresScatter") })
-    observeEvent(input$timeSeriesLine, { current_main_plot("timeSeriesLine") })
-    observeEvent(input$closureRateLine, { current_main_plot("closureRateLine") })
-    observeEvent(input$openingRateLine, { current_main_plot("openingRateLine") })
-    observeEvent(input$openingsClosures, { current_main_plot("openingsClosures") })
-    observeEvent(input$startEnd, { current_main_plot("startEnd") })
-    observeEvent(input$openings2Way, { current_main_plot("openings.2Way") })
-    observeEvent(input$closures2Way, { current_main_plot("closures.2Way") })
-    observeEvent(input$absoluteChange, { current_main_plot("change") })
-    observeEvent(input$percentageChange, { current_main_plot("change_pc") })
-    observeEvent(input$absoluteChange2Way, { current_main_plot("change.2Way") })
-    observeEvent(input$percentageChange2Way, { current_main_plot("change_pc.2Way") })
-    observeEvent(input$openStart2Way, { current_main_plot("start_total.2Way") })
-    observeEvent(input$openEnd2Way, { current_main_plot("end_total.2Way") })
-    observeEvent(input$openingsMap, { current_main_plot("openingsMap") })
-    observeEvent(input$closuresMap, { current_main_plot("closuresMap") })
+    observeEvent(input$openingsVsClosuresScatter, {
+      disable("secondAxis")
+      current_main_plot("openingsVsClosuresScatter")
+    })
+    observeEvent(input$timeSeriesLine, {
+      disable("secondAxis")
+      current_main_plot("timeSeriesLine")
+    })
+    observeEvent(input$closureRateLine, {
+      disable("secondAxis")
+      current_main_plot("closureRateLine")
+    })
+    observeEvent(input$openingRateLine, {
+      disable("secondAxis")
+      current_main_plot("openingRateLine")
+    })
+    observeEvent(input$openingsClosures, {
+      disable("secondAxis")
+      current_main_plot("openingsClosures")
+    })
+    observeEvent(input$startEnd, {
+      disable("secondAxis")
+      current_main_plot("startEnd")
+    })
+    observeEvent(input$openings2Way, {
+      enable("secondAxis")
+      current_main_plot("openings.2Way")
+    })
+    observeEvent(input$closures2Way, {
+      enable("secondAxis")
+      current_main_plot("closures.2Way")
+    })
+    observeEvent(input$absoluteChange, {
+      disable("secondAxis")
+      current_main_plot("change")
+    })
+    observeEvent(input$percentageChange, {
+      disable("secondAxis")
+      current_main_plot("change_pc")
+    })
+    observeEvent(input$absoluteChange2Way, {
+      enable("secondAxis")
+      current_main_plot("change.2Way")
+    })
+    observeEvent(input$percentageChange2Way, {
+      enable("secondAxis")
+      current_main_plot("change_pc.2Way")
+    })
+    observeEvent(input$openStart2Way, {
+      enable("secondAxis")
+      current_main_plot("start_total.2Way")
+    })
+    observeEvent(input$openEnd2Way, {
+      enable("secondAxis")
+      current_main_plot("end_total.2Way")
+    })
+    observeEvent(input$openingsMap, {
+      disable("secondAxis")
+      current_main_plot("openingsMap")
+    })
+    observeEvent(input$closuresMap, {
+      disable("secondAxis")
+      current_main_plot("closuresMap")
+    })
     
     output$mainPlotOptions <- renderUI({
       if(current_main_plot() == "timeSeriesLine") {

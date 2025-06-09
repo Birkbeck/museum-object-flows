@@ -31,11 +31,13 @@ reasonsUI <- function(id) {
         form_item(
           "Group museums by (for heatmaps only)",
           "<p>For the 2-dimensional heatmap.</p><p>Select which museum attribute to show on the <i>x</i>-axis.</p>",
-          selectInput(
-            NS(id, "museumGrouping"),
-            label="",
-            choices=field_names$name,
-            selected="Governance"
+          disabled(
+            selectInput(
+              NS(id, "museumGrouping"),
+              label="",
+              choices=field_names$name,
+              selected="Governance"
+            )
           )
         ),
 

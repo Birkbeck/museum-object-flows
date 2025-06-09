@@ -189,9 +189,18 @@ reasonsServer <- function(id) {
 
     mainPlot <- reactiveVal("reasonsBarChart")
     # Update the current plot based on user clicks
-    observeEvent(input$reasonsBarChart, { mainPlot("reasonsBarChart") })
-    observeEvent(input$reasonsHeatmap, { mainPlot("reasonsHeatmap") })
-    observeEvent(input$reasonsLineChart, { mainPlot("reasonsLineChart") })
+    observeEvent(input$reasonsBarChart, {
+      disable("museumGrouping")
+      mainPlot("reasonsBarChart")
+    })
+    observeEvent(input$reasonsHeatmap, {
+      enable("museumGrouping")
+      mainPlot("reasonsHeatmap")
+    })
+    observeEvent(input$reasonsLineChart, {
+      disable("museumGrouping")
+      mainPlot("reasonsLineChart")
+    })
 
     output$mainPlotOptions <- renderUI({
       if(mainPlot() == "reasonsBarChart") {

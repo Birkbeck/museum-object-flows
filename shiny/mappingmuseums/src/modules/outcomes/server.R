@@ -141,9 +141,18 @@ outcomesServer <- function(id) {
 
     mainPlot <- reactiveVal("outcomesBarChart")
     # Update the current plot based on user clicks
-    observeEvent(input$outcomesBarChart, { mainPlot("outcomesBarChart") })
-    observeEvent(input$outcomesHeatmap, { mainPlot("outcomesHeatmap") })
-    observeEvent(input$outcomesLineChart, { mainPlot("outcomesLineChart") })
+    observeEvent(input$outcomesBarChart, {
+      disable("museumGrouping")
+      mainPlot("outcomesBarChart")
+    })
+    observeEvent(input$outcomesHeatmap, {
+      enable("museumGrouping")
+      mainPlot("outcomesHeatmap")
+    })
+    observeEvent(input$outcomesLineChart, {
+      disable("museumGrouping")
+      mainPlot("outcomesLineChart")
+    })
 
     output$mainPlotOptions <- renderUI({
       if(mainPlot() == "outcomesBarChart") {

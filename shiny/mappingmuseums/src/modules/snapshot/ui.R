@@ -60,11 +60,13 @@ snapshotUI <- function(id) {
         form_item(
           "Secondary museum attribute (for heatmaps only)",
           "<p>Select a second museum attribute to group museums by on the horizontal axis of the heatmap.</p>",
-          selectInput(
-            NS(id, "secondAxis"),
-            label="",
-            choices=field_names$name,
-            selected="Country/Region"
+          disabled(
+            selectInput(
+              NS(id, "secondAxis"),
+              label="",
+              choices=field_names$name,
+              selected="Country/Region"
+            )
           )
         ),
 

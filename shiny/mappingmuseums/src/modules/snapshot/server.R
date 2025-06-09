@@ -157,9 +157,18 @@ snapshotServer <- function(id) {
 
     mainPlot <- reactiveVal("museumMap")
     # Update the current plot based on user clicks
-    observeEvent(input$museumMap, { mainPlot("museumMap") })
-    observeEvent(input$museumCounts, { mainPlot("museumCounts") })
-    observeEvent(input$museumHeatmap, { mainPlot("museumHeatmap") })
+    observeEvent(input$museumMap, {
+      disable("secondAxis")
+      mainPlot("museumMap")
+    })
+    observeEvent(input$museumCounts, {
+      disable("secondAxis")
+      mainPlot("museumCounts")
+    })
+    observeEvent(input$museumHeatmap, {
+      enable("secondAxis")
+      mainPlot("museumHeatmap")
+    })
     
     output$mainPlotOptions <- renderUI({
       if(mainPlot() == "museumCounts") {
