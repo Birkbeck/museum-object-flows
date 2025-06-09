@@ -96,47 +96,62 @@ function(input, output, session) {
           tabsetPanel(
             tabPanel(
               tags$span("Home", title="Go back to the home page"),
-              homeUI("home"),
+              homeUI("home")
             ),
             tabPanel(
               tags$span("About", title="About the project"),
-              aboutUI("about"),
+              aboutUI("about")
             ),
             tabPanel(
-              tags$span("Glossary", title="Definitions of key terms and type hierarchies"),
+              tags$span("Taxonomies", title="Definitions of key terms and type hierarchies"),
               glossaryUI("glossary"),
             ),
             tabPanel(
-              tags$span("Sector Snapshot", title="Data on museums open in a chosen time period"),
-              snapshotUI("snapshot"),
+              tags$span("Mapping Museums", title=""),
+              tabsetPanel(
+                tabPanel(
+                  tags$span("Sector Snapshot", title="Data on museums open in a chosen time period"),
+                  snapshotUI("snapshot")
+                ),
+                tabPanel(
+                  tags$span("Sector Changes", title="Changes in museum numbers over a chosen time period"),
+                  changesUI("changes")
+                )
+              )
             ),
             tabPanel(
-              tags$span("Sector Changes", title="Changes in museum numbers over a chosen time period"),
-              changesUI("changes"),
+              tags$span("Museum Closure", title=""),
+              tabsetPanel(
+                tabPanel(
+                  tags$span("Reasons for Closure", title="Reasons why museums have closed"),
+                  reasonsUI("reasons")
+                ),
+                tabPanel(
+                  tags$span("Outcomes of Closure", title="What museums do after closure"),
+                  outcomesUI("outcomes")
+                )
+              )
             ),
             tabPanel(
-              tags$span("Reasons for Closure", title="Reasons why museums have closed"),
-              reasonsUI("reasons"),
-            ),
-            tabPanel(
-              tags$span("Length of Closure", title="How long it takes for museums to close"),
-              lengthUI("length"),
-            ),
-            tabPanel(
-              tags$span("About the data", title="An introduction to data concerning collection dispersal"),
-              dataUI("data"),
-            ),
-            tabPanel(
-              tags$span("Outcomes of Closure", title="What museums do after closure"),
-              outcomesUI("outcomes"),
-            ),
-            tabPanel(
-              tags$span("Post-closure Events", title="What happens after closure"),
-              eventsUI("events"),
-            ),
-            tabPanel(
-              tags$span("Collections Dispersal", title="The flow of collections away from closed museums"),
-              dispersalUI("dispersal"),
+              tags$span("Collection Disposal", title=""),
+              tabsetPanel(
+                tabPanel(
+                  tags$span("Events after closure", title="What happens after closure"),
+                  eventsUI("events")
+                ),
+                tabPanel(
+                  tags$span("Object destinations", title="The flow of collections away from closed museums"),
+                  dispersalUI("dispersal")
+                ),
+                tabPanel(
+                  tags$span("Time of disposal", title="How long it takes for museums to close"),
+                  lengthUI("length")
+                ),
+                tabPanel(
+                  tags$span("About the data", title="An introduction to data concerning collection dispersal"),
+                  dataUI("data")
+                )
+              )
             )
           )
         )
