@@ -10,7 +10,7 @@ closure_outcomes_summary_table <- function(museums_table,
   museums_table |>
     filter(.data[[outcome_type]] %in% outcome_filter) |>
     filter(size %in% size_filter) |>
-    filter(governance %in% governance_filter | governance_main %in% governance_filter) |>
+    filter(governance_main %in% governance_filter) |>
     filter(accreditation %in% accreditation_filter) |>
     filter(main_subject %in% subject_filter) |>
     filter(subject_matter %in% specific_subject_filter) |>
@@ -38,7 +38,7 @@ closure_outcomes_two_way_summary_table <- function(museums_table,
   closure_outcomes <- museums_table |>
     filter(.data[[outcome_type]] %in% outcome_filter) |>
     filter(size %in% size_filter) |>
-    filter(governance %in% governance_filter | governance_main %in% governance_filter) |>
+    filter(governance_main %in% governance_filter) |>
     filter(accreditation %in% accreditation_filter) |>
     filter(main_subject %in% subject_filter) |>
     filter(subject_matter %in% specific_subject_filter) |>
@@ -130,7 +130,7 @@ closure_outcomes_over_time_table <- function(museums_table,
   museums_table |>
     filter(.data[[outcome_type]] %in% outcome_filter) |>
     filter(size %in% size_filter) |>
-    filter(governance %in% governance_filter | governance_main %in% governance_filter) |>
+    filter(governance_main %in% governance_filter) |>
     filter(accreditation %in% accreditation_filter) |>
     filter(main_subject %in% subject_filter) |>
     filter(subject_matter %in% specific_subject_filter) |>
@@ -345,7 +345,7 @@ museum_closure_outcomes_table <- function(museums_including_crown_dependencies,
     filter(!is.na(outcome_event_type)) |>
     filter(.data[[outcome_type]] %in% outcome_filter) |>
     filter(size %in% size_filter) |>
-    filter(governance %in% governance_filter | governance_main %in% governance_filter) |>
+    filter(governance_main %in% governance_filter) |>
     filter(accreditation %in% accreditation_filter) |>
     filter(main_subject %in% subject_filter) |>
     filter(subject_matter %in% specific_subject_filter) |>

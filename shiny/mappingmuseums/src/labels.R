@@ -67,6 +67,20 @@ governance_labels <- data.frame(
     FALSE,
     TRUE,
     FALSE
+  ),
+  is_broad_type=c(
+    TRUE,
+    TRUE,
+    TRUE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    TRUE,
+    TRUE,
+    TRUE,
+    TRUE
   )
 )
 

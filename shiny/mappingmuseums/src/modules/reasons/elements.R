@@ -39,7 +39,7 @@ closure_reason_types_counts_table <- function(closure_reasons,
   closure_reasons |>
     left_join(museums_table, by="museum_id") |>
     filter(size %in% size_filter) |>
-    filter(governance %in% governance_filter | governance_main %in% governance_filter) |>
+    filter(governance_main %in% governance_filter) |>
     filter(accreditation %in% accreditation_filter) |>
     filter(main_subject %in% subject_filter) |>
     filter(subject_matter %in% specific_subject_filter) |>
@@ -67,7 +67,7 @@ museum_closure_reasons_table <- function(closure_reasons,
     ) |>
     filter(.data[[reason_level]] %in% reason_filter) |>
     filter(size %in% size_filter) |>
-    filter(governance %in% governance_filter | governance_main %in% governance_filter) |>
+    filter(governance_main %in% governance_filter) |>
     filter(accreditation %in% accreditation_filter) |>
     filter(main_subject %in% subject_filter) |>
     filter(subject_matter %in% specific_subject_filter) |>
@@ -102,7 +102,7 @@ closure_reasons_summary_table <- function(closure_reasons,
     filter(!is.na(reason_core)) |>
     filter(reason_core %in% reason_filter) |>
     filter(size %in% size_filter) |>
-    filter(governance %in% governance_filter | governance_main %in% governance_filter) |>
+    filter(governance_main %in% governance_filter) |>
     filter(accreditation %in% accreditation_filter) |>
     filter(main_subject %in% subject_filter) |>
     filter(subject_matter %in% specific_subject_filter) |>
@@ -135,7 +135,7 @@ closure_reasons_two_way_summary_table <- function(closure_reasons,
     left_join(museums_table, by="museum_id") |>
     filter(reason_core %in% reason_filter) |>
     filter(size %in% size_filter) |>
-    filter(governance %in% governance_filter | governance_main %in% governance_filter) |>
+    filter(governance_main %in% governance_filter) |>
     filter(accreditation %in% accreditation_filter) |>
     filter(main_subject %in% subject_filter) |>
     filter(subject_matter %in% specific_subject_filter) |>
@@ -259,7 +259,7 @@ closure_reasons_over_time_table <- function(closure_reasons,
     left_join(museums_table, by="museum_id") |>
     filter(reason_core %in% reason_filter) |>
     filter(size %in% size_filter) |>
-    filter(governance %in% governance_filter | governance_main %in% governance_filter) |>
+    filter(governance_main %in% governance_filter) |>
     filter(accreditation %in% accreditation_filter) |>
     filter(main_subject %in% subject_filter) |>
     filter(subject_matter %in% specific_subject_filter) |>

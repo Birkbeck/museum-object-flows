@@ -103,8 +103,7 @@ filter_events <- function(events,
       event_id %in% event_collection_types$event_id,
       collection_status %in% collection_status_filter,
       initial_museum_size %in% size_filter, 
-      initial_museum_governance %in% governance_filter
-      | initial_museum_governance_broad %in% governance_filter,
+      initial_museum_governance_broad %in% governance_filter,
       initial_museum_subject_matter_broad %in% subject_broad_filter,
       initial_museum_subject_matter %in% subject_specific_filter,
       initial_museum_region %in% region_filter

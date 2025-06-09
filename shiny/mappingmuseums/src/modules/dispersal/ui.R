@@ -176,7 +176,7 @@ dispersalUI <- function(id) {
            pickerInput(
              NS(id, "startGovernanceFilter"), 
              "",
-             choices=governance_labels$tidy_label,
+             choices=filter(governance_labels, is_broad_type)$tidy_label,
              selected=filter(governance_labels, default_filter)$tidy_label,
              options=pickerOptions(
                actionsBox=TRUE, 

@@ -211,8 +211,8 @@ eventsUI <- function(id) {
           pickerInput(
             NS(id, "governanceFilter"), 
             "",
-            choices=filter(governance_labels, internal_label != "Independent")$tidy_label,
-            selected=filter(governance_labels, internal_label != "Independent")$tidy_label,
+            choices=filter(governance_labels, is_broad_type)$tidy_label,
+            selected=filter(governance_labels, is_broad_type)$tidy_label,
             options=pickerOptions(
               actionsBox=TRUE, 
               size=10,
