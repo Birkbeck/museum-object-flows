@@ -3,13 +3,13 @@ source("src/modules/glossary/elements.R")
 glossaryServer <- function(id) {
   moduleServer(id, function(input, output, session) {
 
-    output$actorTypes <- renderPlot({
-      actors_taxonomy()
-    })
+    #output$actorTypes <- renderPlot({
+    #  actors_taxonomy()
+    #})
 
-    output$eventTypes <- renderPlot({
-      events_taxonomy()
-    })
+    #output$eventTypes <- renderPlot({
+    #  events_taxonomy()
+    #})
 
     output$eventTypesGlossary <- renderDT({
       event_types |>
@@ -24,9 +24,9 @@ glossaryServer <- function(id) {
         )
     })
 
-    output$reasonTypes <- renderPlot({
-      reasons_taxonomy()
-    })
+    #output$reasonTypes <- renderPlot({
+    #  reasons_taxonomy()
+    #})
 
   })
 }
