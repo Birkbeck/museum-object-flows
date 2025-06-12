@@ -56,6 +56,8 @@ outcomesServer <- function(id) {
         return("outcome_event_type")
       } else if (input$outcomeType == "Outcome recipient type") {
         return("outcome_recipient_type")
+      } else if (input$outcomeType == "Outcome recipient count") {
+        return("outcome_recipient_count")
       } else {
         return("outcome_destination_type")
       }
@@ -67,6 +69,8 @@ outcomesServer <- function(id) {
         return("outcome_event_type")
       } else if (input$museumGrouping == "Outcome recipient type") {
         return("outcome_recipient_type")
+      } else if (input$museumGrouping == "Outcome recipient count") {
+        return("outcome_recipient_count")
       } else if (input$museumGrouping == "Outcome destination type") {
         return("outcome_destination_type")
       } else if (input$museumGrouping == "Core reason for closure") {

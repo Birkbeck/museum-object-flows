@@ -98,7 +98,11 @@ museums_including_crown_dependencies <- read_csv("data/all_museums_data.csv") |>
       year_closed_1 == 9999 ~ "N/A",
       year_closed_1 == year_closed_2 ~ as.character(year_closed_1),
       TRUE ~ paste(year_closed_1, year_closed_2, sep=":")
-    )
+    ),
+    outcome_event_type=factor(outcome_event_type, museum_attribute_ordering),
+    outcome_recipient_type=factor(outcome_recipient_type, museum_attribute_ordering),
+    outcome_recipient_count=factor(outcome_recipient_count, museum_attribute_ordering),
+    outcome_destination_type=factor(outcome_destination_type, museum_attribute_ordering)
   )
 museums <- museums_including_crown_dependencies |>
   filter(!nation %in% c("Channel Islands", "Isle of Man")) |>

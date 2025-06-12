@@ -938,6 +938,15 @@ short_labels <- c(
   "mostly within the UK"="mostly within the UK",
   "mostly abroad"="mostly abroad",
   "mixed destinations"="mixed destinations",
+  # recipient count outcome
+  "many"="many",
+  "> 5"="> 5",
+  "5"="5",
+  "4"="4",
+  "3"="3",
+  "2"="2",
+  "1"="1",
+  "0"="0",
   # recipient outcome
   "mostly storage"="mostly storage",
   "mostly armed forces"="mostly armed forces",
@@ -1167,6 +1176,15 @@ very_short_labels <- c(
   "mostly within the UK"="mostly within the UK",
   "mostly abroad"="mostly abroad",
   "mixed destinations"="mixed destinations",
+  # recipient count outcome
+  "many"="many",
+  "> 5"="> 5",
+  "5"="5",
+  "4"="4",
+  "3"="3",
+  "2"="2",
+  "1"="1",
+  "0"="0",
   # recipient outcome
   "mostly storage"="mostly storage",
   "mostly armed forces"="mostly armed forces",
@@ -1395,6 +1413,15 @@ museum_attribute_ordering <- c(
   "mostly within the UK",
   "mostly abroad",
   "mixed destinations",
+  # recipient count outcome
+  "many",
+  "> 5",
+  "5",
+  "4",
+  "3",
+  "2",
+  "1",
+  "0",
   # recipient outcome
   "mostly storage",
   "mostly armed forces",

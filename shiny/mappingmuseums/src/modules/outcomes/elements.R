@@ -177,7 +177,24 @@ closure_outcomes_bar_chart <- function(summary_table, count_or_percentage, outco
   } else {
     x_title <- "Percentage of museum closures with outcome"
   }
-  ggplot(summary_table, aes(x=.data[[count_or_percentage]], y=reorder(.data[[outcome_type]], .data[[count_or_percentage]]))) +
+  if (outcome_type %in% c("outcome_event_type", "outcome_recipient_type")) {
+    plot <- ggplot(
+      summary_table,
+      aes(
+        x=.data[[count_or_percentage]],
+        y=reorder(.data[[outcome_type]], .data[[count_or_percentage]])
+      )
+    )
+  } else {
+    plot <- ggplot(
+      summary_table,
+      aes(
+        x=.data[[count_or_percentage]],
+        y=.data[[outcome_type]]
+      )
+    )
+  }
+  plot +
     geom_col(fill=purple) +
     geom_text(aes(label=.data[[count_or_percentage]]), hjust="left", nudge_x=1, size=6) +
     labs(
@@ -189,7 +206,24 @@ closure_outcomes_bar_chart <- function(summary_table, count_or_percentage, outco
 }
 
 closure_outcomes_bar_chart_small <- function(summary_table, outcome_type) {
-  ggplot(summary_table, aes(x=frequency, y=reorder(.data[[outcome_type]], frequency))) +
+  if (outcome_type %in% c("outcome_event_type", "outcome_recipient_type")) {
+    plot <- ggplot(
+      summary_table,
+      aes(
+        x=frequency,
+        y=reorder(.data[[outcome_type]], frequency)
+      )
+    )
+  } else {
+    plot <- ggplot(
+      summary_table,
+      aes(
+        x=frequency,
+        y=.data[[outcome_type]]
+      )
+    )
+  }
+  plot +
     geom_col(fill=purple) +
     geom_text(aes(label=frequency), hjust="left", nudge_x=1, size=3) +
     labs(
@@ -363,6 +397,7 @@ museum_closure_outcomes_table <- function(museums_including_crown_dependencies,
       reasons_for_closure,
       outcome_event_type,
       outcome_recipient_type,
+      outcome_recipient_count,
       outcome_destination_type,
       size,
       governance,

@@ -45,9 +45,32 @@ get_outcomes_by_museum <- function(events_table) {
     events_with_numeric_collection_size, "destination_type"
   ) |>
     select(museum_id=initial_museum_id, outcome_destination_type=outcome)
+  recipient_counts <- events_with_numeric_collection_size |>
+    select(museum_id=initial_museum_id, recipient_id, recipient_quantity) |>
+    unique() |>
+    filter(!is.na(recipient_id)) |>
+    mutate(
+      recipient_quantity=ifelse(
+        recipient_quantity=="many", NaN, as.numeric(recipient_quantity)
+      )
+    ) |>
+    group_by(museum_id) |>
+    summarize(
+      outcome_recipient_count=sum(recipient_quantity)
+    ) |>
+    ungroup()
   event_outcomes |>
     left_join(recipient_outcomes, by="museum_id") |>
-    left_join(destination_outcomes, by="museum_id")
+    left_join(destination_outcomes, by="museum_id") |>
+    left_join(recipient_counts, by="museum_id") |>
+    mutate(
+      outcome_recipient_count=case_when(
+        is.nan(outcome_recipient_count) ~ "many",
+        is.na(outcome_recipient_count) ~ "0",
+        outcome_recipient_count > 5 ~ "> 5",
+        TRUE ~ as.character(outcome_recipient_count)
+      )
+    )
 }
 
 get_outcomes_by_museum_for_type <- function(events_with_numeric_collection_size, event_attribute) {

@@ -21,7 +21,12 @@ outcomesUI <- function(id) {
           selectInput(
             NS(id, "outcomeType"),
             label="",
-            choices=c("Outcome event type", "Outcome recipient type", "Outcome destination type"),
+            choices=c(
+              "Outcome event type",
+              "Outcome recipient type",
+              "Outcome recipient count",
+              "Outcome destination type"
+            ),
             selected="Outcome event type"
           )
         ),
@@ -38,6 +43,7 @@ outcomesUI <- function(id) {
                 "Core reason for closure",
                 "Outcome event type",
                 "Outcome recipient type",
+                "Outcome recipient count",
                 "Outcome destination type"
               ),
               selected="Governance"
