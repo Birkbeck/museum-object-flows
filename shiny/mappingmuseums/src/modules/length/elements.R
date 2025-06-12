@@ -1,11 +1,11 @@
 closure_length_categories <- c(
   "All",
   "unknown",
-  "< 1 year",
-  "< 2 years",
-  "< 4 years",
-  "< 8 years",
-  "< 16 years",
+  "0-1 years",
+  "1-2 years",
+  "2-4 years",
+  "4-8 years",
+  "8-16 years",
   "16+ years"
 )
 
@@ -109,11 +109,11 @@ get_event_dates_table <- function() {
     mutate(
       closure_length_category = case_when(
         is.na(length_of_closure) ~ "unknown",
-        length_of_closure < 1 ~ "< 1 year",
-        length_of_closure < 2 ~ "< 2 years",
-        length_of_closure < 4 ~ "< 4 years",
-        length_of_closure < 8 ~ "< 8 years",
-        length_of_closure < 16 ~ "< 16 years",
+        length_of_closure < 1 ~ "0-1 years",
+        length_of_closure < 2 ~ "1-2 years",
+        length_of_closure < 4 ~ "2-4 years",
+        length_of_closure < 8 ~ "4-8 years",
+        length_of_closure < 16 ~ "8-16 years",
         TRUE ~ "16+ years"
       ),
       closure_length_category = factor(closure_length_category, closure_length_categories)
