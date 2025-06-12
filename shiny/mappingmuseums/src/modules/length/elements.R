@@ -179,29 +179,35 @@ get_lengths_two_way_table <- function(lengths_table, museum_grouping) {
       percentage_x=percentage,
       percentage_y=100
     )
-  heatmap_data_length_totals <- lengths_table |>
-    group_by(closure_length_category) |>
-    summarize(count=n()) |>
-    ungroup() |>
-    mutate(
-      !!sym(museum_grouping):="All",
-      percentage=round(count / sum(count) * 100, 1),
-      percentage_x=100,
-      percentage_y=percentage
-    )
-  heatmap_data_all_totals <- lengths_table |>
-    summarize(
-      !!sym(museum_grouping):="All",
-      closure_length_category="All",
-      count=n(),
-      percentage=100,
-      percentage_x=100,
-      percentage_y=100
-    )
+  if (museum_grouping != "all") {
+    heatmap_data_length_totals <- lengths_table |>
+      group_by(closure_length_category) |>
+      summarize(count=n()) |>
+      ungroup() |>
+      mutate(
+        !!sym(museum_grouping):="All",
+        percentage=round(count / sum(count) * 100, 1),
+        percentage_x=100,
+        percentage_y=percentage
+      )
+    heatmap_data_all_totals <- lengths_table |>
+      summarize(
+        !!sym(museum_grouping):="All",
+        closure_length_category="All",
+        count=n(),
+        percentage=100,
+        percentage_x=100,
+        percentage_y=100
+      )
+    heatmap_data_2_way <- heatmap_data_2_way |>
+      rbind(heatmap_data_museum_totals) |>
+      rbind(heatmap_data_length_totals) |>
+      rbind(heatmap_data_all_totals)
+  } else {
+    heatmap_data_2_way <- heatmap_data_2_way |>
+      rbind(heatmap_data_museum_totals)
+  }
   heatmap_data_2_way |>
-    rbind(heatmap_data_museum_totals) |>
-    rbind(heatmap_data_length_totals) |>
-    rbind(heatmap_data_all_totals) |>
     mutate(
       !!sym(museum_grouping):=factor(.data[[museum_grouping]], museum_attribute_ordering),
       closure_length_category = factor(closure_length_category, closure_length_categories)
