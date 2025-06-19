@@ -240,8 +240,8 @@ length_tile_chart <- function(heatmap_data, count_or_percentage, museum_grouping
     scale_y_discrete(labels=short_labels) +
     heatmap_fill_scale +
     labs(
-      title = "Length of closure",
-      x = "Length of closure (years)",
+      title = "Length of dispersal period",
+      x = "Length of dispersal period (years)",
       y = ""
     ) +
     standard_bars_theme +
@@ -273,8 +273,8 @@ length_tile_chart_small <- function(heatmap_data, museum_grouping) {
     scale_y_discrete(labels=short_labels) +
     heatmap_fill_scale +
     labs(
-      title = "Length of closure",
-      x = "Length of closure (years)",
+      title = "Length of dispersal period",
+      x = "Length of dispersal period (years)",
       y = ""
     ) +
     theme_minimal() +
@@ -316,8 +316,8 @@ length_line_chart <- function(lengths_table, count_or_percentage, museum_groupin
     scale_colour_manual(values=museum_attribute_colours) +
     guides(colour="none") +
     labs(
-      title = "Length of closure",
-      x = "Length of closure (years)",
+      title = "Length of dispersal period",
+      x = "Length of dispersal period (years)",
       y = "Number of Museums"
     ) +
     theme_minimal() +
@@ -355,8 +355,8 @@ length_line_chart_small <- function(lengths_table, museum_grouping) {
     ) +
     scale_colour_manual(values=museum_attribute_colours) +
     labs(
-      title = "Length of closure",
-      x = "Length of closure (years)",
+      title = "Length of dispersal period",
+      x = "Length of dispersal period (years)",
       y = "Number of Museums"
     ) +
     theme_minimal() +
@@ -384,8 +384,8 @@ length_scatter <- function(lengths_table, museum_grouping) {
     geom_point(position=position_jitter(height=0.3, width=0, seed=1), alpha=0.5) +
     scale_y_discrete(labels=short_labels) +
     labs(
-      title = "Length of closure",
-      x = "Length of closure (years)",
+      title = "Length of dispersal period",
+      x = "Length of dispersal period (years)",
       y = ""
     ) +
     theme_minimal() +
@@ -412,8 +412,8 @@ length_scatter_small <- function(lengths_table, museum_grouping) {
     geom_point(position=position_jitter(height=0.3, width=0, seed=1), alpha=0.5) +
     scale_y_discrete(labels=short_labels) +
     labs(
-      title = "Length of closure",
-      x = "Length of closure (years)",
+      title = "Length of dispersal period",
+      x = "Length of dispersal period (years)",
       y = ""
     ) +
     theme_minimal() +

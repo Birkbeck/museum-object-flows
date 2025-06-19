@@ -144,7 +144,7 @@ function(input, output, session) {
                   dispersalUI("dispersal")
                 ),
                 tabPanel(
-                  tags$span("Time of disposal", title="How long it takes for museums to close"),
+                  tags$span("Length of dispersal period", title="How long it takes for museums to close"),
                   lengthUI("length")
                 ),
                 tabPanel(
