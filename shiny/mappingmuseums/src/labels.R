@@ -1,5 +1,5 @@
 tidy_labels_size <- c(
-  "unknown"="Unknown",
+  "unknown"="Unknown size",
   "small"="Small",
   "medium"="Medium",
   "large"="Large",
@@ -7,12 +7,12 @@ tidy_labels_size <- c(
 )
 size_labels <- data.frame(
   internal_label=c("unknown", "small", "medium", "large", "huge"),
-  tidy_label=c("Unknown", "Small", "Medium", "Large", "Huge"),
+  tidy_label=c("Unknown size", "Small", "Medium", "Large", "Huge"),
   default_filter=c(TRUE, TRUE, TRUE, TRUE, TRUE)
 )
 
 tidy_labels_governance <- c(
-  "Unknown"="Unknown",
+  "Unknown"="Unknown governance",
   "Private"="Private",
   "Independent"="Independent",
   "Independent-Not_for_profit"="Not for Profit",
@@ -41,7 +41,7 @@ governance_labels <- data.frame(
     "National"
   ),
   tidy_label=c(
-    "Unknown",
+    "Unknown governance",
     "Private",
     "Independent",
     "Not for Profit",
@@ -112,10 +112,10 @@ tidy_labels_country_region <- c(
     "Yorkshire and The Humber (English Region)"="Yorks & Humber",
     "East Midlands (English Region)"="East Midlands",
     "West Midlands (English Region)"="West Midlands",
-    "South East (English Region)"="South East",
-    "South West (English Region)"="South West",
     "East of England (English Region)"="East of England",
-    "London (English Region)"="London"
+    "London (English Region)"="London",
+    "South East (English Region)"="South East",
+    "South West (English Region)"="South West"
 )
 country_region_labels <- data.frame(
   internal_label=c(
@@ -130,10 +130,10 @@ country_region_labels <- data.frame(
     "Yorkshire and The Humber (English Region)",
     "East Midlands (English Region)",
     "West Midlands (English Region)",
-    "South East (English Region)",
-    "South West (English Region)",
     "East of England (English Region)",
-    "London (English Region)"
+    "London (English Region)",
+    "South East (English Region)",
+    "South West (English Region)"
   ),
   tidy_label=c(
     "Isle of Man",
@@ -147,10 +147,10 @@ country_region_labels <- data.frame(
     "Yorks & Humber",
     "East Midlands",
     "West Midlands",
-    "South East",
-    "South West",
     "East of England",
-    "London"
+    "London",
+    "South East",
+    "South West"
   ),
   default_filter=c(
     TRUE,
@@ -794,10 +794,10 @@ short_labels <- c(
   "Yorkshire and The Humber (English Region)"="Yorks.",
   "East Midlands (English Region)"="East Mids",
   "West Midlands (English Region)"="West Mids",
-  "South East (English Region)"="S. East",
-  "South West (English Region)"="S. West",
   "East of England (English Region)"="East Eng",
   "London (English Region)"="London",
+  "South East (English Region)"="S. East",
+  "South West (English Region)"="S. West",
   # accreditation
   "Accredited"="Accred.",
   "Unaccredited"="Unaccred.",
@@ -1032,10 +1032,10 @@ very_short_labels <- c(
   "Yorkshire and The Humber (English Region)"="Y&H",
   "East Midlands (English Region)"="EM",
   "West Midlands (English Region)"="WM",
-  "South East (English Region)"="SE",
-  "South West (English Region)"="SW",
   "East of England (English Region)"="EE",
   "London (English Region)"="Lon",
+  "South East (English Region)"="SE",
+  "South West (English Region)"="SW",
   # accreditation
   "Accredited"="Acc",
   "Unaccredited"="Unac",
