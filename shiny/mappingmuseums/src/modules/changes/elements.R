@@ -496,13 +496,7 @@ time_series_line <- function(data, dimension, measure, title, y_label, start_yea
       y=y_label,
       x="Year"
     ) +
-    guides(
-      colour="none"
-    ) +
-    standard_bars_theme +
-    theme(
-      legend.position = "None"
-    )
+    standard_bars_theme
 }
 
 time_series_line_small <- function(data, dimension, measure, title, y_label, start_year, end_year) {
