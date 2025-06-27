@@ -15,8 +15,8 @@ sequences_table_choices <- c(
   "collection_size",
   "initial_museum_governance",
   "initial_museum_size",
-  "initial_museum_subject_matter",
-  "initial_museum_subject_matter_broad",
+  "initial_museum_subject",
+  "initial_museum_subject_broad",
   "initial_museum_region",
   "initial_museum_town",
   "sender_name",
@@ -26,7 +26,7 @@ sequences_table_choices <- c(
   "sender_sector",
   "sender_governance",
   "sender_size",
-  "sender_subject_matter_broad",
+  "sender_subject_broad",
   "sender_accreditation",
   "sender_region",
   "sender_town",
@@ -35,7 +35,7 @@ sequences_table_choices <- c(
   "recipient_sector",
   "recipient_governance",
   "recipient_size",
-  "recipient_subject_matter_broad",
+  "recipient_subject_broad",
   "recipient_accreditation",
   "recipient_region",
   "recipient_town"
@@ -53,7 +53,7 @@ sequences_table_selected <- c(
   "collection_size",
   "initial_museum_governance",
   "initial_museum_size",
-  "initial_museum_subject_matter",
+  "initial_museum_subject",
   "initial_museum_town",
   "recipient_name",
   "recipient_quantity",
@@ -68,6 +68,33 @@ grouping_dimension_map <- list(
   "Actor Type (Most General)"="general_type",
   "Actor Type (Most Specific)"="type"
 ) 
+
+get_dispersal_initial_museums <- function(dispersal_events,
+                                         include_firepower,
+                                         size_filter,
+                                         governance_filter,
+                                         subject_filter,
+                                         specific_subject_filter,
+                                         region_filter,
+                                         accreditation_filter) {
+  dispersal_events |>
+    filter(
+      include_firepower | initial_museum_id != "mm.domus.SE513",
+      initial_museum_size %in% size_filter,
+      initial_museum_governance_broad %in% governance_filter,
+      initial_museum_subject_broad %in% subject_filter,
+      initial_museum_subject %in% specific_subject_filter,
+      initial_museum_region %in% region_filter,
+      initial_museum_accreditation %in% accreditation_filter
+    ) |>
+    mutate(
+      museum_id=initial_museum_id,
+      name=paste0(initial_museum_name, " (", initial_museum_id, ")")
+    ) |>
+    arrange(name) |>
+    select(name, museum_id, initial_museum_size) |>
+    distinct()
+}
 
 get_actor_choices <- function(grouping_dimension, museum_grouping_dimension) {
   grouping_dimension <- grouping_dimension_map[grouping_dimension]
@@ -115,10 +142,10 @@ get_filtered_sequences <- function(events_data,
                                    steps_or_first_last) {
   sequences <- events_data |>
     mutate(
-      initial_museum_all="all",
       sender_all=ifelse(!is.na(sender_size), "all", NA),
-      recipient_all=ifelse(!is.na(recipient_size), "all", NA),
-      ) |>
+      recipient_all=ifelse(!is.na(recipient_size), "all", NA)
+    )
+  sequences <- sequences |>
     filter(initial_museum_id %in% initial_museum_ids) |>
     find_events_to_show(show_transaction_types) |>
     find_previous_events() |>
@@ -234,7 +261,7 @@ add_sender_details <- function(events_data, grouping_dimension, museum_grouping_
           from_governance=recipient_governance,
           from_governance_broad=recipient_governance_broad,
           from_accreditation=recipient_accreditation,
-          from_subject_matter_broad=recipient_subject_matter_broad,
+          from_subject_broad=recipient_subject_broad,
           from_country=recipient_country,
           from_region=recipient_region,
           from_town=recipient_town
@@ -272,8 +299,8 @@ add_sender_details <- function(events_data, grouping_dimension, museum_grouping_
       sender_accreditation=ifelse(
         event_stage_in_path==1, initial_museum_accreditation, from_accreditation
       ),
-      sender_subject_matter_broad=ifelse(
-        event_stage_in_path==1, initial_museum_subject_matter_broad, from_subject_matter_broad
+      sender_subject_broad=ifelse(
+        event_stage_in_path==1, initial_museum_subject_broad, from_subject_broad
       ),
       sender_country=ifelse(
         event_stage_in_path==1, initial_museum_country, from_country
@@ -394,7 +421,7 @@ remove_sequence_middle <- function(events_data, grouping_dimension, museum_group
       sender_governance=initial_museum_governance,
       sender_governance_broad=initial_museum_governance_broad,
       sender_subject_matter=initial_museum_subject_matter,
-      sender_subject_matter_broad=initial_museum_subject_matter_broad,
+      sender_subject_broad=initial_museum_subject_broad,
       sender_accreditation=initial_museum_accreditation,
       sender_town=initial_museum_town,
       sender_position=1,
@@ -1381,7 +1408,7 @@ get_movements_distances <- function(sequences,
       !is.na(destination_x)
     ) |>
     mutate(
-      all="All",
+      all="all",
       label=paste(
         ifelse(is.na(collection_description), "", collection_description),
         "from:",
@@ -1432,7 +1459,7 @@ get_movements_distances <- function(sequences,
     ) |>
     ungroup() |>
     mutate(
-      distance_category = "All",
+      distance_category = "all",
       percentage = round(count / sum(count) * 100, 1),
       percentage_y = 100
     )
@@ -1446,7 +1473,7 @@ get_movements_distances <- function(sequences,
     ) |>
     ungroup() |>
     mutate(
-      !!sym(grouping_dimension) := "All",
+      !!sym(grouping_dimension) := "all",
       percentage = round(count / sum(count) * 100, 1),
       percentage_x = 100
     )
@@ -1455,8 +1482,8 @@ get_movements_distances <- function(sequences,
       count = n()
     ) |>
     mutate(
-      !!sym(grouping_dimension) := "All",
-      distance_category = "All",
+      !!sym(grouping_dimension) := "all",
+      distance_category = "all",
       percentage = 100,
       percentage_x = 100,
       percentage_y = 100

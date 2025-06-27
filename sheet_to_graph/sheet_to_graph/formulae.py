@@ -345,7 +345,7 @@ def get_sender_id(table, row_index, actors, event_types):
             and (
                 r["collection_id"] == event["collection_id"]
                 or r["collection_id"] == event["coll_subset_of"]
-            )
+            )  # TODO: you need to check for all collection ancestors, not just immediate parent collection
             and row_is_transfer_event(r)
             and r["actor_recipient_id"] != ""
         ][-1]["actor_recipient_id"]

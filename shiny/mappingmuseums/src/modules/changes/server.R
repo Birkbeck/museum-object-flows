@@ -9,34 +9,22 @@ changesServer <- function(id) {
       updateSelectInput(session=session, inputId="secondAxis", selected="Country/Region")
       updateRadioButtons(session=session, inputId="countOrPercentage", selected="")
       updatePickerInput(
-        session=session,
-        inputId="governanceFilter",
-        selected=filter(governance_labels, internal_label != "Independent")$tidy_label
+        session=session, inputId="governanceFilter", selected=governance_broad_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="sizeFilter",
-        selected=filter(size_labels, default_filter)$tidy_label
+        session=session, inputId="sizeFilter", selected=size_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="subjectFilter",
-        selected=filter(subject_broad_labels, default_filter)$tidy_label
+        session=session, inputId="subjectFilter", selected=subject_broad_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="subjectSpecificFilter",
-        selected=subject_full_labels$tidy_label
+        session=session, inputId="subjectSpecificFilter", selected=subject_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="regionFilter",
-        selected=filter(country_region_labels, internal_label != "England")$tidy_label
+        session=session, inputId="regionFilter", selected=region_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="accreditationFilter",
-        selected=filter(accreditation_labels, default_filter)$tidy_label
+        session=session, inputId="accreditationFilter", selected=accreditation_labels$label
       )
     })
 
@@ -290,52 +278,22 @@ changesServer <- function(id) {
       return(input$countOrPercentage)
     })
 
-    size_filter_choices <- reactive({
-      filter(
-        size_labels,
-        tidy_label %in% input$sizeFilter
-      )$internal_label
-    })
-    governance_filter_choices <- reactive({
-      filter(
-        governance_labels,
-        tidy_label %in% input$governanceFilter
-      )$internal_label
-    })
-    subject_filter_choices <- reactive({
-      filter(
-        subject_broad_labels,
-        tidy_label %in% input$subjectFilter
-      )$internal_label
-    })
-    subject_specific_filter_choices <- reactive({
-      filter(
-        subject_full_labels,
-        tidy_label %in% input$subjectSpecificFilter
-      )$internal_label
-    })
-    region_filter_choices <- reactive({
-      filter(
-        country_region_labels,
-        tidy_label %in% input$regionFilter
-      )$internal_label
-    })
-    accreditation_filter_choices <- reactive({
-      filter(
-        accreditation_labels,
-        tidy_label %in% input$accreditationFilter
-      )$internal_label
-    })
+    size_filter_choices <- reactive({ input$sizeFilter })
+    governance_filter_choices <- reactive({ input$governanceFilter })
+    subject_filter_choices <- reactive({ input$subjectFilter })
+    subject_specific_filter_choices <- reactive({ input$subjectSpecificFilter })
+    region_filter_choices <- reactive({ input$regionFilter })
+    accreditation_filter_choices <- reactive({ input$accreditationFilter })
 
     observeEvent(subject_filter_choices(), {
       freezeReactiveValue(input, "subjectSpecificFilter")
-      specific_subjects <- subject_full_labels |>
+      specific_subjects <- subject_labels_map |>
         filter(subject_broad %in% subject_filter_choices())
       updatePickerInput(
         session=session,
         inputId="subjectSpecificFilter",
-        choices=specific_subjects$tidy_label,
-        selected=specific_subjects$tidy_label,
+        choices=specific_subjects$subject,
+        selected=specific_subjects$subject,
       )
     })
 

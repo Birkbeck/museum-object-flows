@@ -7,41 +7,29 @@ lengthServer <- function(id) {
       updateSelectInput(session=session, inputId="museumGrouping", selected="All")
       updateRadioButtons(session=session, inputId="countOrPercentage", selected="count")
       updatePickerInput(
-        session=session,
-        inputId="governanceFilter",
-        selected=filter(governance_labels, internal_label != "Independent")$tidy_label
+        session=session, inputId="governanceFilter", selected=governance_broad_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="sizeFilter",
-        selected=filter(size_labels, default_filter)$tidy_label
+        session=session, inputId="sizeFilter", selected=size_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="subjectFilter",
-        selected=filter(subject_broad_labels, default_filter)$tidy_label
+        session=session, inputId="subjectFilter", selected=subject_broad_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="subjectSpecificFilter",
-        selected=subject_full_labels$tidy_label
+        session=session, inputId="subjectSpecificFilter", selected=subject_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="regionFilter",
-        selected=filter(country_region_labels, internal_label != "England")$tidy_label
+        session=session, inputId="regionFilter", selected=region_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="accreditationFilter",
-        selected=filter(accreditation_labels, default_filter)$tidy_label
+        session=session, inputId="accreditationFilter", selected=accreditation_labels$label
       )
       becm <- "mm.domus.SW043"
-      example_museum_name <- filter(museums_list, museum_id == becm)$name
+      example_museum_name <- filter(initial_museums, museum_id == becm)$name
       updateVirtualSelect(
         session=session,
         inputId="exampleMuseum",
-        choices=museums_list$name,
+        choices=initial_museums$name,
         selected=example_museum_name
       )
     })
@@ -51,42 +39,12 @@ lengthServer <- function(id) {
     })
     museum_grouping_name <- reactive({input$museumGrouping})
 
-    size_filter_choices <- reactive({
-      filter(
-        size_labels,
-        tidy_label %in% input$sizeFilter
-      )$internal_label
-    })
-    governance_filter_choices <- reactive({
-      filter(
-        governance_labels,
-        tidy_label %in% input$governanceFilter
-      )$internal_label
-    })
-    subject_filter_choices <- reactive({
-      filter(
-        subject_broad_labels,
-        tidy_label %in% input$subjectFilter
-      )$internal_label
-    })
-    specific_subject_filter_choices <- reactive({
-      filter(
-        subject_full_labels,
-        tidy_label %in% input$subjectSpecificFilter
-      )$internal_label
-    })
-    region_filter_choices <- reactive({
-      filter(
-        country_region_labels,
-        tidy_label %in% input$regionFilter
-      )$internal_label
-    })
-    accreditation_filter_choices <- reactive({
-      filter(
-        accreditation_labels,
-        tidy_label %in% input$accreditationFilter
-      )$internal_label
-    })
+    size_filter_choices <- reactive({ input$sizeFilter })
+    governance_filter_choices <- reactive({ input$governanceFilter })
+    subject_filter_choices <- reactive({ input$subjectFilter })
+    specific_subject_filter_choices <- reactive({ input$subjectSpecificFilter })
+    region_filter_choices <- reactive({ input$regionFilter })
+    accreditation_filter_choices <- reactive({ input$accreditationFilter })
     museum_filters <- reactive({
       list(
         input$sizeFilter,
@@ -100,13 +58,13 @@ lengthServer <- function(id) {
 
     observeEvent(subject_filter_choices(), {
       freezeReactiveValue(input, "subjectSpecificFilter")
-      specific_subjects <- subject_full_labels |>
+      specific_subjects <- subject_labels_map |>
         filter(subject_broad %in% subject_filter_choices())
       updatePickerInput(
         session=session,
         inputId="subjectSpecificFilter",
-        choices=specific_subjects$tidy_label,
-        selected=specific_subjects$tidy_label,
+        choices=specific_subjects$subject,
+        selected=specific_subjects$subject,
       )
     })
 
@@ -114,69 +72,49 @@ lengthServer <- function(id) {
       sapply(input$initialMuseum, function(text) sub(".*\\(([^()]*)\\)$", "\\1", text))
     })
 
-    museums_list <- dispersal_events |>
-      mutate(
-        name=paste0(initial_museum_name, " (", initial_museum_id, ")")
-      ) |>
-      arrange(name) |>
-      select(
-        name,
-        museum_id=initial_museum_id,
-        size=initial_museum_size,
-        governance=initial_museum_governance,
-        governance_broad=initial_museum_governance_broad,
-        subject_matter_broad=initial_museum_subject_matter_broad,
-        subject_matter=initial_museum_subject_matter,
-        region=initial_museum_region,
-        country=initial_museum_country,
-        accreditation=initial_museum_accreditation
-      ) |>
-      distinct()
-
     observeEvent(museum_filters(), {
       freezeReactiveValue(input, "exampleMuseum")
-      filtered_museums_list <- museums_list |>
+      filtered_museums <- initial_museums |>
         filter(
           size %in% size_filter_choices(),
-          governance %in% governance_filter_choices() | governance_broad %in% governance_filter_choices(),
-          subject_matter_broad %in% subject_filter_choices(),
-          subject_matter %in% specific_subject_filter_choices(),
-          region %in% region_filter_choices() | country %in% region_filter_choices(),
+          governance_broad %in% governance_filter_choices(),
+          subject_broad %in% subject_filter_choices(),
+          subject %in% specific_subject_filter_choices(),
+          region %in% region_filter_choices(),
           accreditation %in% accreditation_filter_choices()
         )
       becm <- "mm.domus.SW043"
-      if (becm %in% filtered_museums_list$museum_id) {
-        example_museum_name <- filter(filtered_museums_list, museum_id == becm)$name
+      if (becm %in% filtered_museums$museum_id) {
+        example_museum_name <- filter(filtered_museums, museum_id == becm)$name
       } else {
-        example_museum_name <- slice_sample(filtered_museums_list, n=1)$name
+        example_museum_name <- slice_sample(filtered_museums, n=1)$name
       }
       updateVirtualSelect(
         session=session,
         inputId="exampleMuseum",
-        choices=filtered_museums_list$name,
+        choices=filtered_museums$name,
         selected=example_museum_name
       )
     })
 
-    event_dates_table <- reactive({get_event_dates_table()})
-    lengths_table <- reactive({
-      get_lengths_table(
-        event_dates_table(),
-        size_filter_choices(),
-        governance_filter_choices(),
-        accreditation_filter_choices(),
-        subject_filter_choices(),
-        specific_subject_filter_choices(),
-        region_filter_choices()
-      )
+    filtered_closure_lengths <- reactive({
+      closure_lengths |>
+        filter(
+          size %in% size_filter_choices(),
+          governance_broad %in% governance_filter_choices(),
+          accreditation %in% accreditation_filter_choices(),
+          subject_broad %in% subject_filter_choices(),
+          subject %in% specific_subject_filter_choices(),
+          region %in% region_filter_choices()
+        )
     })
     lengths_two_way_table <- reactive({
-      get_lengths_two_way_table(lengths_table(), museum_grouping())
+      get_lengths_two_way_table(filtered_closure_lengths(), museum_grouping())
     })
 
     example_museum_id <- reactive({
       filter(
-        museums_list,
+        initial_museums,
         name==input$exampleMuseum
       )$museum_id
     })
@@ -223,11 +161,11 @@ lengthServer <- function(id) {
       if (currentMainPlot() == "lengthTileChart") {
         length_tile_chart(lengths_two_way_table(), count_or_percentage(), museum_grouping())
       } else if (currentMainPlot() == "lengthLineChart") {
-        length_line_chart(lengths_table(), count_or_percentage(), museum_grouping())
+        length_line_chart(filtered_closure_lengths(), count_or_percentage(), museum_grouping())
       } else if (currentMainPlot() == "lengthScatter") {
-        length_scatter(lengths_table(), museum_grouping())
+        length_scatter(filtered_closure_lengths(), museum_grouping())
       } else if (currentMainPlot() == "exampleTimelines") {
-        example_timelines(event_dates_table(), example_museum_id())
+        example_timelines(closure_timeline_events, example_museum_id())
       }
     })
 
@@ -235,13 +173,13 @@ lengthServer <- function(id) {
       length_tile_chart_small(lengths_two_way_table(), museum_grouping())
     })
     output$lengthLineChartSmall <- renderPlot({
-      length_line_chart_small(lengths_table(), museum_grouping())
+      length_line_chart_small(filtered_closure_lengths(), museum_grouping())
     })
     output$lengthScatterSmall <- renderPlot({
-      length_scatter_small(lengths_table(), museum_grouping())
+      length_scatter_small(filtered_closure_lengths(), museum_grouping())
     })
     output$exampleTimelinesSmall <- renderPlot({
-      example_timelines_small(event_dates_table(), example_museum_id())
+      example_timelines_small(closure_timeline_events, example_museum_id())
     })
 
     output$downloadLengthsTable <- downloadHandler(
@@ -250,7 +188,21 @@ lengthServer <- function(id) {
       },
       content = function(con) {
         write.csv(
-          lengths_table(),
+          filtered_closure_lengths() |>
+            select(
+              museum_id,
+              museum,
+              year_closed,
+              earliest_event_date=earliest,
+              latest_event_date=latest,
+              length_of_closure,
+              closure_length_category,
+              size,
+              governance,
+              subject,
+              region,
+              accreditation
+            ),
           con
         )
       },
@@ -258,7 +210,7 @@ lengthServer <- function(id) {
     )
 
     output$closureLengthsTable <- renderDT({
-      lengths_table()
+      filtered_closure_lengths()
     }, options=list(pageLength=100))
 
   })

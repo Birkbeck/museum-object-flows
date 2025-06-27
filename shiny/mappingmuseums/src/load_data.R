@@ -1,14 +1,54 @@
 set.seed(1)
 
+core_actor_types_with_children <- c(
+  "armed forces",
+  "civic organisation",
+  "company",
+  "education/research",
+  "heritage",
+  "leisure",
+  "library/archive",
+  "other organisation",
+  "service",
+  "society",
+  "storage",
+  "temporary museum",
+  "trader",
+  "transport provider"
+)
+
 dispersal_events_csv <- "data/query_results/dispersal_events.csv"
 dispersal_events <- read_csv(dispersal_events_csv) |>
   mutate(
-    initial_museum_all = "All",
-    recipient_type = ifelse(is.na(recipient_type), "N/A", recipient_type),
-    recipient_general_type = ifelse(is.na(recipient_general_type), "N/A", recipient_general_type),
-    recipient_core_type = ifelse(!is.na(recipient_core_type), recipient_core_type, recipient_general_type),
-    sender_core_type = ifelse(!is.na(sender_core_type), sender_core_type, sender_general_type),
-    event_stage_in_path = event_stage_in_path + 1
+    event_stage_in_path = event_stage_in_path + 1,
+    recipient_type = case_when(
+      is.na(recipient_type) ~ "N/A",
+      recipient_type %in% core_actor_types_with_children ~ paste("unspecified", recipient_core_type),
+      recipient_type == "actor" ~ "unspecified actor",
+      TRUE ~ recipient_type
+    ),
+    recipient_core_type = case_when(
+      is.na(recipient_type) ~ "N/A",
+      recipient_type == "unspecified actor" ~ "unspecified actor",
+      TRUE ~ recipient_core_type
+    ),
+    sender_type = case_when(
+      is.na(sender_type) ~ "N/A",
+      sender_type %in% core_actor_types_with_children ~ paste("unspecified", sender_core_type),
+      sender_type == "actor" ~ "unspecified actor",
+      TRUE ~ sender_type
+    ),
+    sender_core_type = case_when(
+      is.na(sender_type) ~ "N/A",
+      sender_type == "unspecified actor" ~ "unspecified actor",
+      TRUE ~ sender_core_type
+    ),
+    collection_status = case_when(
+      collection_status == "collection" ~ "Items from a museum's collection",
+      collection_status == "loan" ~ "Items loaned to a museum",
+      collection_status == "handling" ~ "Items for handling",
+      collection_status == "museum-stuff" ~ "Other items (e.g. furniture)"
+    )
   )
 
 senders <- dispersal_events |>
@@ -46,6 +86,25 @@ recipients <- dispersal_events |>
 actors <- rbind(senders, recipients) |>
   unique()
 
+initial_museums <- dispersal_events |>
+  select(
+    museum_id=initial_museum_id,
+    museum_name=initial_museum_name,
+    size=initial_museum_size,
+    governance=initial_museum_governance,
+    governance_broad=initial_museum_governance_broad,
+    subject_broad=initial_museum_subject_broad,
+    subject=initial_museum_subject,
+    region=initial_museum_region,
+    country=initial_museum_country,
+    accreditation=initial_museum_accreditation
+  ) |>
+  distinct() |>
+  mutate(
+    name=paste0(museum_name, " (", museum_id, ")")
+  ) |>
+  arrange(name)
+
 collection_types <- dispersal_events |>
   mutate(
     collection_type = str_remove_all(collection_types, "\\[|\\]|'") |>
@@ -56,39 +115,8 @@ collection_types <- dispersal_events |>
   unique() |>
   filter(collection_type != "")
 
-closure_reasons <- dispersal_events |>
-    select(
-      museum_id=initial_museum_id,
-      museum_name=initial_museum_name,
-      cause=super_event_cause_types,
-      super_causes=super_event_causes
-    ) |>
-    distinct() |>
-    separate_rows(cause, sep = "; ") |>
-    separate_wider_delim(
-      cause,
-      " - ",
-      names=c("closure_reason_top_level", "closure_reason_mid_level", "closure_reason_low_level"),
-      too_few="align_start"
-    ) |>
-    mutate(
-      closure_reason_mid_level = ifelse(
-        is.na(closure_reason_mid_level),
-        paste(closure_reason_top_level, "-", "other"),
-        paste(closure_reason_top_level, "-", closure_reason_mid_level)
-      ),
-      closure_reason_low_level = ifelse(
-        is.na(closure_reason_low_level),
-        paste(closure_reason_mid_level, "-", "other"),
-        paste(closure_reason_mid_level, "-", closure_reason_low_level)
-      )
-    )
-
-closure_outcomes <- get_outcomes_by_museum(dispersal_events)
-museums_including_crown_dependencies <- read_csv("data/all_museums_data.csv") |>
-  left_join(closure_outcomes, by="museum_id") |>
+museums_including_crown_dependencies <- read_csv("data/query_results/museums.csv") |>
   mutate(
-    all="All",
     year_opened = ifelse(
       year_opened_1 == year_opened_2,
       year_opened_1,
@@ -99,18 +127,95 @@ museums_including_crown_dependencies <- read_csv("data/all_museums_data.csv") |>
       year_closed_1 == year_closed_2 ~ as.character(year_closed_1),
       TRUE ~ paste(year_closed_1, year_closed_2, sep=":")
     ),
+    all=factor(all, museum_attribute_ordering),
+    size=factor(size, museum_attribute_ordering),
+    governance=factor(governance, museum_attribute_ordering),
+    governance_broad=factor(governance_broad, museum_attribute_ordering),
+    subject=factor(subject, museum_attribute_ordering),
+    subject_broad=factor(subject_broad, museum_attribute_ordering),
+    accreditation=factor(accreditation, museum_attribute_ordering),
+    region=factor(region, museum_attribute_ordering),
+    country=factor(country, museum_attribute_ordering)
+  )
+
+closure_reasons <- dispersal_events |>
+  select(
+    museum_id=initial_museum_id,
+    reason=super_event_cause_types,
+    super_reasons=super_event_causes
+  ) |>
+  distinct() |>
+  separate_rows(reason, sep = "; ") |>
+  separate_wider_delim(
+    reason,
+    " - ",
+    names=c("reason_core", "reason_core_or_child", "reason_specific"),
+    too_few="align_start"
+  ) |>
+  mutate(
+    reason_core_or_child=ifelse(
+      is.na(reason_core_or_child),
+      reason_core,
+      paste(reason_core, "-", reason_core_or_child)
+    ),
+    reason_specific=ifelse(
+      is.na(reason_specific),
+      reason_core_or_child,
+      paste(reason_core_or_child, "-", reason_specific)
+    )
+  ) |>
+  left_join(museums_including_crown_dependencies, by="museum_id")
+
+closure_outcomes <- get_outcomes_by_museum(dispersal_events)
+closure_lengths <- get_closure_lengths_by_museum(
+  dispersal_events, museums_including_crown_dependencies
+)
+closure_timeline_events <- get_closure_timeline_events(
+  dispersal_events, museums_including_crown_dependencies
+)
+
+museums_including_crown_dependencies <- museums_including_crown_dependencies |>
+  left_join(closure_outcomes, by="museum_id") |>
+  left_join(
+    closure_reasons |>
+      select(museum_id, reasons_for_closure=super_reasons) |>
+      unique(),
+    by="museum_id"
+  ) |>
+  mutate(
     outcome_event_type=factor(outcome_event_type, museum_attribute_ordering),
     outcome_recipient_type=factor(outcome_recipient_type, museum_attribute_ordering),
     outcome_recipient_count=factor(outcome_recipient_count, museum_attribute_ordering),
     outcome_destination_type=factor(outcome_destination_type, museum_attribute_ordering)
   )
 museums <- museums_including_crown_dependencies |>
-  filter(!nation %in% c("Channel Islands", "Isle of Man")) |>
-  mutate(`No filter`="All") |>
-  mutate(
-    governance_main=factor(governance_main, museum_attribute_ordering),
-    region=factor(region, museum_attribute_ordering)
-  )
+  filter(!country %in% c("Channel Islands", "Isle of Man"))
+
+size_labels <- unique(select(museums_including_crown_dependencies, label=size))
+governance_broad_labels <- unique(select(museums_including_crown_dependencies, label=governance_broad))
+governance_labels <- unique(select(museums_including_crown_dependencies, label=governance))
+subject_broad_labels <- unique(select(museums_including_crown_dependencies, label=subject_broad))
+subject_labels <- unique(select(museums_including_crown_dependencies, label=subject))
+accreditation_labels <- unique(select(museums_including_crown_dependencies, label=accreditation))
+region_labels <- unique(select(museums_including_crown_dependencies, label=region))
+country_labels <- unique(select(museums_including_crown_dependencies, label=country))
+reason_core_labels <- unique(select(closure_reasons, label=reason_core))
+event_core_types <- dispersal_events |>
+  select(label=event_core_type) |>
+  unique()
+sender_core_types <- dispersal_events |>
+  select(label=sender_core_type) |>
+  unique()
+recipient_core_types <- dispersal_events |>
+  select(label=recipient_core_type) |>
+  unique()
+collection_status_labels <- dispersal_events |>
+  select(label=collection_status) |>
+  unique()
+
+subject_labels_map <- museums_including_crown_dependencies |>
+  select(subject_broad, subject) |>
+  unique()
 
 regions <- read_csv("data/regions.csv") |>
   mutate(group=paste(L1, L2, L3))
@@ -125,21 +230,22 @@ explanations <- read_csv("explanations.csv")
 
 field_names <- data.frame(
   name=c("All", "Size", "Governance", "Accreditation", "Subject Matter", "Country/Region", "Country"),
-  value=c("all", "size", "governance_main", "accreditation", "main_subject", "region", "nation")
+  value=c("all", "size", "governance_broad", "accreditation", "subject_broad", "region", "country")
 )
-filter_field_choices <- museums |>
-  select(size, governance_main, accreditation, main_subject, region, nation) |>
+filter_field_choices <- museums_including_crown_dependencies |>
+  select(all, size, governance_broad, accreditation, subject_broad, region, country) |>
   pivot_longer(
-    cols=c(size, governance_main, accreditation, main_subject, region, nation), names_to=c("field")
+    cols=c(all, size, governance_broad, accreditation, subject_broad, region, country),
+    names_to=c("field"),
+    values_to=c("label")
   ) |>
-  mutate(label=unname(tidy_labels[value])) |>
-  unique() |>
-  arrange(fct_rev(factor(value, museum_attribute_ordering)))
+  unique()
+
 subject_filter_field_choices <- museums |>
-  select(main_subject, subject_matter) |>
+  select(subject_broad, subject) |>
   unique() |>
-  mutate(subject_matter=fct_rev(factor(subject_matter, levels=museum_attribute_ordering))) |>
-  arrange(subject_matter)
+  mutate(subject=fct_rev(factor(subject, levels=museum_attribute_ordering))) |>
+  arrange(subject)
 by_default_ignore <- c("unknown", "Unknown", "Other_Government")
 
 sector_type_ordering_table <- actor_types |>

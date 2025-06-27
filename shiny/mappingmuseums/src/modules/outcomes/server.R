@@ -18,34 +18,22 @@ outcomesServer <- function(id) {
       )
       updateRadioButtons(session=session, inputId="countOrPercentage", selected="frequency")
       updatePickerInput(
-        session=session,
-        inputId="governanceFilter",
-        selected=filter(governance_labels, internal_label != "Independent")$tidy_label
+        session=session, inputId="governanceFilter", selected=governance_broad_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="sizeFilter",
-        selected=filter(size_labels, default_filter)$tidy_label
+        session=session, inputId="sizeFilter", selected=size_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="subjectFilter",
-        selected=filter(subject_broad_labels, default_filter)$tidy_label
+        session=session, inputId="subjectFilter", selected=subject_broad_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="subjectSpecificFilter",
-        selected=subject_full_labels$tidy_label
+        session=session, inputId="subjectSpecificFilter", selected=subject_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="regionFilter",
-        selected=filter(country_region_labels, internal_label != "England")$tidy_label
+        session=session, inputId="regionFilter", selected=region_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="accreditationFilter",
-        selected=filter(accreditation_labels, default_filter)$tidy_label
+        session=session, inputId="accreditationFilter", selected=accreditation_labels$label
       )
     })
 
@@ -74,58 +62,28 @@ outcomesServer <- function(id) {
       } else if (input$museumGrouping == "Outcome destination type") {
         return("outcome_destination_type")
       } else if (input$museumGrouping == "Core reason for closure") {
-        return("closure_reason_top_level")
+        return("reason_core")
       }
       filter(field_names, name==input$museumGrouping)$value[1]
     })
     museum_grouping_name <- reactive({input$museumGrouping})
 
-    size_filter_choices <- reactive({
-      filter(
-        size_labels,
-        tidy_label %in% input$sizeFilter
-      )$internal_label
-    })
-    governance_filter_choices <- reactive({
-      filter(
-        governance_labels,
-        tidy_label %in% input$governanceFilter
-      )$internal_label
-    })
-    subject_filter_choices <- reactive({
-      filter(
-        subject_broad_labels,
-        tidy_label %in% input$subjectFilter
-      )$internal_label
-    })
-    specific_subject_filter_choices <- reactive({
-      filter(
-        subject_full_labels,
-        tidy_label %in% input$subjectSpecificFilter
-      )$internal_label
-    })
-    region_filter_choices <- reactive({
-      filter(
-        country_region_labels,
-        tidy_label %in% input$regionFilter
-      )$internal_label
-    })
-    accreditation_filter_choices <- reactive({
-      filter(
-        accreditation_labels,
-        tidy_label %in% input$accreditationFilter
-      )$internal_label
-    })
+    size_filter_choices <- reactive({ input$sizeFilter })
+    governance_filter_choices <- reactive({ input$governanceFilter })
+    subject_filter_choices <- reactive({ input$subjectFilter })
+    specific_subject_filter_choices <- reactive({ input$subjectSpecificFilter })
+    region_filter_choices <- reactive({ input$regionFilter })
+    accreditation_filter_choices <- reactive({ input$accreditationFilter })
 
     observeEvent(subject_filter_choices(), {
       freezeReactiveValue(input, "subjectSpecificFilter")
-      specific_subjects <- subject_full_labels |>
+      specific_subjects <- subject_labels_map |>
         filter(subject_broad %in% subject_filter_choices())
       updatePickerInput(
         session=session,
         inputId="subjectSpecificFilter",
-        choices=specific_subjects$tidy_label,
-        selected=specific_subjects$tidy_label,
+        choices=specific_subjects$subject,
+        selected=specific_subjects$subject,
       )
     })
 
@@ -224,45 +182,29 @@ outcomesServer <- function(id) {
       }
     })
 
+    filtered_museums <- reactive({
+      museums_including_crown_dependencies |>
+        filter(
+          !is.na(outcome_event_type),
+          .data[[outcome_type()]] %in% outcome_filter(),
+          size %in% size_filter_choices(),
+          governance_broad %in% governance_filter_choices(),
+          accreditation %in% accreditation_filter_choices(),
+          subject_broad %in% subject_filter_choices(),
+          subject %in% specific_subject_filter_choices(),
+          region %in% region_filter_choices()
+        )
+    })
     summary_table <- reactive({
-      closure_outcomes_summary_table(
-        museums_including_crown_dependencies,
-        outcome_type(),
-        outcome_filter(),
-        size_filter_choices(),
-        governance_filter_choices(),
-        accreditation_filter_choices(),
-        subject_filter_choices(),
-        specific_subject_filter_choices(),
-        region_filter_choices()
-      )
+      closure_outcomes_summary_table(filtered_museums(), outcome_type())
     })
     two_way_summary_table <- reactive({
       closure_outcomes_two_way_summary_table(
-        museums_including_crown_dependencies,
-        outcome_type(),
-        outcome_filter(),
-        museum_grouping(),
-        size_filter_choices(),
-        governance_filter_choices(),
-        accreditation_filter_choices(),
-        subject_filter_choices(),
-        specific_subject_filter_choices(),
-        region_filter_choices()
+        filtered_museums(), outcome_type(), museum_grouping()
       )
     })
     over_time_table <- reactive({
-      closure_outcomes_over_time_table(
-        museums_including_crown_dependencies,
-        outcome_type(),
-        outcome_filter(),
-        size_filter_choices(),
-        governance_filter_choices(),
-        accreditation_filter_choices(),
-        subject_filter_choices(),
-        specific_subject_filter_choices(),
-        region_filter_choices()
-      )
+      closure_outcomes_over_time_table(filtered_museums(), outcome_type())
     })
 
     output$outcomesBarChartSmall <- renderPlot({
@@ -275,20 +217,6 @@ outcomesServer <- function(id) {
     })
     output$outcomesLineChartSmall <- renderPlot({
       closure_outcomes_over_time_small(over_time_table(), outcome_type())
-    })
-
-    closure_outcomes_table <- reactive({
-      museum_closure_outcomes_table(
-        museums_including_crown_dependencies,
-        outcome_type(),
-        outcome_filter(),
-        size_filter_choices(),
-        governance_filter_choices(),
-        accreditation_filter_choices(),
-        subject_filter_choices(),
-        specific_subject_filter_choices(),
-        region_filter_choices()
-      )
     })
 
     output$downloadOutcomesTable <- downloadHandler(
@@ -305,7 +233,23 @@ outcomesServer <- function(id) {
     )
 
     output$closureOutcomesTable <- renderDT({
-      closure_outcomes_table()
+      filtered_museums() |>
+        select(
+          museum_id,
+          museum_name,
+          year_opened,
+          year_closed,
+          reasons_for_closure,
+          outcome_event_type,
+          outcome_recipient_type,
+          outcome_recipient_count,
+          outcome_destination_type,
+          size,
+          governance,
+          accreditation,
+          subject,
+          region
+        )
     }, options=list(pageLength=100))
   })
 }

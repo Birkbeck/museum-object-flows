@@ -5,6 +5,8 @@ text_box <- function(text) {
   )
 }
 
+sidebar_style <- "height: 95vh; overflow-y: auto;"
+ 
 popover_js <- HTML("
 $(document).ready(function() {
   $('[data-toggle=\"popover\"]').popover({

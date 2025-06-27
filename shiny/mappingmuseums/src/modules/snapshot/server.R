@@ -10,34 +10,22 @@ snapshotServer <- function(id) {
       updateSelectInput(session=session, inputId="secondAxis", selected="Country/Region")
       updateRadioButtons(session=session, inputId="countOrPercentage", selected="")
       updatePickerInput(
-        session=session,
-        inputId="governanceFilter",
-        selected=filter(governance_labels, internal_label != "Independent")$tidy_label
+        session=session, inputId="governanceFilter", selected=governance_broad_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="sizeFilter",
-        selected=filter(size_labels, default_filter)$tidy_label
+        session=session, inputId="sizeFilter", selected=size_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="subjectFilter",
-        selected=filter(subject_broad_labels, default_filter)$tidy_label
+        session=session, inputId="subjectFilter", selected=subject_broad_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="subjectSpecificFilter",
-        selected=subject_full_labels$tidy_label
+        session=session, inputId="subjectSpecificFilter", selected=subject_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="regionFilter",
-        selected=filter(country_region_labels, internal_label != "England")$tidy_label
+        session=session, inputId="regionFilter", selected=region_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="accreditationFilter",
-        selected=filter(accreditation_labels, default_filter)$tidy_label
+        session=session, inputId="accreditationFilter", selected=accreditation_labels$label
       )
     })
 
@@ -122,7 +110,7 @@ snapshotServer <- function(id) {
 
     observeEvent(main_axis(), {
       choices <- filter_field_choices |> filter(field==main_axis())
-      selected_choices <- choices |> filter(!value %in% by_default_ignore)
+      selected_choices <- choices |> filter(!label %in% by_default_ignore)
       updatePickerInput(
         inputId="mainAxisShowOnly",
         choices=choices$label,
@@ -132,7 +120,7 @@ snapshotServer <- function(id) {
 
     observeEvent(second_axis(), {
       choices <- filter_field_choices |> filter(field==second_axis())
-      selected_choices <- choices |> filter(!value %in% by_default_ignore)
+      selected_choices <- choices |> filter(!label %in% by_default_ignore)
       updatePickerInput(
         inputId="secondAxisShowOnly",
         choices=choices$label,
@@ -145,14 +133,14 @@ snapshotServer <- function(id) {
         filter_field_choices,
         label %in% input$mainAxisShowOnly
         & main_axis() %in% field
-      )$value
+      )$label
     })
     second_axis_filter <- reactive({
       filter(
         filter_field_choices,
         label %in% input$secondAxisShowOnly
         & second_axis() %in% field
-      )$value
+      )$label
     })
 
     mainPlot <- reactiveVal("museumMap")
@@ -229,52 +217,22 @@ snapshotServer <- function(id) {
       paste0(basic_metric(), count_or_percentage())
     })
 
-    size_filter_choices <- reactive({
-      filter(
-        size_labels,
-        tidy_label %in% input$sizeFilter
-      )$internal_label
-    })
-    governance_filter_choices <- reactive({
-      filter(
-        governance_labels,
-        tidy_label %in% input$governanceFilter
-      )$internal_label
-    })
-    subject_filter_choices <- reactive({
-      filter(
-        subject_broad_labels,
-        tidy_label %in% input$subjectFilter
-      )$internal_label
-    })
-    subject_specific_filter_choices <- reactive({
-      filter(
-        subject_full_labels,
-        tidy_label %in% input$subjectSpecificFilter
-      )$internal_label
-    })
-    region_filter_choices <- reactive({
-      filter(
-        country_region_labels,
-        tidy_label %in% input$regionFilter
-      )$internal_label
-    })
-    accreditation_filter_choices <- reactive({
-      filter(
-        accreditation_labels,
-        tidy_label %in% input$accreditationFilter
-      )$internal_label
-    })
+    size_filter_choices <- reactive({ input$sizeFilter })
+    governance_filter_choices <- reactive({ input$governanceFilter })
+    subject_filter_choices <- reactive({ input$subjectFilter })
+    subject_specific_filter_choices <- reactive({ input$subjectSpecificFilter })
+    region_filter_choices <- reactive({ input$regionFilter })
+    accreditation_filter_choices <- reactive({ input$accreditationFilter })
 
     observeEvent(subject_filter_choices(), {
       freezeReactiveValue(input, "subjectSpecificFilter")
-      specific_subjects <- subject_full_labels |>
+      specific_subjects <- subject_labels_map |>
         filter(subject_broad %in% subject_filter_choices())
       updatePickerInput(
         session=session,
         inputId="subjectSpecificFilter",
-        choices=specific_subjects$tidy_label,
-        selected=specific_subjects$tidy_label,
+        choices=specific_subjects$subject,
+        selected=specific_subjects$subject,
       )
     })
 
@@ -406,11 +364,11 @@ snapshotServer <- function(id) {
       filtered_museums() |>
         select(
           museum_id,
-          name_of_museum,
+          museum_name,
           size,
           governance,
           accreditation,
-          subject_matter,
+          subject,
           region,
           year_opened,
           year_closed

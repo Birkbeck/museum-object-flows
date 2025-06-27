@@ -10,12 +10,10 @@ get_museums_in_snapshot <- function(museums,
   museums |>
     filter(
       size %in% size_filter,
-      governance %in% governance_filter
-      | governance_main %in% governance_filter,
-      main_subject %in% subject_filter,
-      subject_matter %in% subject_specific_filter,
-      region %in% region_filter
-      | nation %in% region_filter,
+      governance_broad %in% governance_filter,
+      subject_broad %in% subject_filter,
+      subject %in% subject_specific_filter,
+      region %in% region_filter,
       accreditation %in% accreditation_filter,
       year_closed_2 > start,
       year_opened_1 < end
@@ -35,10 +33,10 @@ museum_map <- function(museums, dimension, year_or_range, start, end, main_axis_
   padding <- 10000
   map <- ggplot(museums |> filter(.data[[dimension]] %in% main_axis_filter)) +
     geom_polygon(data=regions, aes(x=x, y=y, group=group), linewidth=0.1, label=NA, colour="black", fill=NA) +
-    geom_point(aes(label=name_of_museum, x=bng_x, y=bng_y, colour=.data[[dimension]]), size=0.5) +
+    geom_point(aes(label=museum_name, x=bng_x, y=bng_y, colour=.data[[dimension]]), size=0.5) +
     scale_x_continuous(limits=c(min_x - padding, max_x + padding)) +
     scale_y_continuous(limits=c(min_y - padding, max_y + padding)) +
-    scale_colour_manual(values=museum_attribute_colours, labels=tidy_labels) +
+    scale_colour_manual(values=museum_attribute_colours) +
     coord_fixed() +
     labs(
       title = paste("Museums in the UK", period),
@@ -62,8 +60,8 @@ museum_map_small <- function(museums, dimension, year_or_range, start, end, main
   }
   ggplot(museums |> filter(.data[[dimension]] %in% main_axis_filter)) +
     geom_polygon(data=regions, aes(x=x, y=y, group=group), linewidth=0.1, label=NA, colour="black", fill=NA) +
-    geom_point(aes(label=name_of_museum, x=bng_x, y=bng_y, colour=.data[[dimension]]), size=0.5) +
-    scale_colour_manual(values=museum_attribute_colours, labels=tidy_labels) +
+    geom_point(aes(label=museum_name, x=bng_x, y=bng_y, colour=.data[[dimension]]), size=0.5) +
+    scale_colour_manual(values=museum_attribute_colours) +
     coord_fixed() +
     labs(
       title=paste("Museums in the UK", period),
@@ -91,7 +89,6 @@ snapshot_bar_chart <- function(data, dimension, measure, title, y_label, x_label
     )
   ) +
     geom_bar(position="dodge", stat="identity", show.legend=FALSE, alpha=0.7) +
-    scale_y_discrete(labels=tidy_labels) +
     fill_scale +
     guides(fill=FALSE) +
     geom_text(
@@ -198,8 +195,8 @@ snapshot_heatmap <- function(data,
   heatmap <- ggplot(
     data |>
       filter(
-        dimension_1 == "All" | dimension_1 %in% main_axis_filter,
-        dimension_2 == "All" | dimension_2 %in% second_axis_filter
+        dimension_1 == "all" | dimension_1 %in% main_axis_filter,
+        dimension_2 == "all" | dimension_2 %in% second_axis_filter
       ),
     aes(
       x=dimension_2,
@@ -253,8 +250,8 @@ snapshot_heatmap_small <- function(data,
   ggplot(
     data |>
       filter(
-        dimension_1 == "All" | dimension_1 %in% main_axis_filter,
-        dimension_2 == "All" | dimension_2 %in% second_axis_filter
+        dimension_1 == "all" | dimension_1 %in% main_axis_filter,
+        dimension_2 == "all" | dimension_2 %in% second_axis_filter
       ),
     aes(
       x=dimension_2,

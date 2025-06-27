@@ -17,6 +17,7 @@ source("src/labels.R")
 source("src/mapping_museums_tables.R")
 source("src/themes.R")
 source("src/calculate_outcomes.R")
+source("src/calculate_closure_lengths.R")
 source("src/load_data.R")
 source("src/ui_elements.R")
 
@@ -28,9 +29,6 @@ source("src/modules/about/server.R")
 
 source("src/modules/glossary/ui.R")
 source("src/modules/glossary/server.R")
-
-source("src/modules/data/ui.R")
-source("src/modules/data/server.R")
 
 source("src/modules/snapshot/ui.R")
 source("src/modules/snapshot/server.R")
@@ -52,6 +50,9 @@ source("src/modules/events/server.R")
 
 source("src/modules/dispersal/ui.R")
 source("src/modules/dispersal/server.R")
+
+source("src/modules/data/ui.R")
+source("src/modules/data/server.R")
 
 PRODUCTION <- as.logical(Sys.getenv("PRODUCTION"))
 
@@ -186,14 +187,20 @@ function(input, output, session) {
       
       homeServer("home")
       glossaryServer("glossary")
+
+      # mapping museums
       snapshotServer("snapshot")
       changesServer("changes")
+
+      # museum closure
       reasonsServer("reasons")
-      lengthServer("length")
-      dataServer("data")
       outcomesServer("outcomes")
+
+      # collection dispersal
       eventsServer("events")
       dispersalServer("dispersal")
+      lengthServer("length")
+      dataServer("data")
       
     }
   })

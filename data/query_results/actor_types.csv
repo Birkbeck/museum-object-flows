@@ -1,95 +1,88 @@
 unknown_instances,private_instances,public_instances,type_name,is_core_category,university_instances,sub_type_of,hybrid_instances,total_instances,third_instances
-566,979,1230,actor,False,124,,2,5005,2104
-99,0,0,unknown,False,0,actor,0,99,0
-31,0,0,no recipient,True,0,actor,0,31,0
-375,900,1229,organisation,False,124,actor,2,4734,2104
-5,19,26,storage,True,1,organisation,0,56,5
-4,17,26,storage facility,False,1,storage,0,53,5
-0,1,0,garage,False,0,storage,0,1,0
-0,1,0,religious organisation,True,0,organisation,0,1,0
-0,1,0,synagogue,False,0,religious organisation,0,1,0
-354,794,1078,museum/library/archive,True,115,organisation,0,4396,2055
-0,0,0,national museum group,False,0,museum/library/archive,0,0,0
-353,792,1027,museum,True,112,museum/library/archive,0,4335,2051
-0,1,0,museum outreach,False,0,museum,0,1,0
-1,0,1,mobile museum,False,0,museum,0,3,1
-0,2,0,museum (pop up),False,0,museum,0,2,0
-0,0,14,library,False,1,museum/library/archive,0,15,0
-0,0,0,national trust,False,0,museum/library/archive,0,2,2
-0,2,15,archive,False,2,museum/library/archive,0,21,2
-1,0,21,museum service,False,0,museum/library/archive,0,22,0
-0,0,1,museum and archive service,False,0,museum/library/archive,0,1,0
-0,11,1,transport provider,True,0,organisation,0,14,2
+625,992,1243,actor,False,124,,1,5097,2112
+0,12,1,transport provider,True,0,actor,0,15,2
+0,1,0,shipyard,False,0,transport provider,0,1,0
+0,0,1,transport authority,False,0,transport provider,0,1,0
 0,0,0,lighthouse,False,0,transport provider,0,2,2
-0,0,1,local authority transport authority,False,0,transport provider,0,1,0
 0,1,0,dock management company,False,0,transport provider,0,1,0
 0,2,0,aviation service provider,False,0,transport provider,0,2,0
 0,6,0,airport,False,0,transport provider,0,6,0
 0,2,0,airfield,False,0,transport provider,0,2,0
-0,9,0,leisure,True,0,organisation,0,10,1
-0,0,0,arts centre,False,0,leisure,0,1,1
-0,1,0,sport stadium,False,0,leisure,0,1,0
-0,1,0,leisure centre,False,0,leisure,0,1,0
-0,4,0,tourism business,False,0,leisure,0,4,0
-0,3,0,restaurant,False,0,leisure,0,3,0
-0,31,0,trader,True,0,organisation,0,31,0
-0,1,0,furniture dealer,False,0,trader,0,1,0
-0,1,0,film prop business,False,0,trader,0,1,0
-0,1,0,technology company,False,0,trader,0,1,0
-0,2,0,housing developer,False,0,trader,0,2,0
+56,28,0,trader,True,0,actor,0,84,0
+0,1,0,antiques dealer,False,0,trader,0,1,0
 0,2,0,scrapyard,False,0,trader,0,2,0
 0,1,0,liquidator,False,0,trader,0,1,0
-0,19,0,auction house,False,0,trader,0,19,0
-0,1,0,art gallery,False,0,trader,0,1,0
+0,1,0,furniture dealer,False,0,trader,0,1,0
+0,1,0,film prop business,False,0,trader,0,1,0
+56,21,0,auction house,False,0,trader,0,77,0
 0,1,0,art dealer,False,0,trader,0,1,0
-2,7,1,other organisation,True,0,organisation,1,31,20
-0,1,0,sports club,False,0,other organisation,0,1,0
-0,0,0,heritage charity,False,0,other organisation,0,1,1
-1,4,0,company,False,0,other organisation,0,5,0
-1,0,0,textile mill,False,0,other organisation,0,1,0
-0,1,0,restorers,False,0,other organisation,0,1,0
-0,1,0,mining company,False,0,other organisation,0,1,0
-0,0,0,lenders,False,0,other organisation,1,1,0
-0,0,0,charity,False,0,other organisation,0,19,19
-0,0,1,broadcaster,False,0,other organisation,0,1,0
-0,3,16,education/research,True,8,organisation,0,31,4
-0,0,2,college,False,0,education/research,0,2,0
-0,0,10,university,False,8,education/research,0,18,0
-0,0,1,scientific organisation,False,0,education/research,0,5,4
-0,3,3,school,False,0,education/research,0,6,0
-2,1,7,service,True,0,organisation,0,10,0
-0,0,1,fire station,False,0,service,0,1,0
-2,0,0,care home,False,0,service,0,2,0
-0,1,1,hospital,False,0,service,0,2,0
-0,0,2,emergency service,False,0,service,0,2,0
-0,0,3,police college,False,0,service,0,3,0
-0,1,56,armed forces,True,0,organisation,0,58,1
-0,0,0,armed forces support charity,False,0,armed forces,0,1,1
-0,0,1,RAF base,False,0,armed forces,0,1,0
-0,1,0,naval dockyard,False,0,armed forces,0,1,0
-0,0,1,military site,False,0,armed forces,0,1,0
-0,2,44,civic organisation,True,0,organisation,0,48,2
-0,0,1,government organisation,False,0,civic organisation,0,1,0
-0,0,0,parish council,False,0,civic organisation,0,1,1
-0,0,1,embassy,False,0,civic organisation,0,1,0
-0,0,1,civic centre,False,0,civic organisation,0,1,0
-0,0,1,city corporation,False,0,civic organisation,0,1,0
-0,0,1,village hall,False,0,civic organisation,0,1,0
-0,0,0,community centre,False,0,civic organisation,0,1,1
-0,0,36,local authority,False,0,civic organisation,0,36,0
-0,2,1,visitor centre,False,0,civic organisation,0,3,0
-0,0,2,town hall,False,0,civic organisation,0,2,0
-9,14,0,society,True,0,organisation,1,38,14
-5,3,0,enthusiast organisation,False,0,society,0,8,0
-0,1,0,private members club,False,0,society,0,1,0
-1,6,0,railway preservation,False,0,society,0,12,5
-1,3,0,heritage railway,False,0,railway preservation,0,9,5
-0,2,0,railway preservation company,False,0,railway preservation,0,2,0
-0,1,0,railway preservation association,False,0,railway preservation,0,1,0
+1,3,1,temporary museum,True,0,actor,0,6,1
+0,1,0,museum outreach,False,0,temporary museum,0,1,0
+0,2,0,museum (pop up),False,0,temporary museum,0,2,0
+1,0,1,mobile museum,False,0,temporary museum,0,3,1
+25,16,26,storage,True,1,actor,0,73,5
+6,14,26,storage facility,False,1,storage,0,52,5
+0,1,0,garage,False,0,storage,0,1,0
+9,7,0,society,True,0,actor,0,16,0
 1,0,0,social club,False,0,society,0,1,0
 0,1,0,shareholder consortium,False,0,society,0,1,0
+0,1,0,private members club,False,0,society,0,1,0
 0,1,0,natural history society,False,0,society,0,1,0
-1,0,0,heritage society,False,0,society,1,10,8
-0,1,0,craft guild,False,0,society,0,2,1
-0,79,0,individual,True,0,actor,0,79,0
-1,0,1,historic house,True,0,actor,0,2,0
+6,3,0,enthusiast organisation,False,0,society,0,9,0
+2,1,7,service,True,0,actor,0,10,0
+0,0,3,police college,False,0,service,0,3,0
+0,1,1,hospital,False,0,service,0,2,0
+0,0,1,fire station,False,0,service,0,1,0
+0,0,2,police,False,0,service,0,2,0
+2,0,0,care home,False,0,service,0,2,0
+2,3,1,other organisation,True,0,actor,0,26,20
+0,1,0,craft guild,False,0,other organisation,0,2,1
+0,1,0,synagogue,False,0,other organisation,0,1,0
+0,0,0,charity,False,0,other organisation,0,19,19
+0,0,1,broadcaster,False,0,other organisation,0,1,0
+1,0,25,museum service,True,0,actor,0,26,0
+357,795,1028,museum,True,112,actor,0,4349,2057
+0,3,31,library/archive,True,3,actor,0,39,2
+0,0,14,library,False,1,library/archive,0,15,0
+0,3,17,archive,False,2,library/archive,0,24,2
+0,10,1,leisure,True,0,actor,0,13,2
+0,4,0,tourism business,False,0,leisure,0,4,0
+0,0,1,theatre,False,0,leisure,0,1,0
+0,1,0,sports club,False,0,leisure,0,1,0
+0,1,0,sport stadium,False,0,leisure,0,1,0
+0,3,0,restaurant,False,0,leisure,0,3,0
+0,1,0,leisure centre,False,0,leisure,0,1,0
+0,0,0,arts centre,False,0,leisure,0,2,2
+0,84,0,individual,True,0,actor,0,84,0
+3,7,1,heritage,True,0,actor,1,28,16
+0,3,0,railway preservation,False,0,heritage,0,3,0
+0,0,0,national trust,False,0,heritage,0,3,3
+1,1,1,historic house,False,0,heritage,0,3,0
+1,0,0,heritage society,False,0,heritage,1,9,7
+1,3,0,heritage railway,False,0,heritage,0,9,5
+0,0,0,heritage charity,False,0,heritage,0,1,1
+41,0,0,end of existence,True,0,actor,0,41,0
+1,3,16,education/research,True,8,actor,0,32,4
+1,0,10,university,False,8,education/research,0,19,0
+0,0,1,scientific organisation,False,0,education/research,0,5,4
+0,3,3,school,False,0,education/research,0,6,0
+0,0,2,college,False,0,education/research,0,2,0
+2,16,0,company,True,0,actor,0,18,0
+1,0,0,armourer,False,0,company,0,1,0
+0,1,0,restorers,False,0,company,0,1,0
+0,2,0,technology company,False,0,company,0,2,0
+0,2,0,housing developer,False,0,company,0,2,0
+0,3,48,civic organisation,True,0,actor,0,53,2
+0,3,1,visitor centre,False,0,civic organisation,0,4,0
+0,0,1,village hall,False,0,civic organisation,0,1,0
+0,0,3,town hall,False,0,civic organisation,0,3,0
+0,0,0,parish council,False,0,civic organisation,0,1,1
+0,0,40,local authority,False,0,civic organisation,0,40,0
+0,0,1,government organisation,False,0,civic organisation,0,1,0
+0,0,1,embassy,False,0,civic organisation,0,1,0
+0,0,0,community centre,False,0,civic organisation,0,1,1
+0,0,1,city corporation,False,0,civic organisation,0,1,0
+1,1,57,armed forces,True,0,actor,0,60,1
+0,0,1,RAF base,False,0,armed forces,0,1,0
+0,1,0,naval dockyard,False,0,armed forces,0,1,0
+0,0,0,armed forces support charity,False,0,armed forces,0,1,1

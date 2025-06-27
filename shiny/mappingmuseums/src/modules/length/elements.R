@@ -1,5 +1,5 @@
 closure_length_categories <- c(
-  "All",
+  "all",
   "unknown",
   "0-1 years",
   "1-2 years",
@@ -8,154 +8,6 @@ closure_length_categories <- c(
   "8-16 years",
   "16+ years"
 )
-
-get_event_dates_table <- function() {
-  closure_super_events <- dispersal_events |>
-    mutate(museum_id=initial_museum_id) |>
-    left_join(museums_including_crown_dependencies, by="museum_id") |>
-    mutate(
-      event_date=ifelse(
-        year_closed_1==year_closed_2,
-        year_closed_1,
-        paste(year_closed_1, year_closed_2, sep="-")
-      ),
-      year1 = year_closed_1,
-      year2 = year_closed_2,
-      year = (year1 + year2) / 2
-    ) |>
-    mutate(
-      event_level="super",
-      event_description="closure"
-    ) |>
-    select(
-      museum=initial_museum_name,
-      museum_id=initial_museum_id,
-      event_level,
-      event_date,
-      year1,
-      year2,
-      year,
-      event_description
-    ) |>
-    distinct()
-  closure_events <- dispersal_events |>
-    filter(sender_name == initial_museum_name) |>
-    mutate(
-      event_level="sub",
-      event_description=ifelse(
-        is.na(collection_description),
-        paste(collection_id, event_type, "to", recipient_name),
-        paste(collection_description, event_type, "to", recipient_name)
-      )
-    ) |>
-    select(
-      museum=initial_museum_name,
-      museum_id=initial_museum_id,
-      event_level,
-      event_date,
-      event_description
-    ) |>
-    mutate(
-      year1 = sub("/.*", "", event_date),
-      year2 = sub(".*/", "", event_date),
-      year1 = sub("-.*", "", year1),
-      year2 = sub("-.*", "", year2),
-      year1 = sub("\\?", "", year1),
-      year2 = sub("\\?", "", year2),
-      year1 = as.numeric(year1),
-      year2 = as.numeric(year2),
-      year2 = ifelse(is.na(year2), year1, year2),
-      year = (year1 + year2) / 2,
-    ) |>
-    filter(year > 1000) |>
-    select(
-      museum,
-      museum_id,
-      event_level,
-      event_date,
-      year1,
-      year2,
-      year,
-      event_description
-    ) |>
-    rbind(closure_super_events)
-
-  museum_ordering <- closure_events |>
-    filter(event_level=="super") |>
-    distinct() |>
-    arrange(year)
-  
-  closure_lengths <- closure_events |>
-    filter(event_level=="sub") |>
-    filter(!is.na(year)) |>
-    group_by(museum_id) |>
-    summarize(
-      earliest = min(year),
-      latest = max(year)
-    ) |>
-    left_join(closure_events |> filter(event_level=="super") |> select(museum_id, year), by="museum_id") |>
-    rename(closure_date=year) |>
-    mutate(
-      time_between_closure_and_earliest = earliest - closure_date,
-      latest_including_closure_date = ifelse(closure_date > latest, closure_date, latest),
-      length_of_closure = latest_including_closure_date - closure_date
-    )
-
-  closure_events <- closure_events |> left_join(closure_lengths, by="museum_id") |>
-    filter(
-      closure_date < 9999,
-      event_level == "super" | year1 >= closure_date
-    ) |>
-    mutate(
-      closure_length_category = case_when(
-        is.na(length_of_closure) ~ "unknown",
-        length_of_closure < 1 ~ "0-1 years",
-        length_of_closure < 2 ~ "1-2 years",
-        length_of_closure < 4 ~ "2-4 years",
-        length_of_closure < 8 ~ "4-8 years",
-        length_of_closure < 16 ~ "8-16 years",
-        TRUE ~ "16+ years"
-      ),
-      closure_length_category = factor(closure_length_category, closure_length_categories)
-    )
-}
-
-get_lengths_table <- function(event_dates_table,
-                              size_filter,
-                              governance_filter,
-                              accreditation_filter,
-                              subject_filter,
-                              specific_subject_filter,
-                              region_filter) {
-  event_dates_table |>
-    filter(event_level=="super") |>
-    left_join(museums_including_crown_dependencies, by="museum_id") |>
-    filter(
-      size %in% size_filter,
-      governance_main %in% governance_filter,
-      accreditation %in% accreditation_filter,
-      main_subject %in% subject_filter,
-      subject_matter %in% specific_subject_filter,
-      region %in% region_filter | nation %in% region_filter
-    ) |>
-    select(
-      museum_id,
-      museum,
-      closure_date=event_date,
-      earliest,
-      latest,
-      length_of_closure,
-      closure_length_category,
-      all,
-      size,
-      governance,
-      governance_main,
-      subject_matter,
-      main_subject,
-      region,
-      accreditation
-    )
-} 
 
 get_lengths_two_way_table <- function(lengths_table, museum_grouping) {
   heatmap_data_2_way <- lengths_table |>
@@ -174,7 +26,7 @@ get_lengths_two_way_table <- function(lengths_table, museum_grouping) {
     summarize(count=n()) |>
     ungroup() |>
     mutate(
-      closure_length_category="All",
+      closure_length_category="all",
       percentage=round(count / sum(count) * 100, 1),
       percentage_x=percentage,
       percentage_y=100
@@ -185,15 +37,15 @@ get_lengths_two_way_table <- function(lengths_table, museum_grouping) {
       summarize(count=n()) |>
       ungroup() |>
       mutate(
-        !!sym(museum_grouping):="All",
+        !!sym(museum_grouping):="all",
         percentage=round(count / sum(count) * 100, 1),
         percentage_x=100,
         percentage_y=percentage
       )
     heatmap_data_all_totals <- lengths_table |>
       summarize(
-        !!sym(museum_grouping):="All",
-        closure_length_category="All",
+        !!sym(museum_grouping):="all",
+        closure_length_category="all",
         count=n(),
         percentage=100,
         percentage_x=100,

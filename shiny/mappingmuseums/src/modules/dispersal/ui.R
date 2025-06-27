@@ -6,7 +6,7 @@ dispersalUI <- function(id) {
     sidebarLayout(
       sidebarPanel(
         width=3,
-        style = "height: 90vh; overflow-y: auto;",
+        style = sidebar_style,
 
         div(
           style = "text-align: right;",
@@ -145,8 +145,8 @@ dispersalUI <- function(id) {
            pickerInput(
              NS(id, "collectionStatusFilter"), 
              "", 
-             choices=collection_status_labels$tidy_label,
-             selected=filter(collection_status_labels, default_filter)$tidy_label,
+             choices=collection_status_labels$label,
+             selected=collection_status_labels$label,
              options=pickerOptions(
                actionsBox=TRUE, 
                size=10,
@@ -176,8 +176,8 @@ dispersalUI <- function(id) {
            pickerInput(
              NS(id, "startGovernanceFilter"), 
              "",
-             choices=filter(governance_labels, is_broad_type)$tidy_label,
-             selected=filter(governance_labels, default_filter)$tidy_label,
+             choices=governance_broad_labels$label,
+             selected=c("local authority"),
              options=pickerOptions(
                actionsBox=TRUE, 
                size=10,
@@ -193,8 +193,8 @@ dispersalUI <- function(id) {
           pickerInput(
             NS(id, "startSizeFilter"), 
             "",
-            choices=size_labels$tidy_label,
-            selected=filter(size_labels, default_filter)$tidy_label,
+            choices=size_labels$label,
+            selected=size_labels$label,
             options=pickerOptions(
               actionsBox=TRUE, 
               size=10,
@@ -210,8 +210,8 @@ dispersalUI <- function(id) {
          pickerInput(
            NS(id, "startSubjectFilter"), 
            "",
-           choices=subject_broad_labels$tidy_label,
-           selected=filter(subject_broad_labels, default_filter)$tidy_label,
+           choices=subject_broad_labels$label,
+           selected=subject_broad_labels$label,
            options=pickerOptions(
              actionsBox=TRUE, 
              size=10,
@@ -244,8 +244,8 @@ dispersalUI <- function(id) {
          pickerInput(
            NS(id, "startRegionFilter"), 
            "",
-           choices=country_region_labels$tidy_label,
-           selected=filter(country_region_labels, default_filter)$tidy_label,
+           choices=region_labels$label,
+           selected=region_labels$label,
            options=pickerOptions(
              actionsBox=TRUE, 
              size=10,
@@ -261,8 +261,8 @@ dispersalUI <- function(id) {
            pickerInput(
              NS(id, "startAccreditationFilter"), 
              "",
-             choices=accreditation_labels$tidy_label,
-             selected=filter(accreditation_labels, default_filter)$tidy_label,
+             choices=accreditation_labels$label,
+             selected=accreditation_labels$label,
              options=pickerOptions(
                actionsBox=TRUE, 
                size=10,

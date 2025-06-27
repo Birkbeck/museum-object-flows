@@ -273,20 +273,16 @@ if __name__ == "__main__":
             Column("actor_country", ignore=True),
             OptionalColumn("size", property_of="actor_id"),
             OptionalColumn("governance", property_of="actor_id"),
+            OptionalColumn("governance_broad", property_of="actor_id"),
             OptionalColumn("accreditation", property_of="actor_id"),
-            OptionalColumn("subject_matter", property_of="actor_id"),
+            OptionalColumn("subject", property_of="actor_id"),
+            OptionalColumn("subject_broad", property_of="actor_id"),
+            OptionalColumn("year_opened_1", property_of="actor_id"),
+            OptionalColumn("year_opened_2", property_of="actor_id"),
+            OptionalColumn("year_closed_1", property_of="actor_id"),
+            OptionalColumn("year_closed_2", property_of="actor_id"),
             OptionalColumn("region", property_of="actor_id"),
             OptionalColumn("country", property_of="actor_id"),
-            FormulaColumn(
-                "subject_matter_broad",
-                formula=formulae.get_subject_matter_broad,
-                property_of="actor_id",
-            ),
-            FormulaColumn(
-                "governance_broad",
-                formula=formulae.get_governance_broad,
-                property_of="actor_id",
-            ),
             FormulaColumn(
                 "has_location",
                 formula=lambda table, row_index: formulae.get_actor_location(
@@ -670,10 +666,10 @@ if __name__ == "__main__":
     places.import_from_list_of_lists(
         file_loader.get_sheet_as_list_of_lists("museums"),
         header_mapping={
-            "address_line_1": "address_1",
-            "address_line_2": "address_2",
-            "address_line_3": "address_3",
-            "village_town_or_city": "village_town_city",
+            "address_1": "address_1",
+            "address_2": "address_2",
+            "address_3": "address_3",
+            "village_town_city": "village_town_city",
             "english_county": "county",
             "postcode": "postcode",
             "nation": "country",

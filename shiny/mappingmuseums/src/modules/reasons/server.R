@@ -7,42 +7,26 @@ reasonsServer <- function(id) {
       updateSelectInput(session=session, inputId="reasonLevel", selected="Core categories")
       updateSelectInput(session=session, inputId="museumGrouping", selected="Governance")
       updateRadioButtons(session=session, inputId="countOrPercentage", selected="frequency")
-      closure_reasons <- closure_reasons_table()
-      reason_choices <- distinct(select(closure_reasons, reason_core))$reason_core
       updatePickerInput(
-        session=session,
-        inputId="reasonFilter",
-        selected=reason_choices
+        session=session, inputId="reasonFilter", selected=reason_core_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="governanceFilter",
-        selected=filter(governance_labels, internal_label != "Independent")$tidy_label
+        session=session, inputId="governanceFilter", selected=governance_broad_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="sizeFilter",
-        selected=filter(size_labels, default_filter)$tidy_label
+        session=session, inputId="sizeFilter", selected=size_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="subjectFilter",
-        selected=filter(subject_broad_labels, default_filter)$tidy_label
+        session=session, inputId="subjectFilter", selected=subject_broad_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="subjectSpecificFilter",
-        selected=subject_full_labels$tidy_label
+        session=session, inputId="subjectSpecificFilter", selected=subject_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="regionFilter",
-        selected=filter(country_region_labels, internal_label != "England")$tidy_label
+        session=session, inputId="regionFilter", selected=region_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="accreditationFilter",
-        selected=filter(accreditation_labels, default_filter)$tidy_label
+        session=session, inputId="accreditationFilter", selected=accreditation_labels$label
       )
     })
 
@@ -72,119 +56,46 @@ reasonsServer <- function(id) {
     })
     museum_grouping_name <- reactive({input$museumGrouping})
 
-    size_filter_choices <- reactive({
-      filter(
-        size_labels,
-        tidy_label %in% input$sizeFilter
-      )$internal_label
-    })
-    governance_filter_choices <- reactive({
-      filter(
-        governance_labels,
-        tidy_label %in% input$governanceFilter
-      )$internal_label
-    })
-    subject_filter_choices <- reactive({
-      filter(
-        subject_broad_labels,
-        tidy_label %in% input$subjectFilter
-      )$internal_label
-    })
-    specific_subject_filter_choices <- reactive({
-      filter(
-        subject_full_labels,
-        tidy_label %in% input$subjectSpecificFilter
-      )$internal_label
-    })
-    region_filter_choices <- reactive({
-      filter(
-        country_region_labels,
-        tidy_label %in% input$regionFilter
-      )$internal_label
-    })
-    accreditation_filter_choices <- reactive({
-      filter(
-        accreditation_labels,
-        tidy_label %in% input$accreditationFilter
-      )$internal_label
-    })
+    size_filter_choices <- reactive({ input$sizeFilter })
+    governance_filter_choices <- reactive({ input$governanceFilter })
+    subject_filter_choices <- reactive({ input$subjectFilter })
+    specific_subject_filter_choices <- reactive({ input$subjectSpecificFilter })
+    region_filter_choices <- reactive({ input$regionFilter })
+    accreditation_filter_choices <- reactive({ input$accreditationFilter })
 
     observeEvent(subject_filter_choices(), {
       freezeReactiveValue(input, "subjectSpecificFilter")
-      specific_subjects <- subject_full_labels |>
+      specific_subjects <- subject_labels_map |>
         filter(subject_broad %in% subject_filter_choices())
       updatePickerInput(
         session=session,
         inputId="subjectSpecificFilter",
-        choices=specific_subjects$tidy_label,
-        selected=specific_subjects$tidy_label,
+        choices=specific_subjects$subject,
+        selected=specific_subjects$subject,
       )
     })
 
-    closure_reasons <- reactive({
-      closure_reasons <- closure_reasons_table()
-      choices <- distinct(select(closure_reasons, reason_core))$reason_core
-      updatePickerInput(
-        inputId="reasonFilter",
-        choices=choices,
-        selected=choices
-      )
-      return(closure_reasons)
-    })
-    closure_reasons_type_counts <- reactive({
-      closure_reasons_types_counts_table(
-        closure_reasons(),
-        museums_including_crown_dependencies,
-        size_filter_choices(),
-        governance_filter_choices(),
-        accreditation_filter_choices(),
-        subject_filter_choices(),
-        specific_subject_filter_choices(),
-        region_filter_choices()
-      )
+    filtered_reasons <- reactive({
+      closure_reasons |>
+        filter(
+          !is.na(reason_core),
+          reason_core %in% reason_filter(),
+          size %in% size_filter_choices(),
+          governance_broad %in% governance_filter_choices(),
+          accreditation %in% accreditation_filter_choices(),
+          subject %in% specific_subject_filter_choices(),
+          subject_broad %in% subject_filter_choices(),
+          region %in% region_filter_choices()
+        )
     })
     summary_table <- reactive({
-      closure_reasons_summary_table(
-        closure_reasons(),
-        museums_including_crown_dependencies,
-        reason_level(),
-        reason_filter(),
-        size_filter_choices(),
-        governance_filter_choices(),
-        accreditation_filter_choices(),
-        subject_filter_choices(),
-        specific_subject_filter_choices(),
-        region_filter_choices()
-      )
+      closure_reasons_summary_table(filtered_reasons(), reason_level())
     })
     two_way_summary_table <- reactive({
-      closure_reasons_two_way_summary_table(
-        closure_reasons(),
-        museums_including_crown_dependencies,
-        reason_level(),
-        reason_filter(),
-        museum_grouping(),
-        size_filter_choices(),
-        governance_filter_choices(),
-        accreditation_filter_choices(),
-        subject_filter_choices(),
-        specific_subject_filter_choices(),
-        region_filter_choices()
-      )
+      closure_reasons_two_way_summary_table(filtered_reasons(), reason_level(), museum_grouping())
     })
     over_time_table <- reactive({
-      closure_reasons_over_time_table(
-        closure_reasons(),
-        museums_including_crown_dependencies,
-        reason_level(),
-        reason_filter(),
-        size_filter_choices(),
-        governance_filter_choices(),
-        accreditation_filter_choices(),
-        subject_filter_choices(),
-        specific_subject_filter_choices(),
-        region_filter_choices()
-      )
+      closure_reasons_over_time_table(filtered_reasons(), reason_level())
     })
 
     mainPlot <- reactiveVal("reasonsBarChart")
@@ -228,7 +139,7 @@ reasonsServer <- function(id) {
           inputId = NS(id, "countOrPercentage"),
           label = "",
           choices = list(
-            "Show number of closures" = "count",
+            "Show number of closures" = "frequency",
             "Show percentage of closures" = "percentage"
           )
         )
@@ -300,21 +211,6 @@ reasonsServer <- function(id) {
       closure_reasons_over_time_small(over_time_table(), reason_level())
     })
 
-    closure_reasons_by_museum_table <- reactive({
-      museum_closure_reasons_table(
-        closure_reasons(),
-        museums_including_crown_dependencies,
-        reason_level(),
-        reason_filter(),
-        size_filter_choices(),
-        governance_filter_choices(),
-        accreditation_filter_choices(),
-        subject_filter_choices(),
-        specific_subject_filter_choices(),
-        region_filter_choices()
-      )
-    })
-
     output$downloadReasonsTable <- downloadHandler(
       filename = function() {
         paste('closure-reasons-data-', Sys.Date(), '.csv', sep='')
@@ -329,7 +225,20 @@ reasonsServer <- function(id) {
     )
 
     output$closureReasonsTable <- renderDT({
-      closure_reasons_by_museum_table()
+      filtered_reasons() |>
+        select(
+          museum_id,
+          museum_name,
+          year_opened,
+          year_closed,
+          reasons_for_closure=super_reasons,
+          size,
+          governance,
+          accreditation,
+          subject,
+          region
+        ) |>
+        distinct()
     }, options=list(pageLength=100))
   })
 }

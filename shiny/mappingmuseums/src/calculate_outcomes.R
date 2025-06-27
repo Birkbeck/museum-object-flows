@@ -21,28 +21,16 @@ get_outcomes_by_museum <- function(events_table) {
         TRUE ~ "abroad"
       )
     )
-  write.csv(
-    events_with_numeric_collection_size |>
-      select(
-        initial_museum_id,
-        initial_museum_name,
-        event_core_type,
-        recipient_core_type,
-        destination_type,
-        collection_size
-      ),
-    "events_numeric.csv"
-  )
   event_outcomes <- get_outcomes_by_museum_for_type(
-    events_with_numeric_collection_size, "event_core_type"
+    events_with_numeric_collection_size, "event_core_type", "unknown"
   ) |>
     select(museum_id=initial_museum_id, outcome_event_type=outcome)
   recipient_outcomes <- get_outcomes_by_museum_for_type(
-    events_with_numeric_collection_size, "recipient_core_type"
+    events_with_numeric_collection_size, "recipient_core_type", "unspecified actor"
   ) |>
     select(museum_id=initial_museum_id, outcome_recipient_type=outcome)
   destination_outcomes <- get_outcomes_by_museum_for_type(
-    events_with_numeric_collection_size, "destination_type"
+    events_with_numeric_collection_size, "destination_type", "unknown"
   ) |>
     select(museum_id=initial_museum_id, outcome_destination_type=outcome)
   recipient_counts <- events_with_numeric_collection_size |>
@@ -73,7 +61,9 @@ get_outcomes_by_museum <- function(events_table) {
     )
 }
 
-get_outcomes_by_museum_for_type <- function(events_with_numeric_collection_size, event_attribute) {
+get_outcomes_by_museum_for_type <- function(events_with_numeric_collection_size,
+                                            event_attribute,
+                                            unknown_label) {
   collection_totals <- events_with_numeric_collection_size |>
     group_by(initial_museum_id) |>
     summarize(
@@ -88,7 +78,6 @@ get_outcomes_by_museum_for_type <- function(events_with_numeric_collection_size,
       percent=sum(collection_size)
     ) |>
     ungroup()
-  write.csv(outcomes_under_counted, paste0("under_counted_", event_attribute, ".csv"))
   outcomes_over_counted <- events_with_numeric_collection_size |>
     left_join(collection_totals, by="initial_museum_id") |>
     filter(total > 100) |>
@@ -103,7 +92,6 @@ get_outcomes_by_museum_for_type <- function(events_with_numeric_collection_size,
     ) |>
     ungroup() |>
     select(initial_museum_id, .data[[event_attribute]], percent)
-  write.csv(outcomes_over_counted, paste0("over_counted_", event_attribute, ".csv"))
   outcome_proportions <- rbind(outcomes_under_counted, outcomes_over_counted) |>
     group_by(initial_museum_id) |>
     mutate(total = sum(percent)) |>
@@ -113,7 +101,7 @@ get_outcomes_by_museum_for_type <- function(events_with_numeric_collection_size,
       values_from=percent,
       values_fill=0
     ) |>
-    mutate(unknown=unknown + 100 - total) |>
+    mutate(!!sym(unknown_label):=.data[[unknown_label]] + 100 - total) |>
     select(-total)
   if (event_attribute == "destination_type") {
     outcome_proportions <- outcome_proportions |>
@@ -128,12 +116,11 @@ get_outcomes_by_museum_for_type <- function(events_with_numeric_collection_size,
           `within the same region` >= 50 ~ "mostly within the same region",
           `within the UK` >= 50 ~ "mostly within the UK",
           `abroad` >= 50 ~ "mostly abroad",
-          `unknown` >= 50 ~ "mostly unknown",
+          .data[[unknown_label]] >= 50 ~ paste("mostly", unknown_label),
           TRUE ~ "mixed destinations"
         )
       )
     write.csv(outcome_proportions, "outcome_destination_proportions.csv")
-    print(outcome_proportions |> filter(outcome=="mixed destinations"))
     return(outcome_proportions)
   }
   outcome_proportions |>

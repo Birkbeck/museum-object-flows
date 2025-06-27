@@ -9,6 +9,7 @@ openpyxl = "*"
 pytest = "*"
 edtf = "*"
 bng-latlon = "*"
+pandas = "*"
 
 [dev-packages]
 

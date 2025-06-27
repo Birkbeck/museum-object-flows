@@ -6,7 +6,7 @@ eventsUI <- function(id) {
     sidebarLayout(
       sidebarPanel(
         width=3,
-        style = "height: 90vh; overflow-y: auto;",
+        style = sidebar_style,
 
         div(
           style = "text-align: right;",
@@ -194,8 +194,8 @@ eventsUI <- function(id) {
           pickerInput(
             NS(id, "collectionStatusFilter"), 
             "",
-            choices=collection_status_labels$tidy_label,
-            selected=filter(collection_status_labels, default_filter)$tidy_label,
+            choices=collection_status_labels$label,
+            selected=collection_status_labels$label,
             options=pickerOptions(
               actionsBox=TRUE, 
               size=10,
@@ -211,8 +211,8 @@ eventsUI <- function(id) {
           pickerInput(
             NS(id, "governanceFilter"), 
             "",
-            choices=filter(governance_labels, is_broad_type)$tidy_label,
-            selected=filter(governance_labels, is_broad_type)$tidy_label,
+            choices=governance_broad_labels$label,
+            selected=governance_broad_labels$label,
             options=pickerOptions(
               actionsBox=TRUE, 
               size=10,
@@ -228,8 +228,8 @@ eventsUI <- function(id) {
           pickerInput(
             NS(id, "sizeFilter"), 
             "",
-            choices=size_labels$tidy_label,
-            selected=filter(size_labels, default_filter)$tidy_label,
+            choices=size_labels$label,
+            selected=size_labels$label,
             options=pickerOptions(
               actionsBox=TRUE, 
               size=10,
@@ -245,8 +245,8 @@ eventsUI <- function(id) {
           pickerInput(
             NS(id, "subjectFilter"), 
             "",
-            choices=subject_broad_labels$tidy_label,
-            selected=filter(subject_broad_labels, default_filter)$tidy_label,
+            choices=subject_broad_labels$label,
+            selected=subject_broad_labels$label,
             options=pickerOptions(
               actionsBox=TRUE, 
               size=10,
@@ -279,8 +279,8 @@ eventsUI <- function(id) {
           pickerInput(
             NS(id, "regionFilter"), 
             "",
-            choices=filter(country_region_labels, internal_label != "England")$tidy_label,
-            selected=filter(country_region_labels, internal_label != "England")$tidy_label,
+            choices=region_labels$label,
+            selected=region_labels$label,
             options=pickerOptions(
               actionsBox=TRUE, 
               size=10,
@@ -296,8 +296,8 @@ eventsUI <- function(id) {
           pickerInput(
             NS(id, "accreditationFilter"), 
             "",
-            choices=accreditation_labels$tidy_label,
-            selected=filter(accreditation_labels, default_filter)$tidy_label,
+            choices=accreditation_labels$label,
+            selected=accreditation_labels$label,
             options=pickerOptions(
               actionsBox=TRUE, 
               size=10,

@@ -1,20 +1,5 @@
-closure_outcomes_summary_table <- function(museums_table,
-                                           outcome_type,
-                                           outcome_filter,
-                                           size_filter,
-                                           governance_filter,
-                                           accreditation_filter,
-                                           subject_filter,
-                                           specific_subject_filter,
-                                           region_filter) {
+closure_outcomes_summary_table <- function(museums_table, outcome_type) {
   museums_table |>
-    filter(.data[[outcome_type]] %in% outcome_filter) |>
-    filter(size %in% size_filter) |>
-    filter(governance_main %in% governance_filter) |>
-    filter(accreditation %in% accreditation_filter) |>
-    filter(main_subject %in% subject_filter) |>
-    filter(subject_matter %in% specific_subject_filter) |>
-    filter(region %in% region_filter | nation %in% region_filter) |>
     group_by(.data[[outcome_type]]) |>
     summarize(frequency=n()) |>
     ungroup() |>
@@ -23,26 +8,16 @@ closure_outcomes_summary_table <- function(museums_table,
 
 closure_outcomes_two_way_summary_table <- function(museums_table,
                                                    outcome_type,
-                                                   outcome_filter,
-                                                   museum_grouping,
-                                                   size_filter,
-                                                   governance_filter,
-                                                   accreditation_filter,
-                                                   subject_filter,
-                                                   specific_subject_filter,
-                                                   region_filter) {
-  if (museum_grouping =="closure_reason_top_level") {
+                                                   museum_grouping) {
+  if (museum_grouping =="reason_core") {
     museums_table <- museums_table |>
-      left_join(closure_reasons, by="museum_id")
+      left_join(
+        closure_reasons |>
+          select(museum_id, reason_core),
+        by="museum_id"
+      )
   }
   closure_outcomes <- museums_table |>
-    filter(.data[[outcome_type]] %in% outcome_filter) |>
-    filter(size %in% size_filter) |>
-    filter(governance_main %in% governance_filter) |>
-    filter(accreditation %in% accreditation_filter) |>
-    filter(main_subject %in% subject_filter) |>
-    filter(subject_matter %in% specific_subject_filter) |>
-    filter(region %in% region_filter | nation %in% region_filter) |>
     mutate(
       dimension_1=.data[[outcome_type]],
       dimension_2=.data[[museum_grouping]]
@@ -83,7 +58,7 @@ closure_outcomes_two_way_summary_table <- function(museums_table,
     group_by(dimension_1) |>
     left_join(number_of_closed_museums_dimension_1, by="dimension_1") |>
     summarize(
-      dimension_2="All",
+      dimension_2="all",
       frequency=number_of_closures_dimension_1,
       percentage=round(frequency / number_of_closed_museums * 100, 1),
       percentage_x=percentage,
@@ -95,7 +70,7 @@ closure_outcomes_two_way_summary_table <- function(museums_table,
     group_by(dimension_2) |>
     left_join(number_of_closed_museums_dimension_2, by="dimension_2") |>
     summarize(
-      dimension_1="All",
+      dimension_1="all",
       frequency=number_of_closures_dimension_2,
       percentage=round(frequency / number_of_closed_museums * 100, 1),
       percentage_x=100,
@@ -105,8 +80,8 @@ closure_outcomes_two_way_summary_table <- function(museums_table,
     distinct()
   data_all_totals <- closure_outcomes |>
     summarize(
-      dimension_1="All",
-      dimension_2="All",
+      dimension_1="all",
+      dimension_2="all",
       frequency=number_of_closed_museums,
       percentage=100,
       percentage_x=100,
@@ -118,25 +93,8 @@ closure_outcomes_two_way_summary_table <- function(museums_table,
     rbind(data_all_totals)
 }
 
-closure_outcomes_over_time_table <- function(museums_table,
-                                             outcome_type,
-                                             outcome_filter,
-                                             size_filter,
-                                             governance_filter,
-                                             accreditation_filter,
-                                             subject_filter,
-                                             specific_subject_filter,
-                                             region_filter) {
+closure_outcomes_over_time_table <- function(museums_table, outcome_type) {
   museums_table |>
-    filter(.data[[outcome_type]] %in% outcome_filter) |>
-    filter(size %in% size_filter) |>
-    filter(governance_main %in% governance_filter) |>
-    filter(accreditation %in% accreditation_filter) |>
-    filter(main_subject %in% subject_filter) |>
-    filter(subject_matter %in% specific_subject_filter) |>
-    filter(region %in% region_filter | nation %in% region_filter) |>
-    filter(!is.na(year_closed_1) & !is.na(year_closed_2)) |>
-    filter(year_closed_1 != 9999) |>
     rowwise() |>
     mutate(
       year_closed = mean(c(year_closed_1, year_closed_2)),
@@ -361,48 +319,4 @@ closure_outcomes_over_time_small <- function(outcomes_over_time_table, outcome_t
       colour="Outcome of closure"
     ) +
     theme_minimal()
-}
-
-museum_closure_outcomes_table <- function(museums_including_crown_dependencies,
-                                          outcome_type,
-                                          outcome_filter,
-                                          size_filter,
-                                          governance_filter,
-                                          accreditation_filter,
-                                          subject_filter,
-                                          specific_subject_filter,
-                                          region_filter) {
-  causes <- dispersal_events |>
-    select(museum_id=initial_museum_id, reasons_for_closure=super_event_causes) |>
-    distinct()
-  museums_including_crown_dependencies |>
-    filter(!is.na(outcome_event_type)) |>
-    filter(.data[[outcome_type]] %in% outcome_filter) |>
-    filter(size %in% size_filter) |>
-    filter(governance_main %in% governance_filter) |>
-    filter(accreditation %in% accreditation_filter) |>
-    filter(main_subject %in% subject_filter) |>
-    filter(subject_matter %in% specific_subject_filter) |>
-    filter(region %in% region_filter | nation %in% region_filter) |>
-    left_join(causes, by="museum_id") |>
-    mutate(
-      year_opened = paste(year_opened_1, year_opened_2, sep=":"),
-      year_closed = paste(year_closed_1, year_closed_2, sep=":")
-    ) |>
-    select(
-      museum_id,
-      museum_name=name_of_museum,
-      year_opened,
-      year_closed,
-      reasons_for_closure,
-      outcome_event_type,
-      outcome_recipient_type,
-      outcome_recipient_count,
-      outcome_destination_type,
-      size,
-      governance,
-      accreditation,
-      subject_matter,
-      region
-    )
 }

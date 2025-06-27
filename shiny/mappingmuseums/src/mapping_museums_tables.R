@@ -152,7 +152,7 @@ get_2_way_open_and_close_data <- function(data, dimension1, dimension2, start_ye
     ) |>
     ungroup() |>
     mutate(
-      !!sym(dimension2) := "All",
+      !!sym(dimension2) := "all",
       period_total = round(period_total, 0),
       period_total_pc = round(period_total_pc, 1),
       start_total = round(start_total, 0),
@@ -186,7 +186,7 @@ get_2_way_open_and_close_data <- function(data, dimension1, dimension2, start_ye
     ) |>
     ungroup() |>
     mutate(
-      !!sym(dimension1) := "All",
+      !!sym(dimension1) := "all",
       period_total = round(period_total, 0),
       period_total_pc = round(period_total_pc, 1),
       start_total = round(start_total, 0),
@@ -219,8 +219,8 @@ get_2_way_open_and_close_data <- function(data, dimension1, dimension2, start_ye
     ) |>
     ungroup() |>
     mutate(
-      !!sym(dimension1) := "All",
-      !!sym(dimension2) := "All",
+      !!sym(dimension1) := "all",
+      !!sym(dimension2) := "all",
       period_total = round(period_total, 0),
       period_total_pc = round(period_total_pc, 1),
       start_total = round(start_total, 0),
@@ -288,11 +288,11 @@ get_open_in_time_period <- function(museums, start_year, end_year, measure) {
     mutate(!!sym(measure) := round(.data[[measure]], 2)) |>
     select(
       museum_id,
-      name_of_museum,
+      museum_name,
       size,
       governance,
       accreditation,
-      subject_matter,
+      subject,
       region,
       year_opened,
       .data[[measure]]
@@ -306,11 +306,11 @@ get_closures_in_time_period <- function(museums, start_year, end_year) {
     mutate(prob_closed_in_period = round(prob_closed_in_period, 2)) |>
     select(
       museum_id,
-      name_of_museum,
+      museum_name,
       size,
       governance,
       accreditation,
-      subject_matter,
+      subject,
       region,
       year_opened,
       year_closed,
@@ -325,11 +325,11 @@ get_openings_in_time_period <- function(museums, start_year, end_year) {
     mutate(prob_opened_in_period = round(prob_opened_in_period, 2)) |>
     select(
       museum_id,
-      name_of_museum,
+      museum_name,
       size,
       governance,
       accreditation,
-      subject_matter,
+      subject,
       region,
       year_opened,
       year_closed,

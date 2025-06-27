@@ -1,372 +1,372 @@
 museum_id,outcome_main_event,outcome_main_recipient
-mm.MDN.005,mixed,mostly museum
-mm.MDN.029,mostly stored,mostly NA
+mm.MDN.005,mostly loaned,mostly museum
+mm.MDN.029,mostly transferred,mostly other organisation
 mm.MDN.031,mixed,mixed
 mm.MDN.032,mostly transferred,mostly museum
 mm.MDN.034,mostly transferred,mixed
 mm.Mus70Cal.005,mostly transferred,mostly museum
 mm.Mus70Cal.010,mostly sold,mostly trader
-mm.Mus70Cal.011,mostly stored,mostly NA
+mm.Mus70Cal.011,mostly transferred,mostly museum/library/archive
 mm.Mus70Cal.015,mostly transferred,mostly museum
-mm.New.104,mostly stored,mostly NA
-mm.New.140,mostly sold,mostly unknown
+mm.New.104,mostly stored,mostly storage
+mm.New.140,mostly sold,mostly trader
 mm.New.147,mostly sold,mostly unknown
-mm.New.154,mostly moved,mixed
+mm.New.154,mixed,mixed
 mm.New.165,mostly sold,mostly unknown
 mm.New.168,mostly transferred,mostly civic organisation
 mm.New.172,mixed,mixed
-mm.New.202,mostly sold,mostly unknown
-mm.New.203,mixed,mostly trader
+mm.New.202,mostly sold,mostly trader
+mm.New.203,mostly sold,mostly trader
 mm.New.211,mostly transferred,mostly museum
-mm.New.213,mostly stored,mostly NA
+mm.New.213,mostly kept,mostly N/A
 mm.New.233,mostly returned,mostly unknown
-mm.New.242,mostly sold,mostly unknown
+mm.New.242,mostly sold,mostly trader
 mm.New.254,mixed,mixed
 mm.New.27,mostly transferred,mostly museum
 mm.New.28,mostly sold,mostly individual
-mm.New.58,mostly stored,mostly NA
+mm.New.58,mostly stored,mostly storage
 mm.New.69,mostly sold,mostly unknown
-mm.New.81,mostly moved,mixed
+mm.New.81,mostly transferred,mixed
 mm.New.83,mixed,mixed
-mm.New.87,mostly moved,mostly museum
-mm.New.96,mostly moved,mostly museum
+mm.New.87,mostly transferred,mostly museum
+mm.New.96,mostly transferred,mostly museum
 mm.ace.1103,mostly transferred,mostly museum
 mm.ace.1167,mostly transferred,mixed
 mm.ace.1193,mostly transferred,mostly civic organisation
-mm.ace.1240,mostly stored,mostly NA
-mm.ace.1270,mostly stored,mostly NA
-mm.ace.399,mostly stored,mostly NA
+mm.ace.1240,mostly stored,mostly N/A
+mm.ace.1270,mostly stored,mostly N/A
+mm.ace.399,mostly stored,mostly storage
 mm.aim.0052,mostly transferred,mostly museum/library/archive
-mm.aim.0062,mostly sold,mostly unknown
-mm.aim.0126,mostly moved,mostly museum
-mm.aim.0127,mostly stored,mostly NA
+mm.aim.0062,mostly sold,mostly trader
+mm.aim.0126,mostly transferred,mostly museum
+mm.aim.0127,mostly stored,mostly storage
 mm.aim.0129,mixed,mixed
-mm.aim.0150,mostly sold,mostly unknown
-mm.aim.0158,mixed,mixed
-mm.aim.0215,mostly stored,mostly NA
-mm.aim.0431,mostly stored,mostly NA
-mm.aim.0456,mixed,mostly NA
-mm.aim.0484,mixed,mostly unknown
-mm.aim.0486,mostly transferred,mostly museum
+mm.aim.0150,mostly sold,mostly trader
+mm.aim.0158,mostly returned,mixed
+mm.aim.0215,mostly transferred,mostly storage
+mm.aim.0431,mostly stored,mostly N/A
+mm.aim.0456,mostly unknown,mostly N/A
+mm.aim.0484,mostly damaged/destroyed,mostly unknown
+mm.aim.0486,mostly loaned,mostly museum
 mm.aim.0528,mostly sold,mostly individual
-mm.aim.0557,mostly stored,mostly NA
+mm.aim.0557,mostly transferred,mostly civic organisation
 mm.aim.0651,mostly transferred,mostly museum
-mm.aim.0658,mostly stored,mostly NA
-mm.aim.0663,mostly kept,mostly NA
-mm.aim.0754,mostly stored,mostly NA
-mm.aim.0774,mostly stored,mostly NA
+mm.aim.0658,mostly stored,mostly storage
+mm.aim.0663,mostly kept,mostly N/A
+mm.aim.0754,mostly stored,mostly storage
+mm.aim.0774,mostly stored,mostly N/A
 mm.aim.0779,mostly returned,mostly unknown
-mm.aim.0881,mostly transferred,mixed
-mm.aim.0936,mostly sold,mostly unknown
+mm.aim.0881,mostly transferred,mostly other organisation
+mm.aim.0936,mostly sold,mostly trader
 mm.aim.0956,mostly sold,mostly trader
-mm.aim.1001,mixed,mixed
-mm.aim.1031,mostly stored,mostly NA
-mm.aim.1082,mostly stored,mostly NA
+mm.aim.1001,mixed,mostly unknown
+mm.aim.1031,mostly stored,mostly N/A
+mm.aim.1082,mostly stored,mostly N/A
 mm.aim.1121,mostly sold,mostly unknown
-mm.aim.1136,mostly stored,mostly NA
+mm.aim.1136,mostly stored,mostly storage
 mm.aim.1166,mixed,mixed
 mm.aim.1169,mostly transferred,mixed
-mm.aim.1194,mostly sold,mostly unknown
-mm.aim.1217,mostly sold,mostly unknown
+mm.aim.1194,mostly sold,mostly trader
+mm.aim.1217,mostly sold,mostly trader
 mm.aim.1281,mostly returned,mixed
 mm.aim82M.002,mostly sold,mostly unknown
 mm.aim82M.004,mostly sold,mostly unknown
-mm.aim82M.029,mostly sold,mostly unknown
+mm.aim82M.029,mostly sold,mostly trader
 mm.aim82M.033,mostly returned,mixed
-mm.aim82M.049,mostly sold,mostly unknown
+mm.aim82M.049,mostly sold,mostly trader
 mm.aim82M.051,mostly sold,mostly unknown
-mm.aim82M.052,mixed,mixed
-mm.aim82M.066,mostly sold,mostly unknown
-mm.aim82M.068,mostly kept,mostly NA
+mm.aim82M.052,mostly sold,mostly trader
+mm.aim82M.066,mostly sold,mostly trader
+mm.aim82M.068,mostly kept,mostly N/A
 mm.aim82NM.005,mostly sold,mostly individual
 mm.aim82NM.027,mostly transferred,mostly unknown
 mm.aim82NM.028,mostly transferred,mostly museum
-mm.aim82NM.029,mixed,mostly museum
+mm.aim82NM.029,mostly loaned,mostly museum
+mm.aim82NM.038,mostly sold,mostly trader
 mm.aim82NM.045,mostly sold,mostly unknown
 mm.aim82NM.051,mostly transferred,mostly museum
 mm.aim82NM.052,mostly sold,mostly trader
 mm.aim82NM.061,mostly sold,mostly individual
 mm.aim82NM.064,mostly sold,mostly unknown
-mm.aim82NM.066,mostly sold,mostly unknown
-mm.aim82NM.072,mostly stored,mostly NA
+mm.aim82NM.066,mostly sold,mostly trader
+mm.aim82NM.072,mostly transferred,mostly museum/library/archive
 mm.aim82NM.075,mostly sold,mostly trader
 mm.aim82NM.077,mixed,mixed
-mm.aim82NM.079,mostly returned,mixed
+mm.aim82NM.079,mostly returned,mostly unknown
 mm.aim82NM.082,mixed,mixed
 mm.aim82NM.083,mostly sold,mostly trader
 mm.aim82NM.091,mostly sold,mostly museum
 mm.aim82NM.100,mixed,mixed
-mm.aim82NM.101,mostly kept,mostly NA
+mm.aim82NM.101,mostly kept,mostly N/A
 mm.aim82NM.103,mostly transferred,mostly museum
-mm.aim82NM.104,mostly stored,mostly NA
+mm.aim82NM.104,mostly stored,mostly N/A
 mm.aim82NM.119,mostly transferred,mostly museum
 mm.aim82NM.122,mostly sold,mixed
-mm.aim82NM.133,mixed,mixed
-mm.domus.EM020,mostly left,mostly NA
-mm.domus.EM030,mostly stored,mostly NA
+mm.aim82NM.133,mostly kept,mixed
+mm.domus.EM020,mostly left,mostly N/A
+mm.domus.EM030,mostly stored,mostly storage
 mm.domus.EM046,mostly transferred,mostly museum
 mm.domus.EM047,mostly transferred,mostly museum
-mm.domus.EM053,mostly stored,mostly NA
+mm.domus.EM053,mostly stored,mostly storage
 mm.domus.EM054,mostly transferred,mostly museum
 mm.domus.EM060,mixed,mixed
-mm.domus.EM065,mostly moved,mostly civic organisation
-mm.domus.EM075,mostly stored,mostly NA
+mm.domus.EM065,mostly transferred,mostly civic organisation
+mm.domus.EM075,mostly transferred,mostly civic organisation
 mm.domus.EM100,mostly transferred,mostly museum
-mm.domus.NE007,mostly left,mostly NA
+mm.domus.NE007,mostly left,mostly N/A
 mm.domus.NE009,mostly transferred,mostly museum
-mm.domus.NE015,mostly stored,mostly NA
-mm.domus.NE018,mostly stored,mostly NA
-mm.domus.NE022,mostly stored,mostly NA
-mm.domus.NE027,mostly stored,mostly NA
+mm.domus.NE015,mostly stored,mostly storage
+mm.domus.NE018,mostly stored,mostly storage
+mm.domus.NE022,mostly stored,mostly storage
+mm.domus.NE027,mostly transferred,mostly museum
 mm.domus.NE036,mostly transferred,mostly museum
 mm.domus.NE044,mostly transferred,mostly museum
 mm.domus.NE055,mostly transferred,mostly museum
 mm.domus.NE058,mostly transferred,mostly museum
 mm.domus.NE063,mostly transferred,mostly museum
 mm.domus.NE065,mixed,mixed
-mm.domus.NI004,mixed,mostly NA
-mm.domus.NI007,mostly stored,mostly NA
+mm.domus.NI004,mixed,mixed
+mm.domus.NI007,mostly stored,mostly N/A
 mm.domus.NI026,mixed,mixed
 mm.domus.NI034,mostly transferred,mostly museum
-mm.domus.NI035,mostly left,mostly NA
-mm.domus.NW009,mostly stored,mostly NA
-mm.domus.NW012,mostly stored,mostly NA
+mm.domus.NI035,mostly left,mostly N/A
+mm.domus.NW009,mostly transferred,mostly museum
+mm.domus.NW012,mostly stored,mostly storage
 mm.domus.NW015,mostly transferred,mostly museum
 mm.domus.NW032,mostly transferred,mostly museum
-mm.domus.NW035,mostly left,mostly NA
+mm.domus.NW035,mostly left,mostly N/A
 mm.domus.NW036,mixed,mixed
 mm.domus.NW054,mostly returned,mostly museum
 mm.domus.NW089,mixed,mixed
 mm.domus.NW091,mostly transferred,mostly museum
 mm.domus.NW105,mostly transferred,mostly museum
 mm.domus.NW122,mostly transferred,mostly museum
-mm.domus.NW135,mostly stored,mostly NA
+mm.domus.NW135,mostly stored,mostly storage
 mm.domus.NW137,mostly transferred,mostly museum
-mm.domus.NW149,mostly stored,mostly NA
+mm.domus.NW149,mostly transferred,mostly museum/library/archive
 mm.domus.NW179,mostly transferred,mostly museum
-mm.domus.NW190,mostly left,mostly NA
-mm.domus.SC001,mostly transferred,mixed
-mm.domus.SC004,mostly stored,mostly NA
-mm.domus.SC007,mostly stored,mostly NA
+mm.domus.NW190,mostly left,mostly N/A
+mm.domus.SC001,mostly transferred,mostly other organisation
+mm.domus.SC007,mostly stored,mostly storage
 mm.domus.SC009,mostly transferred,mostly museum
 mm.domus.SC010,mostly transferred,mostly museum
 mm.domus.SC012,mostly transferred,mostly museum
-mm.domus.SC016,mostly moved,mostly museum/library/archive
-mm.domus.SC024,mostly stored,mostly NA
-mm.domus.SC026,mostly left,mostly NA
-mm.domus.SC029,mostly stored,mostly NA
-mm.domus.SC041,mixed,mostly NA
+mm.domus.SC016,mostly stored,mostly N/A
+mm.domus.SC024,mostly transferred,mostly museum/library/archive
+mm.domus.SC026,mixed,mostly museum/library/archive
+mm.domus.SC029,mostly transferred,mostly museum/library/archive
+mm.domus.SC041,mostly transferred,mostly museum
 mm.domus.SC053,mostly returned,mostly museum
-mm.domus.SC105,mostly stored,mostly NA
-mm.domus.SC110,mostly left,mostly NA
+mm.domus.SC105,mostly transferred,mostly storage
+mm.domus.SC110,mostly left,mostly N/A
 mm.domus.SC123,mostly transferred,mixed
-mm.domus.SC141,mostly moved,mostly NA
+mm.domus.SC141,mostly transferred,mostly civic organisation
 mm.domus.SC193,mixed,mixed
 mm.domus.SC202,mixed,mixed
 mm.domus.SC215,mixed,mixed
-mm.domus.SC224,mostly stored,mostly NA
-mm.domus.SC229,mostly stored,mostly NA
-mm.domus.SC231,mostly stored,mostly NA
-mm.domus.SC236,mostly left,mostly NA
+mm.domus.SC224,mostly stored,mostly storage
+mm.domus.SC229,mostly transferred,mostly civic organisation
+mm.domus.SC231,mostly stored,mostly storage
+mm.domus.SC236,mostly left,mostly N/A
 mm.domus.SC237,mixed,mixed
-mm.domus.SC242,mostly moved,mixed
+mm.domus.SC242,mostly stored,mostly storage
 mm.domus.SC263,mostly transferred,mostly museum/library/archive
-mm.domus.SC282,mostly moved,mixed
+mm.domus.SC282,mostly transferred,mostly storage
 mm.domus.SC297,mostly transferred,mostly museum
 mm.domus.SC299,mostly transferred,mostly museum
 mm.domus.SC305,mostly transferred,mixed
-mm.domus.SC319,mostly stored,mostly NA
-mm.domus.SE009,mostly stored,mostly NA
-mm.domus.SE014,mostly stored,mostly NA
-mm.domus.SE040,mostly stored,mostly NA
+mm.domus.SC319,mostly transferred,mostly civic organisation
+mm.domus.SE009,mostly transferred,mostly civic organisation
+mm.domus.SE014,mostly transferred,mostly museum/library/archive
+mm.domus.SE040,mostly stored,mostly storage
 mm.domus.SE059,mostly transferred,mixed
 mm.domus.SE066,mostly transferred,mixed
 mm.domus.SE074,mostly transferred,mostly civic organisation
 mm.domus.SE075,mostly returned,mixed
 mm.domus.SE076,mostly transferred,mostly museum
-mm.domus.SE078,mixed,mixed
-mm.domus.SE091,mixed,mixed
+mm.domus.SE078,mostly damaged/destroyed,mixed
+mm.domus.SE091,mostly damaged/destroyed,mixed
 mm.domus.SE100,mostly transferred,mostly museum
 mm.domus.SE103,mostly transferred,mostly museum
-mm.domus.SE104,mostly moved,mixed
-mm.domus.SE107,mostly stored,mostly NA
+mm.domus.SE104,mostly transferred,mixed
+mm.domus.SE107,mostly stored,mostly N/A
 mm.domus.SE109,mostly transferred,mostly museum
-mm.domus.SE112,mostly stored,mostly NA
+mm.domus.SE112,mostly transferred,mostly museum/library/archive
 mm.domus.SE149,mostly transferred,mostly museum
 mm.domus.SE185,mostly transferred,mostly museum
 mm.domus.SE189,mostly transferred,mostly museum
-mm.domus.SE190,mostly stored,mostly NA
-mm.domus.SE193,mostly transferred,mostly NA
+mm.domus.SE190,mostly stored,mostly civic organisation
+mm.domus.SE193,mostly transferred,mostly museum
 mm.domus.SE216,mostly transferred,mostly museum
 mm.domus.SE222,mostly transferred,mostly museum
 mm.domus.SE251,mostly transferred,mostly museum
-mm.domus.SE263,mostly transferred,mostly museum
-mm.domus.SE264,mostly left,mostly NA
-mm.domus.SE268,mostly stored,mostly NA
+mm.domus.SE263,mostly transferred,mixed
+mm.domus.SE264,mostly left,mostly N/A
+mm.domus.SE268,mostly stored,mostly N/A
 mm.domus.SE275,mostly transferred,mostly museum
 mm.domus.SE276,mostly transferred,mostly museum
 mm.domus.SE279,mostly transferred,mostly museum
 mm.domus.SE286,mostly transferred,mostly civic organisation
-mm.domus.SE299,mostly stored,mostly NA
-mm.domus.SE311,mostly stored,mostly NA
+mm.domus.SE299,mostly stored,mostly N/A
+mm.domus.SE311,mostly stored,mostly museum/library/archive
 mm.domus.SE324,mixed,mixed
 mm.domus.SE327,mostly transferred,mostly museum
 mm.domus.SE332,mostly transferred,mostly museum
-mm.domus.SE354,mostly transferred,mixed
-mm.domus.SE363,mostly stored,mostly NA
+mm.domus.SE354,mostly transferred,mostly other organisation
+mm.domus.SE363,mostly transferred,mixed
 mm.domus.SE387,mixed,mixed
-mm.domus.SE414,mostly stored,mostly NA
-mm.domus.SE421,mostly stored,mostly NA
+mm.domus.SE414,mostly stored,mostly unknown
+mm.domus.SE421,mostly stored,mostly storage
 mm.domus.SE446,mostly transferred,mostly museum
-mm.domus.SE453,mixed,mixed
-mm.domus.SE456,mixed,mixed
-mm.domus.SE457,mostly stored,mostly NA
+mm.domus.SE453,mostly transferred,mostly N/A
+mm.domus.SE456,mixed,mostly unknown
+mm.domus.SE457,mostly stored,mostly storage
 mm.domus.SE458,mostly transferred,mostly museum
-mm.domus.SE467,mixed,mixed
+mm.domus.SE467,mostly damaged/destroyed,mixed
 mm.domus.SE471,mostly transferred,mostly museum
-mm.domus.SE489,mostly stored,mostly NA
-mm.domus.SE509,mostly returned,mixed
-mm.domus.SE561,mostly stored,mostly NA
-mm.domus.SE605,mostly stored,mostly NA
-mm.domus.SW009,mostly stored,mostly NA
+mm.domus.SE489,mostly stored,mostly storage
+mm.domus.SE509,mixed,mixed
+mm.domus.SE561,mostly stored,mostly storage
+mm.domus.SE605,mostly stored,mostly storage
+mm.domus.SW009,mostly stored,mostly unknown
 mm.domus.SW028,mixed,mixed
 mm.domus.SW043,mostly transferred,mostly museum/library/archive
 mm.domus.SW066,mostly transferred,mostly museum
 mm.domus.SW067,mostly returned,mostly unknown
-mm.domus.SW077,mostly moved,mixed
+mm.domus.SW077,mostly transferred,mostly storage
 mm.domus.SW078,mostly transferred,mixed
 mm.domus.SW092,mostly transferred,mostly museum
-mm.domus.SW108,mostly stored,mostly NA
-mm.domus.SW113,mostly left,mostly NA
-mm.domus.SW142,mostly moved,mixed
+mm.domus.SW108,mostly stored,mostly museum/library/archive
+mm.domus.SW113,mostly left,mostly N/A
+mm.domus.SW142,mostly transferred,mixed
 mm.domus.SW147,mixed,mixed
 mm.domus.SW153,mostly transferred,mixed
-mm.domus.SW168,mostly kept,mostly NA
+mm.domus.SW168,mostly kept,mostly N/A
 mm.domus.SW192,mostly sold,mostly museum
 mm.domus.WA010,mostly transferred,mostly civic organisation
-mm.domus.WA011,mostly left,mostly NA
+mm.domus.WA011,mostly left,mostly N/A
 mm.domus.WA012,mostly returned,mostly museum
-mm.domus.WA013,mostly left,mostly NA
+mm.domus.WA013,mostly left,mostly N/A
 mm.domus.WA017,mostly transferred,mostly civic organisation
-mm.domus.WA028,mostly left,mostly NA
-mm.domus.WA040,mostly left,mostly NA
-mm.domus.WA051,mostly stored,mostly NA
+mm.domus.WA028,mostly left,mostly N/A
+mm.domus.WA040,mostly left,mostly N/A
+mm.domus.WA051,mostly stored,mostly N/A
 mm.domus.WA059,mostly transferred,mostly museum
-mm.domus.WA067,mixed,mostly museum
-mm.domus.WA074,mixed,mixed
-mm.domus.WA083,mostly left,mostly NA
+mm.domus.WA067,mostly loaned,mostly museum
+mm.domus.WA074,mostly sold,mixed
+mm.domus.WA083,mostly left,mostly N/A
 mm.domus.WA088,mostly returned,mostly museum
 mm.domus.WM012,mostly transferred,mostly museum
-mm.domus.WM018,mostly stored,mostly NA
+mm.domus.WM018,mostly stored,mostly museum/library/archive
 mm.domus.WM021,mostly transferred,mostly museum
-mm.domus.WM044,mostly stored,mostly NA
-mm.domus.WM047,mostly stored,mostly NA
-mm.domus.WM048,mostly returned,mixed
-mm.domus.WM051,mixed,mostly NA
+mm.domus.WM044,mostly stored,mostly storage
+mm.domus.WM047,mostly stored,mostly storage
+mm.domus.WM048,mostly returned,mostly unknown
+mm.domus.WM051,mixed,mostly N/A
 mm.domus.WM076,mostly transferred,mostly museum
-mm.domus.WM109,mostly stored,mostly NA
+mm.domus.WM109,mostly transferred,mostly museum/library/archive
 mm.domus.WM131,mostly returned,mostly unknown
 mm.domus.YH001,mostly transferred,mostly museum
-mm.domus.YH012,mostly stored,mostly NA
-mm.domus.YH015,mostly stored,mostly NA
+mm.domus.YH012,mostly stored,mostly N/A
+mm.domus.YH015,mostly transferred,mostly museum/library/archive
 mm.domus.YH018,mostly transferred,mostly museum
-mm.domus.YH033,mostly stored,mostly NA
-mm.domus.YH051,mostly stored,mostly NA
-mm.domus.YH056,mostly stored,mostly NA
-mm.domus.YH059,mostly stored,mostly NA
+mm.domus.YH033,mostly stored,mostly N/A
+mm.domus.YH051,mostly stored,mostly N/A
+mm.domus.YH056,mostly stored,mostly storage
+mm.domus.YH059,mostly stored,mostly N/A
 mm.domus.YH082,mostly sold,mostly unknown
-mm.domus.YH086,mostly stored,mostly NA
+mm.domus.YH086,mixed,mixed
 mm.domus.YH095,mostly returned,mostly museum
 mm.domus.YH109,mostly transferred,mostly museum/library/archive
 mm.domus.YH117,mostly transferred,mostly museum
-mm.domus.YH163,mostly moved,mostly museum
+mm.domus.YH163,mostly transferred,mostly storage
 mm.domus.YH165,mostly transferred,mostly museum
 mm.domus.YH166,mostly transferred,mixed
-mm.fcm.062,mostly stored,mostly NA
+mm.fcm.062,mostly stored,mostly storage
 mm.fcm.114,mostly transferred,mixed
-mm.fcm.137,mostly stored,mostly NA
+mm.fcm.137,mostly stored,mostly storage
 mm.fcm.154,mixed,mostly individual
-mm.fcm.160,mostly sold,mostly unknown
+mm.fcm.160,mostly sold,mostly trader
 mm.fcm.172,mostly sold,mixed
-mm.fcm.175,mixed,mostly unknown
-mm.fcm.207,mostly stored,mostly NA
+mm.fcm.175,mostly damaged/destroyed,mostly unknown
+mm.fcm.207,mostly kept,mostly N/A
 mm.fcm.279,mostly sold,mostly museum
-mm.hha.066,mixed,mostly NA
-mm.hud.007,mostly sold,mostly unknown
-mm.hud.024,mostly stored,mostly NA
+mm.hha.066,mostly unknown,mostly N/A
+mm.hud.007,mostly sold,mostly trader
+mm.hud.024,mostly transferred,mostly museum/library/archive
 mm.mald.013,mostly sold,mostly unknown
 mm.mald.027,mixed,mixed
 mm.mald.148,mixed,mixed
-mm.mald.159,mostly stored,mostly NA
-mm.mgs.293,mostly left,mostly NA
-mm.mgs.298,mostly stored,mostly NA
-mm.mgs.302,mostly transferred,mostly museum
-mm.mgs.311,mostly stored,mostly NA
+mm.mald.159,mostly stored,mostly individual
+mm.mgs.293,mostly left,mostly N/A
+mm.mgs.298,mostly transferred,mostly civic organisation
+mm.mgs.302,mixed,mostly museum
+mm.mgs.311,mostly transferred,mostly museum
 mm.mgs.316,mixed,mixed
-mm.mgs.341,mostly left,mostly individual
+mm.mgs.341,mostly sold,mostly individual
 mm.mgs.353,mostly returned,mostly individual
 mm.mgs.357,mostly transferred,mostly museum
-mm.mgs.380,mostly stored,mostly NA
-mm.mgs.413,mostly sold,mostly unknown
-mm.misc.004,mostly stored,mostly NA
+mm.mgs.380,mostly transferred,mostly museum/library/archive
+mm.mgs.413,mostly sold,mostly trader
+mm.misc.004,mostly stored,mostly storage
 mm.misc.012,mostly transferred,mostly museum
-mm.misc.014,mostly left,mostly NA
-mm.misc.019,mostly sold,mostly unknown
-mm.misc.030,mostly sold,mostly unknown
-mm.misc.046,mostly sold,mixed
+mm.misc.014,mostly left,mostly N/A
+mm.misc.019,mostly sold,mostly trader
+mm.misc.030,mostly sold,mostly trader
+mm.misc.046,mostly sold,mostly other organisation
 mm.misc.047,mixed,mixed
-mm.misc.051,mostly stored,mostly NA
-mm.misc.053,mostly stored,mostly NA
-mm.misc.055,mostly stored,mostly NA
-mm.misc.060,mixed,mixed
+mm.misc.051,mostly stored,mostly N/A
+mm.misc.053,mostly transferred,mostly museum/library/archive
+mm.misc.055,mostly left,mostly N/A
+mm.misc.060,mostly stored,mostly N/A
 mm.misc.070,mostly sold,mostly unknown
-mm.misc.072,mostly stored,mostly NA
+mm.misc.072,mostly left,mostly N/A
 mm.misc.075,mixed,mixed
 mm.misc.080,mostly transferred,mostly museum
 mm.misc.086,mostly transferred,mostly museum
-mm.misc.094,mostly kept,mostly NA
+mm.misc.094,mostly kept,mostly N/A
 mm.misc.095,mostly sold,mostly unknown
 mm.misc.106,mostly transferred,mostly unknown
 mm.misc.155,mostly transferred,mostly museum
-mm.misc.165,mostly sold,mostly unknown
-mm.misc.198,mostly stored,mostly NA
+mm.misc.165,mostly sold,mostly trader
+mm.misc.198,mostly stored,mostly civic organisation
 mm.misc.211,mostly sold,mostly trader
-mm.misc.213,mostly stored,mostly NA
-mm.misc.214,mostly transferred,mixed
+mm.misc.213,mostly stored,mostly storage
+mm.misc.214,mixed,mixed
 mm.misc.215,mostly transferred,mixed
 mm.misc.239,mixed,mixed
 mm.misc.263,mixed,mixed
 mm.musa.001,mostly sold,mostly trader
 mm.musa.008,mostly transferred,mostly museum/library/archive
-mm.musa.021,mostly kept,mostly NA
+mm.musa.021,mostly kept,mostly N/A
 mm.musa.043,mostly sold,mostly unknown
-mm.musa.057,mostly stored,mostly NA
+mm.musa.057,mostly left,mostly N/A
 mm.musa.115,mostly returned,mostly unknown
-mm.musa.116,mostly kept,mostly NA
-mm.musa.136,mostly stored,mostly NA
+mm.musa.116,mostly stored,mostly storage
+mm.musa.136,mostly transferred,mostly museum
 mm.musa.204,mostly sold,mostly trader
 mm.musa.220,mixed,mixed
-mm.musa.224,mixed,mostly NA
-mm.musa.225,mostly left,mostly NA
+mm.musa.224,mixed,mostly N/A
+mm.musa.225,mostly left,mostly N/A
 mm.musa.369,mostly sold,mostly trader
-mm.wiki.006,mostly sold,mostly unknown
+mm.wiki.006,mostly sold,mostly trader
 mm.wiki.015,mixed,mixed
 mm.wiki.017,mostly sold,mostly trader
-mm.wiki.021,mostly sold,mostly unknown
-mm.wiki.027,mixed,mostly NA
+mm.wiki.021,mostly sold,mostly trader
+mm.wiki.027,mostly unknown,mostly N/A
 mm.wiki.035,mostly sold,mostly trader
-mm.wiki.038,mostly stored,mostly NA
-mm.wiki.043,mostly transferred,mixed
-mm.wiki.044,mixed,mixed
+mm.wiki.038,mostly stored,mostly storage
+mm.wiki.043,mixed,mixed
+mm.wiki.044,mostly sold,mixed
 mm.wiki.047,mostly transferred,mostly museum
 mm.wiki.049,mostly sold,mostly individual
 mm.wiki.060,mostly sold,mostly museum
 mm.wiki.061,mostly transferred,mostly museum
 mm.wiki.062,mostly sold,mostly museum
 mm.wiki.063,mostly sold,mostly individual
-mm.wiki.071,mixed,mixed
-mm.wiki.073,mixed,mostly unknown
-mm.wiki.075,mostly stored,mostly NA
+mm.wiki.071,mostly sold,mixed
+mm.wiki.073,mostly sold,mostly trader
+mm.wiki.075,mostly kept,mostly N/A
 mm.wiki.082,mixed,mixed
 mm.wiki.089,mostly returned,mixed
 mm.wiki.090,mostly sold,mostly trader
@@ -376,68 +376,68 @@ mm.wiki.096,mostly sold,mostly unknown
 mm.wiki.101,mostly sold,mostly trader
 mm.wiki.102,mostly sold,mostly trader
 mm.wiki.105,mostly transferred,mostly museum
-mm.wiki.107,mixed,mixed
+mm.wiki.107,mixed,mostly unknown
 mm.wiki.109,mostly sold,mostly individual
-mm.wiki.114,mostly left,mostly NA
+mm.wiki.114,mostly left,mostly N/A
 mm.wiki.117,mixed,mixed
-mm.wiki.119,mostly stored,mostly NA
-mm.wiki.139,mostly returned,mixed
+mm.wiki.119,mostly stored,mostly N/A
+mm.wiki.139,mostly transferred,mostly unknown
 mm.wiki.149,mostly sold,mostly trader
-mm.wiki.155,mixed,mixed
-mm.wiki.158,mostly stored,mostly NA
-mm.wiki.167,mixed,mixed
-mm.wiki.173,mostly stored,mostly NA
-mm.wiki.178,mostly kept,mostly NA
+mm.wiki.155,mostly stored,mixed
+mm.wiki.158,mostly kept,mostly N/A
+mm.wiki.167,mostly loaned,mixed
+mm.wiki.173,mostly transferred,mostly other organisation
+mm.wiki.178,mostly kept,mostly N/A
 mm.wiki.179,mostly sold,mostly individual
-mm.wiki.185,mostly stored,mostly NA
-mm.wiki.198,mostly sold,mostly unknown
-mm.wiki.200,mostly stored,mostly NA
-mm.wiki.210,mostly left,mostly NA
+mm.wiki.185,mostly stored,mostly storage
+mm.wiki.198,mostly stored,mostly trader
+mm.wiki.200,mixed,mixed
+mm.wiki.210,mostly left,mostly N/A
 mm.wiki.222,mixed,mixed
-mm.wiki.224,mostly sold,mostly unknown
-mm.wiki.240,mostly stored,mostly NA
-mm.wiki.243,mixed,mixed
-mm.wiki.254,mostly left,mostly NA
+mm.wiki.224,mostly sold,mostly trader
+mm.wiki.240,mostly transferred,mostly civic organisation
+mm.wiki.243,mostly damaged/destroyed,mixed
+mm.wiki.254,mostly left,mostly N/A
 mm.wiki.271,mixed,mixed
 mm.wiki.273,mostly transferred,mostly museum
 mm.wiki.278,mostly transferred,mixed
-mm.wiki.279,mostly stored,mostly NA
-mm.wiki.282,mostly moved,mixed
+mm.wiki.279,mostly stored,mostly N/A
+mm.wiki.282,mixed,mixed
 mm.wiki.291,mostly transferred,mostly museum/library/archive
-mm.wiki.292,mixed,mixed
-mm.wiki.293,mostly stored,mostly NA
-mm.wiki.294,mostly sold,mostly unknown
-mm.wiki.303,mostly sold,mostly unknown
+mm.wiki.292,mostly stored,mostly storage
+mm.wiki.293,mostly stored,mostly storage
+mm.wiki.294,mostly sold,mostly trader
+mm.wiki.303,mostly sold,mostly trader
 mm.wiki.309,mostly sold,mostly individual
 mm.wiki.315,mostly sold,mostly individual
 mm.wiki.316,mostly transferred,mostly civic organisation
-mm.wiki.336,mostly sold,mostly unknown
-mm.wiki.337,mostly moved,mostly museum/library/archive
-mm.wiki.344,mostly returned,mixed
+mm.wiki.336,mostly sold,mostly trader
+mm.wiki.337,mostly transferred,mostly museum/library/archive
+mm.wiki.344,mostly returned,mostly other organisation
 mm.wiki.353,mostly transferred,mostly museum
 mm.wiki.354,mixed,mixed
-mm.wiki.355,mixed,mostly unknown
-mm.wiki.358,mostly left,mostly NA
+mm.wiki.355,mixed,mixed
+mm.wiki.358,mostly left,mostly N/A
 mm.wiki.361,mostly sold,mostly trader
 mm.wiki.367,mixed,mixed
 mm.wiki.374,mixed,mixed
 mm.wiki.383,mostly transferred,mostly museum
 mm.wiki.386,mostly sold,mostly unknown
 mm.wiki.387,mostly sold,mostly individual
-mm.wiki.389,mostly stored,mostly NA
-mm.wiki.391,mostly kept,mostly individual
-mm.wiki.394,mostly sold,mostly unknown
-mm.wiki.400,mostly left,mostly NA
+mm.wiki.389,mostly stored,mostly N/A
+mm.wiki.391,mostly returned,mostly individual
+mm.wiki.394,mostly sold,mostly trader
+mm.wiki.400,mostly left,mostly N/A
 mm.wiki.411,mixed,mixed
 mm.wiki.420,mostly transferred,mostly civic organisation
-mm.wiki.423,mixed,mixed
-mm.wiki.432,mostly stored,mostly NA
-mm.wiki.434,mostly stored,mostly NA
-mm.wiki.447,mostly sold,mostly unknown
-mm.wiki.454,mostly returned,mixed
+mm.wiki.423,mostly transferred,mixed
+mm.wiki.432,mostly transferred,mostly museum/library/archive
+mm.wiki.434,mostly transferred,mostly museum/library/archive
+mm.wiki.447,mostly sold,mostly trader
+mm.wiki.454,mostly returned,mostly unknown
 mm.wiki.455,mostly sold,mostly unknown
 mm.wiki.461,mostly transferred,mostly civic organisation
-mm.wiki.464,mostly transferred,mixed
+mm.wiki.464,mostly transferred,mostly other organisation
 mm.wiki.480,mostly kept,mostly unknown
-mm.wiki.481,mostly stored,mostly NA
-mm.wiki.499,mostly stored,mostly NA
+mm.wiki.481,mostly stored,mostly N/A
+mm.wiki.499,mostly transferred,mostly museum/library/archive

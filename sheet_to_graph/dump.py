@@ -65,6 +65,34 @@ RETURN {
 } as record
 """
 
+museums_query = """
+MATCH (museum:Actor)-[:HAS_LOCATION]->(place:Place)
+WHERE museum.mm_id <> ""
+RETURN {
+    museum_id: museum.mm_id,
+    museum_name: museum.actor_name,
+    all: "all",
+    governance: museum.governance,
+    governance_broad: museum.governance_broad,
+    size: museum.size,
+    subject: museum.subject,
+    subject_broad: museum.subject_broad,
+    accreditation: museum.accreditation,
+    region: museum.region,
+    country: museum.country,
+    year_opened_1: museum.year_opened_1,
+    year_opened_2: museum.year_opened_2,
+    year_closed_1: museum.year_closed_1,
+    year_closed_2: museum.year_closed_2,
+    address_1: place.address_1,
+    address_2: place.address_2,
+    address_3: place.address_3,
+    village_town_city: place.village_town_city,
+    postcode: place.postcode,
+    bng_x: place.bng_x,
+    bng_y: place.bng_y
+} AS record
+"""
 
 dispersal_events_query = """
 MATCH (initial_museum:Actor)<-[:CONCERNS]-(super_event:SuperEvent)<-[:SUB_EVENT_OF]-(event:Event)-[event_is_instance_of:INSTANCE_OF]->(event_type:Type)
@@ -87,13 +115,18 @@ OPTIONAL MATCH (initial_museum)-[:HAS_LOCATION]->(initial_museum_location:Place)
 RETURN {
     initial_museum_id: initial_museum.mm_id,
     initial_museum_name: initial_museum.actor_name,
+    initial_museum_all: "all",
     initial_museum_size: initial_museum.size,
     initial_museum_governance_broad: initial_museum.governance_broad,
     initial_museum_governance: initial_museum.governance,
     initial_museum_sector: initial_museum.actor_sector_name,
     initial_museum_accreditation: initial_museum.accreditation,
-    initial_museum_subject_matter_broad: initial_museum.subject_matter_broad,
-    initial_museum_subject_matter: initial_museum.subject_matter,
+    initial_museum_subject_broad: initial_museum.subject_broad,
+    initial_museum_subject: initial_museum.subject,
+    initial_museum_year_opened_1: initial_museum.year_opened_1,
+    initial_museum_year_opened_2: initial_museum.year_opened_2,
+    initial_museum_year_closed_1: initial_museum.year_closed_1,
+    initial_museum_year_closed_2: initial_museum.year_closed_2,
     initial_museum_country: initial_museum.country,
     initial_museum_region: initial_museum.region,
     initial_museum_town: initial_museum_location.village_town_city,
@@ -153,11 +186,17 @@ RETURN {
     collection_estimated_size_max: collection.max_estimated_size,
     sender_id: sender.actor_id,
     sender_name: sender.actor_name,
+    sender_all: "all",
     sender_size: sender.size,
     sender_governance: sender.governance,
     sender_governance_broad: sender.governance_broad,
     sender_accreditation: sender.accreditation,
-    sender_subject_matter_broad: sender.subject_matter_broad,
+    sender_subject: sender.subject,
+    sender_subject_broad: sender.subject_broad,
+    sender_year_opened_1: sender.year_opened_1,
+    sender_year_opened_2: sender.year_opened_2,
+    sender_year_closed_1: sender.year_closed_1,
+    sender_year_closed_2: sender.year_closed_2,
     sender_region: sender.region,
     sender_country: sender.country,
     sender_town: sender_location.village_town_city,
@@ -176,11 +215,17 @@ RETURN {
     ][0],
     recipient_id: recipient.actor_id,
     recipient_name: recipient.actor_name,
+    recipient_all: "all",
     recipient_size: recipient.size,
     recipient_governance: recipient.governance,
     recipient_governance_broad: recipient.governance_broad,
     recipient_accreditation: recipient.accreditation,
-    recipient_subject_matter_broad: recipient.subject_matter_broad,
+    recipient_subject: recipient.subject,
+    recipient_subject_broad: recipient.subject_broad,
+    recipient_year_opened_1: recipient.year_opened_1,
+    recipient_year_opened_2: recipient.year_opened_2,
+    recipient_year_closed_1: recipient.year_closed_1,
+    recipient_year_closed_2: recipient.year_closed_2,
     recipient_region: recipient.region,
     recipient_country: recipient.country,
     recipient_town: recipient_location.village_town_city,
@@ -225,6 +270,7 @@ if __name__ == "__main__":
     queries = {
         "actor_types": actor_types_query,
         "event_types": event_types_query,
+        "museums": museums_query,
         "dispersal_events": dispersal_events_query,
     }
 

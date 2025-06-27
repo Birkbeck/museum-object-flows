@@ -1,6 +1,7 @@
 {
     "credentials_file": "credentials.json",
-    "dispersal_sheet_file": "../data/dispersal-sheet-anonymized-2024-12-12.xlsx",
+    "dispersal_sheet_file": "../data/dispersal-sheet-2025-06-23.xlsx",
+    "mapping_museums_file": "_var_www_museumflask_app_main_editmusfiles_data_2025-06-19_14-42-49.csv",
     "sheets": {
 	"actor types": {
 	    "file": "",
@@ -23,7 +24,7 @@
 	    "sheet": "closure-causes-hierarchy"
 	},
 	"museums": {
-	    "file": "../data/mapping-museums-2025-01-07.csv",
+	    "file": "../data/mapping-museums-data.csv",
 	    "sheet": ""
 	},
 	"actors": {

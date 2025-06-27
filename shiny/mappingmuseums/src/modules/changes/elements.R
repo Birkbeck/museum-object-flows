@@ -4,7 +4,7 @@ openings_vs_closures_scatter <- function(data, dimension) {
   ggplot(data, aes(x=closure_rate, y=opening_rate)) +
     geom_point(aes(colour=.data[[dimension]], size=`total openings and closures`), alpha=0.7) +
     geom_abline(colour="grey") +
-    geom_text(aes(label=tidy_labels[.data[[dimension]]]), size=6, nudge_y=3) +
+    geom_text(aes(label=.data[[dimension]]), size=6, nudge_y=3) +
     scale_x_continuous(expand=c(0,1), limits=c(0,80)) +
     scale_y_continuous(expand=c(0,1), limits=c(0,80)) +
     scale_size_continuous(
@@ -69,7 +69,6 @@ bar_chart <- function(data, dimension, measure, title, y_label, x_label) {
     )
   ) +
     geom_bar(position="dodge", stat="identity", show.legend=FALSE, alpha=0.7) +
-    scale_y_discrete(labels=tidy_labels) +
     fill_scale +
     guides(fill=FALSE) +
     geom_text(
@@ -185,7 +184,6 @@ two_measure_bar_chart <- function(data,
     )
   ) +
     geom_bar(position="dodge", stat="identity", alpha=0.7) +
-    scale_y_discrete(labels=tidy_labels) +
     fill_scale +
     guides(fill=guide_legend(reverse=TRUE)) +
     geom_text(
@@ -273,10 +271,10 @@ changes_map <- function(museums, dimension, measure, start, end) {
   padding <- 10000
   map <- ggplot(data) +
     geom_polygon(data=regions, aes(x=x, y=y, group=group), linewidth=0.1, label=NA, colour="black", fill=NA) +
-    geom_point(aes(label=name_of_museum, x=bng_x, y=bng_y, colour=.data[[dimension]]), size=0.5) +
+    geom_point(aes(label=museum_name, x=bng_x, y=bng_y, colour=.data[[dimension]]), size=0.5) +
     scale_x_continuous(limits=c(min_x - padding, max_x + padding)) +
     scale_y_continuous(limits=c(min_y - padding, max_y + padding)) +
-    scale_colour_manual(values=museum_attribute_colours, labels=tidy_labels) +
+    scale_colour_manual(values=museum_attribute_colours) +
     coord_fixed() +
     labs(
       title=paste("Museum", measure, start, "-", end),
@@ -302,8 +300,8 @@ changes_map_small <- function(museums, dimension, measure, start, end) {
   }
   ggplot(data) +
     geom_polygon(data=regions, aes(x=x, y=y, group=group), linewidth=0.1, label=NA, colour="black", fill=NA) +
-    geom_point(aes(label=name_of_museum, x=bng_x, y=bng_y, colour=.data[[dimension]]), size=0.5) +
-    scale_colour_manual(values=museum_attribute_colours, labels=tidy_labels) +
+    geom_point(aes(label=museum_name, x=bng_x, y=bng_y, colour=.data[[dimension]]), size=0.5) +
+    scale_colour_manual(values=museum_attribute_colours) +
     coord_fixed() +
     labs(
       title=paste("Museum", measure, start, "-", end),
@@ -484,7 +482,7 @@ time_series_line <- function(data, dimension, measure, title, y_label, start_yea
     geom_line(alpha=0.6 , size=1) +
     geom_text(
       data=data |> filter(year==floor(mean(c(start_year, end_year)))),
-      aes(y=value*1.1, label=tidy_labels[.data[[dimension]]]),
+      aes(y=value*1.1, label=.data[[dimension]]),
       size=6
     ) +
     scale_x_continuous(limits=c(start_year, end_year)) +
@@ -535,7 +533,7 @@ time_series_line_small <- function(data, dimension, measure, title, y_label, sta
     geom_line(alpha=0.6 , size=1) +
     geom_text(
       data=data|> filter(year==floor(mean(c(start_year, end_year)))),
-      aes(y=value*1.1, label=tidy_labels[.data[[dimension]]])
+      aes(y=value*1.1, label=.data[[dimension]])
     ) +
     scale_x_continuous(expand=c(0, 0), limits=c(start_year, end_year)) +
     scale_y_continuous(expand=c(0,0), limits=limits, breaks=breaks) +
@@ -577,7 +575,7 @@ time_series_line_double <- function(data,
     geom_line(alpha=0.6, size=1) +
     geom_text(
       data=data|> filter(year==floor(mean(c(start_year, end_year)))),
-      aes(y=value*1.1, label=tidy_labels[.data[[dimension]]])
+      aes(y=value*1.1, label=.data[[dimension]])
     ) +
     scale_x_continuous(expand=c(0, 0), limits=c(start_year, end_year)) +
     scale_y_continuous(limits=function(x){c(min(0, min(x)), max(x))}) +
@@ -637,7 +635,7 @@ time_series_line_double_small <- function(data,
     geom_line(alpha=0.6 , size=1) +
     geom_text(
       data=data|> filter(year==floor(mean(c(start_year, end_year)))),
-      aes(y=value*1.1, label=tidy_labels[.data[[dimension]]])
+      aes(y=value*1.1, label=.data[[dimension]])
     ) +
     scale_x_continuous(expand=c(0, 0), limits=c(start_year, end_year)) +
     scale_y_continuous(expand=c(0,0), limits=limits, breaks=breaks) +

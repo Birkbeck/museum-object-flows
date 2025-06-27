@@ -11,6 +11,7 @@ class ExtendedDateTimeColumn(Column):
     """
 
     def _validate(self, value) -> str:
+        return None
         if value == "":
             return None
         try:

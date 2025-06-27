@@ -22,47 +22,42 @@ dispersalServer <- function(id) {
         selected=c("certain", "?+", "?", "?-")
       )
       updatePickerInput(
-        session=session,
-        inputId="collectionStatusFilter",
-        selected=filter(collection_status_labels, default_filter)$tidy_label,
+        session=session, inputId="collectionStatusFilter", selected=collection_status_labels$label,
+      )
+      updatePickerInput(
+        session=session, inputId="startGovernanceFilter", selected="local authority"
+      )
+      updatePickerInput(
+        session=session, inputId="startSizeFilter", selected=size_labels$label
+      )
+      updatePickerInput(
+        session=session, inputId="startSubjectFilter", selected=subject_broad_labels$label
+      )
+      updatePickerInput(
+        session=session, inputId="startSubjectSpecificFilter", selected=subject_full_labels$label
+      )
+      updatePickerInput(
+        session=session, inputId="startRegionFilter", selected=region_labels$label
+      )
+      updatePickerInput(
+        session=session, inputId="startAccreditationFilter", selected=accreditation_labels$label
+      )
+      filtered_museums <- get_dispersal_initial_museums(
+        dispersal_events,
+        include_firepower(),
+        size_filter_choices(),
+        governance_filter_choices(),
+        subject_filter_choices(),
+        specific_subject_filter_choices(),
+        region_filter_choices(),
+        accreditation_filter_choices()
       )
       updateVirtualSelect(
         session=session,
         inputId="initialMuseum",
-        choices=filtered_museums()$name,
-        selected=filtered_museums()$name
+        choices=filtered_museums$name,
+        selected=filtered_museums$name
       )
-      updatePickerInput(
-        session=session,
-        inputId="startGovernanceFilter",
-        selected="Local Authority"
-      )
-      updatePickerInput(
-        session=session,
-        inputId="startSizeFilter",
-        selected=filter(size_labels, default_filter)$tidy_label
-      )
-      updatePickerInput(
-        session=session,
-        inputId="startSubjectFilter",
-        selected=filter(subject_broad_labels, default_filter)$tidy_label
-      )
-      updatePickerInput(
-        session=session,
-        inputId="startSubjectSpecificFilter",
-        selected=subject_full_labels$tidy_label
-      )
-      updatePickerInput(
-        session=session,
-        inputId="startRegionFilter",
-        selected=filter(country_region_labels, internal_label != "England")$tidy_label
-      )
-      updatePickerInput(
-        session=session,
-        inputId="startAccreditationFilter",
-        selected=filter(accreditation_labels, default_filter)$tidy_label
-      )
-      print(actor_choices_table())
       updatePickerInput(
         session=session,
         inputId="sequenceEnd",
@@ -108,7 +103,7 @@ dispersalServer <- function(id) {
       } else if (input$groupingMuseums == "Accreditation") {
         return("accreditation")
       } else if (input$groupingMuseums == "Subject Matter") {
-        return("subject_matter_broad")
+        return("subject_broad")
       } else if (input$groupingMuseums == "Country/Region") {
         return("region")
       }
@@ -123,7 +118,7 @@ dispersalServer <- function(id) {
       } else if (input$groupingMuseums == "Accreditation") {
         return("initial_museum_accreditation")
       } else if (input$groupingMuseums == "Subject Matter") {
-        return("initial_museum_subject_matter_broad")
+        return("initial_museum_subject_broad")
       } else if (input$groupingMuseums == "Country/Region") {
         return("initial_museum_region")
       }
@@ -131,50 +126,21 @@ dispersalServer <- function(id) {
 
     transaction_type_filter <- reactive({input$transactionTypeFilter})
 
-    event_type_filter <- reactive({input$eventTypeFilter})
-    event_type_uncertainty_filter <- reactive({input$eventTypeUncertaintyFilter})
-    collection_status_filter <- reactive({
-      filter(
-        collection_status_labels,
-        tidy_label %in% input$collectionStatusFilter
-      )$internal_label
-    })
-
-    size_filter_choices <- reactive({
-      filter(
-        size_labels,
-        tidy_label %in% input$startSizeFilter
-      )$internal_label
-    })
-    governance_filter_choices <- reactive({
-      filter(
-        governance_labels,
-        tidy_label %in% input$startGovernanceFilter
-      )$internal_label
-    })
-    subject_filter_choices <- reactive({
-      filter(
-        subject_broad_labels,
-        tidy_label %in% input$startSubjectFilter
-      )$internal_label
-    })
-    specific_subject_filter_choices <- reactive({
-      filter(
-        subject_full_labels,
-        tidy_label %in% input$startSubjectSpecificFilter
-      )$internal_label
-    })
-    region_filter_choices <- reactive({
-      filter(
-        country_region_labels,
-        tidy_label %in% input$startRegionFilter
-      )$internal_label
-    })
-    accreditation_filter_choices <- reactive({
-      filter(
-        accreditation_labels,
-        tidy_label %in% input$startAccreditationFilter
-      )$internal_label
+    event_type_filter <- reactive({ input$eventTypeFilter })
+    event_type_uncertainty_filter <- reactive({ input$eventTypeUncertaintyFilter })
+    collection_status_filter <- reactive({ input$collectionStatusFilter })
+    size_filter_choices <- reactive({ input$startSizeFilter })
+    governance_filter_choices <- reactive({ input$startGovernanceFilter })
+    subject_filter_choices <- reactive({ input$startSubjectFilter })
+    specific_subject_filter_choices <- reactive({ input$startSubjectSpecificFilter })
+    region_filter_choices <- reactive({ input$startRegionFilter })
+    accreditation_filter_choices <- reactive({ input$startAccreditationFilter })
+    include_firepower <- reactive({
+      if (is.null(input$firepower)) {
+        FALSE
+      } else {
+        input$firepower
+      }
     })
     initial_museum_filters <- reactive({
       list(
@@ -265,13 +231,13 @@ dispersalServer <- function(id) {
 
     observeEvent(subject_filter_choices(), {
       freezeReactiveValue(input, "startSubjectSpecificFilter")
-      specific_subjects <- subject_full_labels |>
+      specific_subjects <- subject_labels_map |>
         filter(subject_broad %in% subject_filter_choices())
       updatePickerInput(
         session=session,
         inputId="startSubjectSpecificFilter",
-        choices=specific_subjects$tidy_label,
-        selected=specific_subjects$tidy_label,
+        choices=specific_subjects$subject,
+        selected=specific_subjects$subject,
       )
     })
 
@@ -279,35 +245,23 @@ dispersalServer <- function(id) {
       sapply(input$initialMuseum, function(text) sub(".*\\(([^()]*)\\)$", "\\1", text))
     })
 
-    filtered_museums <- reactive({
-      dispersal_events |>
-        filter(
-          input$firepower | initial_museum_id != "mm.domus.SE513",
-          initial_museum_size %in% size_filter_choices(),
-          initial_museum_governance %in% governance_filter_choices()
-          | initial_museum_governance_broad %in% governance_filter_choices(),
-          initial_museum_subject_matter_broad %in% subject_filter_choices(),
-          initial_museum_subject_matter %in% specific_subject_filter_choices(),
-          initial_museum_region %in% region_filter_choices()
-          | initial_museum_country %in% region_filter_choices(),
-          initial_museum_accreditation %in% accreditation_filter_choices()
-        ) |>
-        mutate(
-          museum_id=initial_museum_id,
-          name=paste0(initial_museum_name, " (", initial_museum_id, ")")
-        ) |>
-        arrange(name) |>
-        select(name, museum_id, initial_museum_size) |>
-        distinct()
-    })
-
     observeEvent(initial_museum_filters(), {
       freezeReactiveValue(input, "initialMuseum")
+      filtered_museums <- get_dispersal_initial_museums(
+        dispersal_events,
+        include_firepower(),
+        size_filter_choices(),
+        governance_filter_choices(),
+        subject_filter_choices(),
+        specific_subject_filter_choices(),
+        region_filter_choices(),
+        accreditation_filter_choices()
+      )
       updateVirtualSelect(
         session=session,
         inputId="initialMuseum",
-        choices=filtered_museums()$name,
-        selected=filtered_museums()$name
+        choices=filtered_museums$name,
+        selected=filtered_museums$name
       )
     })
 
@@ -376,7 +330,7 @@ dispersalServer <- function(id) {
       } else if (input$groupingMuseums == "Accreditation") {
         return("accreditation")
       } else if (input$groupingMuseums == "Subject Matter") {
-        return("subject_matter_broad")
+        return("subject_broad")
       } else if (input$groupingMuseums == "Country/Region") {
         return("region")
       }

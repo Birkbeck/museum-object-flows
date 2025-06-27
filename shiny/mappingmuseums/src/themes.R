@@ -66,74 +66,74 @@ public_private_edge_scale <- scale_edge_colour_manual(
 )
 
 size_colours <- c(
-  "unknown"="#E84A84",
+  "unknown size"="#E84A84",
   "small"="#00FFD4",
   "medium"="#00B394",
   "large"="#006655",
   "huge"="#001A15"
 )
 governance_colours <- c(
-  "Unknown"="lightgrey",
-  "Private"="#E69F00",
-  "Independent"="#0D4373",
-  "Independent-Not_for_profit"="#0D4373",
-  "Independent-National_Trust_for_Scotland"="#1878CE",
-  "Independent-National_Trust"="#1878CE",
-  "Independent-English_Heritage"="#60ABEC",
-  "Independent-Historic_Environment_Scotland"="#BBDBF7",
-  "University"="#009E73",
-  "National"="#720E32",
-  "Local_Authority"="#CD185A",
-  "Other Government"="#ED5F93"
+  "unknown size"="lightgrey",
+  "private"="#E69F00",
+  "independent"="#0D4373",
+  "not-for-profit"="#0D4373",
+  "National Trust for Scotland"="#1878CE",
+  "National Trust"="#1878CE",
+  "English Heritage"="#60ABEC",
+  "Historic Environment Scotland"="#BBDBF7",
+  "university"="#009E73",
+  "national"="#720E32",
+  "local authority"="#CD185A",
+  "other government"="#ED5F93"
 )
 subject_colours <- c(
-  "War_and_conflict" = "#A44600",
-  "Utilities" = "#F8E97C",
-  "Transport" = "#4C99D1",
-  "Services" = "#66C2A2",
-  "Sea_and_seafaring" = "#9ED2F3",
-  "Science_and_technology" = "#007652",
-  "Rural_Industry" = "#BFB82E",
-  "Personality" = "#E0AFC7",
-  "Other" = "#666666",
-  "Natural_world" = "#009E73",
-  "Mixed" = "#F5C85C",
-  "Medicine_and_health" = "#3E88B2",
-  "Local_Histories" = "#00578A",
-  "Leisure_and_sport" = "#F0E442",
-  "Industry_and_manufacture" = "#D55E00",
-  "Food_and_drink" = "#B37800",
-  "Communications" = "#56B4E9",
-  "Buildings" = "#0072B2",
-  "Belief_and_identity" = "#9A5C7D",
-  "Arts" = "#CC79A7",
-  "Archaeology" = "#E5955C"
+  "war & conflict" = "#A44600",
+  "utilities" = "#F8E97C",
+  "transport" = "#4C99D1",
+  "services" = "#66C2A2",
+  "sea & seafaring" = "#9ED2F3",
+  "science & technology" = "#007652",
+  "rural industry" = "#BFB82E",
+  "personality" = "#E0AFC7",
+  "other" = "#666666",
+  "natural world" = "#009E73",
+  "mixed" = "#F5C85C",
+  "medicine & health" = "#3E88B2",
+  "local histories" = "#00578A",
+  "leisure & sport" = "#F0E442",
+  "industry & manufacture" = "#D55E00",
+  "food & drink" = "#B37800",
+  "communications" = "#56B4E9",
+  "buildings" = "#0072B2",
+  "belief & identity" = "#9A5C7D",
+  "arts" = "#CC79A7",
+  "archaeology" = "#E5955C"
 )
 country_region_colours <- c(
-    "Scotland"="#0072B2",
-    "Wales"="#009E73",
-    "Northern Ireland"="#CC79A7",
-    "England"="#D55E00",
-    "North East (English Region)"="#56B4E9",
-    "North West (English Region)"="#56B4E9",
-    "Yorkshire and The Humber (English Region)"="#56B4E9",
-    "East Midlands (English Region)"="#E69F00",
-    "West Midlands (English Region)"="#E69F00",
-    "South East (English Region)"="#F0E442",
-    "South West (English Region)"="#F0E442",
-    "East of England (English Region)"="#F0E442",
-    "London (English Region)"="#F0E442"
+  "Scotland"="#0072B2",
+  "Wales"="#009E73",
+  "Northern Ireland"="#CC79A7",
+  "England"="#D55E00",
+  "North East"="#56B4E9",
+  "North West"="#56B4E9",
+  "Yorks & Humber"="#56B4E9",
+  "East Midlands"="#E69F00",
+  "West Midlands"="#E69F00",
+  "South East"="#F0E442",
+  "South West"="#F0E442",
+  "East"="#F0E442",
+  "London"="#F0E442"
 )
 accreditation_colours <- c(
-    "Accredited"="#E66100",
-    "Unaccredited"="#5D3A9B"
+  "accredited"="#E66100",
+  "unaccredited"="#5D3A9B"
 )
 museum_attribute_colours <- c(
-    size_colours,
-    governance_colours,
-    subject_colours,
-    country_region_colours,
-    accreditation_colours
+  size_colours,
+  governance_colours,
+  subject_colours,
+  country_region_colours,
+  accreditation_colours
 )
 
 white = "#FFFFFF"

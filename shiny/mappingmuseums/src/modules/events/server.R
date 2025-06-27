@@ -17,59 +17,31 @@ eventsServer <- function(id) {
       updateSelectInput(session=session, inputId="actorGrouping", selected="Core categories")
       updateSelectInput(session=session, inputId="museumGrouping", selected="Governance")
       updatePickerInput(
-        session=session,
-        inputId="eventTypeFilter",
-        selected=unique(select(dispersal_events, event_core_type))$event_core_type
+        session=session, inputId="eventTypeFilter", selected=event_core_types$label
       )
       updatePickerInput(
-        session=session,
-        inputId="senderTypeFilter",
-        selected=unique(select(dispersal_events, sender_core_type))$sender_core_type
+        session=session, inputId="collectionTypeFilter", selected=collection_types$collection_type
       )
       updatePickerInput(
-        session=session,
-        inputId="recipientTypeFilter",
-        selected=unique(select(dispersal_events, recipient_core_type))$recipient_core_type
+        session=session, inputId="collectionStatusFilter", selected=collection_status_labels$label,
       )
       updatePickerInput(
-        session=session,
-        inputId="collectionTypeFilter",
-        selected=collection_types$collection_type
+        session=session, inputId="governanceFilter", selected=governance_broad_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="collectionStatusFilter",
-        selected=filter(collection_status_labels, default_filter)$tidy_label,
+        session=session, inputId="sizeFilter", selected=size_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="governanceFilter",
-        selected=filter(governance_labels, internal_label != "Independent")$tidy_label
+        session=session, inputId="subjectFilter", selected=subject_broad_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="sizeFilter",
-        selected=filter(size_labels, default_filter)$tidy_label
+        session=session, inputId="subjectSpecificFilter", selected=subject_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="subjectFilter",
-        selected=filter(subject_broad_labels, default_filter)$tidy_label
+        session=session, inputId="regionFilter", selected=region_labels$label
       )
       updatePickerInput(
-        session=session,
-        inputId="subjectSpecificFilter",
-        selected=subject_full_labels$tidy_label
-      )
-      updatePickerInput(
-        session=session,
-        inputId="regionFilter",
-        selected=filter(country_region_labels, internal_label != "England")$tidy_label
-      )
-      updatePickerInput(
-        session=session,
-        inputId="accreditationFilter",
-        selected=filter(accreditation_labels, default_filter)$tidy_label
+        session=session, inputId="accreditationFilter", selected=accreditation_labels$label
       )
     })
 
@@ -81,7 +53,7 @@ eventsServer <- function(id) {
         "Size" = "_size",
         "Governance" = "_governance_broad",
         "Accreditation" = "_accreditation",
-        "Subject Matter" = "_subject_matter_broad",
+        "Subject Matter" = "_subject_broad",
         "Country/Region" = "_region",
         "Country" = "_country"
       )
@@ -310,63 +282,27 @@ eventsServer <- function(id) {
       )
     })
 
-    event_filter_choices <- reactive({input$eventTypeFilter})
-    sender_filter_choices <- reactive({input$senderTypeFilter})
-    recipient_filter_choices <- reactive({input$recipientTypeFilter})
-    collection_type_filter_choices <- reactive({input$collectionTypeFilter})
-    collection_status_filter_choices <- reactive({
-      filter(
-        collection_status_labels,
-        tidy_label %in% input$collectionStatusFilter
-      )$internal_label
-    })
-
-    size_filter_choices <- reactive({
-      filter(
-        size_labels,
-        tidy_label %in% input$sizeFilter
-      )$internal_label
-    })
-    governance_filter_choices <- reactive({
-      filter(
-        governance_labels,
-        tidy_label %in% input$governanceFilter
-      )$internal_label
-    })
-    subject_filter_choices <- reactive({
-      filter(
-        subject_broad_labels,
-        tidy_label %in% input$subjectFilter
-      )$internal_label
-    })
-    specific_subject_filter_choices <- reactive({
-      filter(
-        subject_full_labels,
-        tidy_label %in% input$subjectSpecificFilter
-      )$internal_label
-    })
-    region_filter_choices <- reactive({
-      filter(
-        country_region_labels,
-        tidy_label %in% input$regionFilter
-      )$internal_label
-    })
-    accreditation_filter_choices <- reactive({
-      filter(
-        accreditation_labels,
-        tidy_label %in% input$accreditationFilter
-      )$internal_label
-    })
+    event_filter_choices <- reactive({ input$eventTypeFilter })
+    sender_filter_choices <- reactive({ input$senderTypeFilter })
+    recipient_filter_choices <- reactive({ input$recipientTypeFilter })
+    collection_type_filter_choices <- reactive({ input$collectionTypeFilter })
+    collection_status_filter_choices <- reactive({ input$collectionStatusFilter })
+    size_filter_choices <- reactive({ input$sizeFilter })
+    governance_filter_choices <- reactive({ input$governanceFilter })
+    subject_filter_choices <- reactive({ input$subjectFilter })
+    specific_subject_filter_choices <- reactive({ input$subjectSpecificFilter })
+    region_filter_choices <- reactive({ input$regionFilter })
+    accreditation_filter_choices <- reactive({ input$accreditationFilter })
 
     observeEvent(subject_filter_choices(), {
       freezeReactiveValue(input, "subjectSpecificFilter")
-      specific_subjects <- subject_full_labels |>
+      specific_subjects <- subject_labels_map |>
         filter(subject_broad %in% subject_filter_choices())
       updatePickerInput(
         session=session,
         inputId="subjectSpecificFilter",
-        choices=specific_subjects$tidy_label,
-        selected=specific_subjects$tidy_label,
+        choices=specific_subjects$subject,
+        selected=specific_subjects$subject,
       )
     })
 
