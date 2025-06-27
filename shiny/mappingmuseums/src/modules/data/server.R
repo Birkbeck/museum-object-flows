@@ -9,12 +9,20 @@ dataServer <- function(id) {
       events_per_museum_matrix(data_by_museum)
     })
 
+    output$eventsPerMuseumBoxplots <- renderPlotly({
+      events_per_museum_boxplots(data_by_museum)
+    })
+
     output$eventsPerMuseum <- renderPlotly({
       events_per_museum()
     })
 
     output$collectionGranularity <- renderPlotly({
       collection_distribution_bars()
+    })
+
+    output$collectionGranularityHeatmap <- renderPlotly({
+      collection_distribution_heatmap()
     })
 
     output$summaryTable <- renderDT({

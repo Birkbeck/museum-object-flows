@@ -181,6 +181,175 @@ RETURN {
     collection_types: collection.coll_type,
     collection_status: collection.collection_status,
     collection_size: collection.coll_size_name,
+    collection_quantity: collection.object_qty,
+    collection_estimated_size: collection.estimated_size,
+    collection_estimated_size_min: collection.min_estimated_size,
+    collection_estimated_size_max: collection.max_estimated_size,
+    sender_id: sender.actor_id,
+    sender_name: sender.actor_name,
+    sender_all: "all",
+    sender_size: sender.size,
+    sender_governance: sender.governance,
+    sender_governance_broad: sender.governance_broad,
+    sender_accreditation: sender.accreditation,
+    sender_subject: sender.subject,
+    sender_subject_broad: sender.subject_broad,
+    sender_year_opened_1: sender.year_opened_1,
+    sender_year_opened_2: sender.year_opened_2,
+    sender_year_closed_1: sender.year_closed_1,
+    sender_year_closed_2: sender.year_closed_2,
+    sender_region: sender.region,
+    sender_country: sender.country,
+    sender_town: sender_location.village_town_city,
+    sender_county: sender_location.county,
+    sender_postcode: sender_location.postcode,
+    sender_quantity: sender.actor_quantity,
+    sender_sector: sender.actor_sector_name,
+    sender_type: sender_type.type_name,
+    sender_core_type: [
+      (sender_type)-[:SUB_TYPE_OF*0..]->(sender_core_type:Type {is_core_category: TRUE})
+      | sender_core_type.type_name
+    ][0],
+    sender_general_type: [
+      (sender_type)-[:SUB_TYPE_OF*0..]->(sender_general_type:Type)-[:SUB_TYPE_OF]->(:Type {type_name: "actor"})
+      | sender_general_type.type_name
+    ][0],
+    recipient_id: recipient.actor_id,
+    recipient_name: recipient.actor_name,
+    recipient_all: "all",
+    recipient_size: recipient.size,
+    recipient_governance: recipient.governance,
+    recipient_governance_broad: recipient.governance_broad,
+    recipient_accreditation: recipient.accreditation,
+    recipient_subject: recipient.subject,
+    recipient_subject_broad: recipient.subject_broad,
+    recipient_year_opened_1: recipient.year_opened_1,
+    recipient_year_opened_2: recipient.year_opened_2,
+    recipient_year_closed_1: recipient.year_closed_1,
+    recipient_year_closed_2: recipient.year_closed_2,
+    recipient_region: recipient.region,
+    recipient_country: recipient.country,
+    recipient_town: recipient_location.village_town_city,
+    recipient_county: recipient_location.county,
+    recipient_postcode: recipient_location.postcode,
+    recipient_quantity: recipient.actor_quantity,
+    recipient_sector: recipient.actor_sector_name,
+    recipient_type: recipient_type.type_name,
+    recipient_core_type: [
+      (recipient_type)-[:SUB_TYPE_OF*0..]->(recipient_core_type:Type {is_core_category: TRUE})
+      | recipient_core_type.type_name
+    ][0],
+    recipient_general_type: [
+      (recipient_type)-[:SUB_TYPE_OF*0..]->(recipient_general_type:Type)-[:SUB_TYPE_OF]->(:Type {type_name: "actor"})
+      | recipient_general_type.type_name
+    ][0],
+    origin_id: origin.place_id,
+    origin_latitude: origin.latitude,
+    origin_longitude: origin.longitude,
+    origin_x: origin.bng_x,
+    origin_y: origin.bng_y,
+    origin_lad: origin.local_authority_name,
+    origin_region: origin.region,
+    origin_country: origin.country,
+    destination_id: destination.place_id,
+    destination_latitude: destination.latitude,
+    destination_longitude: destination.longitude,
+    destination_x: destination.bng_x,
+    destination_y: destination.bng_y,
+    destination_lad: destination.local_authority_name,
+    destination_region: destination.region,
+    destination_country: destination.country
+} as record
+"""
+
+dispersal_lengths_query = """
+MATCH (initial_museum:Actor)<-[:CONCERNS]-(super_event:SuperEvent)<-[:SUB_EVENT_OF]-(event:Event)-[event_is_instance_of:INSTANCE_OF]->(event_type:Type)
+WHERE NOT (:Type {type_name: "transferred"})<-[:INSTANCE_OF]-(event)-[:PRECEDES]->(:Event)-[:INSTANCE_OF]->(:Type {type_name: "displayed"})
+WITH initial_museum, super_event, event, event_is_instance_of, event_type
+OPTIONAL MATCH (event)-[:INVOLVES]->(collection:CollectionOrObject)
+WITH initial_museum, super_event, event, event_is_instance_of, event_type, collection
+OPTIONAL MATCH (event)-[:HAS_SENDER]->(sender:Actor)-[:INSTANCE_OF]->(sender_type:Type)
+WITH initial_museum, super_event, event, event_is_instance_of, event_type, collection, sender, sender_type
+OPTIONAL MATCH (event)-[:HAS_RECIPIENT]->(recipient:Actor)-[:INSTANCE_OF]->(recipient_type:Type)
+WITH initial_museum, super_event, event, event_is_instance_of, event_type, collection, sender, sender_type, recipient, recipient_type
+OPTIONAL MATCH (event)-[:HAS_ORIGIN]->(origin:Place)
+WITH initial_museum, super_event, event, event_is_instance_of, event_type, collection, sender, sender_type, recipient, recipient_type, origin
+OPTIONAL MATCH (event)-[:HAS_DESTINATION]->(destination:Place)
+WITH initial_museum, super_event, event, event_is_instance_of, event_type, collection, sender, sender_type, recipient, recipient_type, origin, destination
+OPTIONAL MATCH (sender)-[:HAS_LOCATION]->(sender_location:Place)
+WITH initial_museum, super_event, event, event_is_instance_of, event_type, collection, sender, sender_type, recipient, recipient_type, origin, destination, sender_location
+OPTIONAL MATCH (recipient)-[:HAS_LOCATION]->(recipient_location:Place)
+WITH initial_museum, super_event, event, event_is_instance_of, event_type, collection, sender, sender_type, recipient, recipient_type, origin, destination, sender_location, recipient_location
+OPTIONAL MATCH (initial_museum)-[:HAS_LOCATION]->(initial_museum_location:Place)
+RETURN {
+    initial_museum_id: initial_museum.mm_id,
+    initial_museum_name: initial_museum.actor_name,
+    initial_museum_all: "all",
+    initial_museum_size: initial_museum.size,
+    initial_museum_governance_broad: initial_museum.governance_broad,
+    initial_museum_governance: initial_museum.governance,
+    initial_museum_sector: initial_museum.actor_sector_name,
+    initial_museum_accreditation: initial_museum.accreditation,
+    initial_museum_subject_broad: initial_museum.subject_broad,
+    initial_museum_subject: initial_museum.subject,
+    initial_museum_year_opened_1: initial_museum.year_opened_1,
+    initial_museum_year_opened_2: initial_museum.year_opened_2,
+    initial_museum_year_closed_1: initial_museum.year_closed_1,
+    initial_museum_year_closed_2: initial_museum.year_closed_2,
+    initial_museum_country: initial_museum.country,
+    initial_museum_region: initial_museum.region,
+    initial_museum_town: initial_museum_location.village_town_city,
+    initial_museum_type: [
+      (initial_museum)-[:INSTANCE_OF]->(initial_museum_type:Type)
+      | initial_museum_type.type_name
+    ][0],
+    initial_museum_core_type: [
+      (initial_museum)-[:INSTANCE_OF]->(initial_museum_type:Type)-[:SUB_TYPE_OF*0..]->(initial_museum_core_type:Type {is_core_category: TRUE})
+      | initial_museum_core_type.type_name
+    ][0],
+    initial_museum_general_type: [
+      (initial_museum)-[:INSTANCE_OF]->(initial_museum_type:Type)-[:SUB_TYPE_OF*0..]->(initial_museum_general_type:Type)-[:SUB_TYPE_OF]->(:Type {type_name: "actor"})
+      | initial_museum_general_type.type_name
+    ][0],
+    super_event_id: super_event.super_event_id,
+    super_event_causes: super_event.super_causes,
+    super_event_cause_types: super_event.super_cause_types,
+    super_event_date: super_event.super_date,
+    event_id: event.event_id,
+    previous_event_id: [
+      (previous_event)-[:PRECEDES]->(event) | previous_event.event_id
+    ][0],
+    ancestor_events: [
+      (event)<-[:PRECEDES*0..]-(ancestor_event:Event) | ancestor_event.event_id
+    ],
+    event_type: event_type.type_name,
+    event_core_type: [
+      (event_type)-[:SUB_TYPE_OF*0..]->(event_core_type:Type {is_core_category: TRUE})
+      | event_core_type.type_name
+    ][0],
+    event_type_uncertainty: event_is_instance_of.event_type_uncertainty,
+    event_date: event.event_date,
+    event_date_from: event.event_date_from,
+    event_date_to: event.event_date_to,
+    event_stage_in_path: event.stage_in_path,
+    event_is_change_of_ownership: event_type.change_of_ownership,
+    event_is_change_of_custody: event_type.change_of_custody and exists((event)-[:HAS_DESTINATION]->()),
+    event_is_end_of_existence: event_type.end_of_existence,
+    collection_id: collection.collection_or_object_id,
+    parent_collection_id: [
+      (collection)-[:WAS_REMOVED_FROM]->(parent_collection:CollectionOrObject) | parent_collection.collection_or_object_id
+    ][0],
+    ancestor_collections: [
+      (collection)-[:WAS_REMOVED_FROM*0..]->(ancestor_collection:CollectionOrObject) | ancestor_collection.collection_or_object_id
+    ],
+    original_collection_id: [
+      (collection)-[:WAS_REMOVED_FROM*0..]->(original_collection:CollectionOrObject)<-[:INVOLVES]-(original_event {stage_in_path: 0})
+      | original_collection.collection_or_object_id
+    ][0],
+    collection_description: collection.coll_desc,
+    collection_types: collection.coll_type,
+    collection_status: collection.collection_status,
+    collection_size: collection.coll_size_name,
     collection_estimated_size: collection.estimated_size,
     collection_estimated_size_min: collection.min_estimated_size,
     collection_estimated_size_max: collection.max_estimated_size,
@@ -272,6 +441,7 @@ if __name__ == "__main__":
         "event_types": event_types_query,
         "museums": museums_query,
         "dispersal_events": dispersal_events_query,
+        "dispersal_length_events": dispersal_lengths_query,
     }
 
     query_to_csv = QueryToCsv(
