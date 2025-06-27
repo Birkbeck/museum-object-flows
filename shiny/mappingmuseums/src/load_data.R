@@ -28,7 +28,7 @@ dispersal_events <- read_csv(dispersal_events_csv) |>
       TRUE ~ recipient_type
     ),
     recipient_core_type = case_when(
-      is.na(recipient_type) ~ "N/A",
+      recipient_type == "N/A" ~ "N/A",
       recipient_type == "unspecified actor" ~ "unspecified actor",
       TRUE ~ recipient_core_type
     ),
