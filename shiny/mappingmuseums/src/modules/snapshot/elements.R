@@ -15,7 +15,7 @@ get_museums_in_snapshot <- function(museums,
       subject %in% subject_specific_filter,
       region %in% region_filter,
       accreditation %in% accreditation_filter,
-      year_closed_2 > start,
+      year_closed_2 >= start,
       year_opened_1 < end
     )
 }
@@ -217,7 +217,6 @@ snapshot_heatmap <- function(data,
     ) +
     standard_bars_theme +
     theme(
-      legend.position="Non",
       axis.text.x=element_text(angle=45, vjust=0.5, hjust=1)
     )
   if (metric %in% c("period_total_pc_x", "end_total_pc_x")) {
