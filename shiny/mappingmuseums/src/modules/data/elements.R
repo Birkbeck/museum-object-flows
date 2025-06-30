@@ -183,6 +183,10 @@ collection_distribution_bars <- function() {
 }
 
 collection_distribution_heatmap <- function() {
+  museums_in_subject <- dispersal_events |>
+    group_by(initial_museum_subject_broad) |>
+    summarize(number_of_museums_in_subject=n_distinct(initial_museum_id)) |>
+    ungroup()
   summary <- dispersal_events |>
     mutate(
       collection_size = case_when(
@@ -203,10 +207,14 @@ collection_distribution_heatmap <- function() {
       count = n()
       # TODO: calculate count per number of museums in category
     ) |>
-    ungroup()
-  ggplot(summary, aes(y=initial_museum_subject_broad, x=collection_size, fill=count)) +
+    ungroup() |>
+    left_join(museums_in_subject, by="initial_museum_subject_broad") |>
+    mutate(
+      count_per_museum = round(count / number_of_museums_in_subject, 1)
+    )
+  ggplot(summary, aes(y=initial_museum_subject_broad, x=collection_size, fill=count_per_museum)) +
     geom_tile(show.legend=FALSE) +
-    geom_text(aes(label=count)) +
+    geom_text(aes(label=count_per_museum)) +
     geom_vline(xintercept=6.5) +
     scale_x_discrete(
       limits=c(
@@ -225,7 +233,7 @@ collection_distribution_heatmap <- function() {
     ) +
     heatmap_fill_scale +
     labs(
-      title="Distribution of Collection Sizes",
+      title="Distribution of Collection Sizes (collections per museum)",
       y="Museum Subject Matter",
       x="Collection Size Quantity/Category"
     ) +

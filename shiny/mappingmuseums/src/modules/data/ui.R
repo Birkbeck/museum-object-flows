@@ -23,7 +23,14 @@ dataUI <- function(id) {
     hr(),
 
     h3("Collection Sizes"),
+    p(
+      "Collections recorded in the data also have a wide range of sizes. The chart below shows the distribution of these. Approximately x% of collections have been given a numeric size and the remainder are described according to the proportion they took up of their original museum's total collection."
+    ),
     plotlyOutput(NS(id, "collectionGranularity"), width="80%", height="1000px"),
+
+    p(
+      "The distribution of collection sizes varies widely by museum subject matter. Museum types which are more likely to have a large number of collections recorded (e.g. war & conflict, transport) are also more likely to have records of individual collections (though this is partly down to a handful of outliers). Collections from other categories such as arts, buildings, rural industry are almost always recorded as 'all' or 'most' with little or no numerical record of collection sizes."
+    ),
     plotlyOutput(NS(id, "collectionGranularityHeatmap"), width="80%", height="1000px"),
 
     DTOutput(NS(id, "summaryTable"))
