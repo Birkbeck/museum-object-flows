@@ -68,10 +68,9 @@ dispersalUI <- function(id) {
             choices=c(
               "Actor Sector",
               "Actor Type (Core Categories)",
-              "Actor Type (Most General)",
               "Actor Type (Most Specific)"
             ),
-            selected="Actor Sector"
+            selected="Actor Type (Core Categories)"
           )
         ),
             

@@ -91,7 +91,7 @@ eventsUI <- function(id) {
           selectInput(
             NS(id, "eventGrouping"),
             label="",
-            choices=c("Most general", "Core categories", "Most specific"),
+            choices=c("Core categories", "Most specific"),
             selected="Core categories"
           )
         ),
@@ -102,7 +102,7 @@ eventsUI <- function(id) {
           selectInput(
             NS(id, "actorGrouping"),
             label="",
-            choices=c("Most general", "Core categories", "Most specific"),
+            choices=c("Core categories", "Most specific"),
             selected="Core categories"
           )
         ),
