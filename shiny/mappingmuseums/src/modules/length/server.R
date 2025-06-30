@@ -191,7 +191,7 @@ lengthServer <- function(id) {
           filtered_closure_lengths() |>
             select(
               museum_id,
-              museum,
+              museum_name,
               year_closed,
               earliest_event_date=earliest,
               latest_event_date=latest,

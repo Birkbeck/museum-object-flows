@@ -11,7 +11,10 @@ closure_length_categories <- c(
 
 get_super_events <- function(dispersal_events, museums) {
   museums |>
-    filter(museum_id %in% dispersal_events$initial_museum_id) |>
+    filter(
+      year_closed_1 != 9999,
+      museum_id %in% dispersal_events$initial_museum_id
+    ) |>
     mutate(
       event_level="super",
       event_description="closure",
@@ -31,7 +34,7 @@ get_super_events <- function(dispersal_events, museums) {
 
 get_initial_transactions <- function(dispersal_events) {
   dispersal_events |>
-    filter(sender_name == initial_museum_name & recipient_type != "N/A") |>
+    filter(sender_name == initial_museum_name & event_type != "displayed") |>
     mutate(
       event_level="sub",
       event_description=ifelse(
@@ -84,6 +87,7 @@ get_closure_lengths_by_museum <- function(dispersal_events, museums) {
     left_join(closure_super_events |> select(museum_id, event_year), by="museum_id") |>
     rename(closure_date=event_year) |>
     mutate(
+      earliest = ifelse(earliest < closure_date, closure_date, earliest),
       time_between_closure_and_earliest = earliest - closure_date,
       latest_including_closure_date = ifelse(closure_date > latest, closure_date, latest),
       length_of_closure = latest_including_closure_date - closure_date,
@@ -98,6 +102,7 @@ get_closure_lengths_by_museum <- function(dispersal_events, museums) {
       ),
       closure_length_category = factor(closure_length_category, closure_length_categories)
     ) |>
-    left_join(museums, by="museum_id")
+    left_join(museums, by="museum_id") #|>
+    #filter(!is.na(length_of_closure)) # remove open museums
   closure_lengths
 }
