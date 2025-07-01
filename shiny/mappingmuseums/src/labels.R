@@ -794,7 +794,7 @@ short_labels <- c(
   "Yorks & Humber"="Yorks.",
   "East Midlands"="East Mids",
   "West Midlands"="West Mids",
-  "East"="East Eng",
+  "East of England"="East Eng",
   "London"="London",
   "South East"="S. East",
   "South West"="S. West",

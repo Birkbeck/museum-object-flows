@@ -100,7 +100,10 @@ def get_bng_y(table, row_index, postcode_column, postcode_to_lat_long):
 
 def get_region(table, row_index, postcode_column, postcode_to_lat_long):
     postcode = table[row_index][postcode_column]
-    return postcode_to_lat_long.get_region(postcode)
+    region = postcode_to_lat_long.get_region(postcode)
+    if region == "Yorkshire and The Humber":
+        return "Yorks & Humber"
+    return region
 
 
 def get_local_authority_code(table, row_index, postcode_column, postcode_to_lat_long):
