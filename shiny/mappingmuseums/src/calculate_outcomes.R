@@ -1,3 +1,12 @@
+sizes_mapping <- c(
+  "all"=100,
+  "most"=80,
+  "half"=50,
+  "some"=25,
+  "few"=5,
+  "NA"=1
+)
+
 get_outcomes_by_museum <- function(events_table) {
   events_with_numeric_collection_size <- events_table |>
     filter(event_stage_in_path == 1) |>
@@ -47,10 +56,12 @@ get_outcomes_by_museum <- function(events_table) {
       outcome_recipient_count=sum(recipient_quantity)
     ) |>
     ungroup()
+  largest_recipient_shares <- calculate_largest_recipient_shares(events_table)
   event_outcomes |>
     left_join(recipient_outcomes, by="museum_id") |>
     left_join(destination_outcomes, by="museum_id") |>
     left_join(recipient_counts, by="museum_id") |>
+    left_join(largest_recipient_shares, by="museum_id") |>
     mutate(
       outcome_recipient_count=case_when(
         is.nan(outcome_recipient_count) ~ "many",
@@ -58,6 +69,32 @@ get_outcomes_by_museum <- function(events_table) {
         outcome_recipient_count > 5 ~ "> 5",
         TRUE ~ as.character(outcome_recipient_count)
       )
+    )
+}
+
+calculate_largest_recipient_shares <- function(events) {
+  categorical_max <- function(sizes) {
+    largest <- "NA"
+    for (size in sizes) {
+      print(size)
+      print(sizes_mapping[size])
+      if (is.na(size)) {
+        next
+      }
+      if (sizes_mapping[size] > sizes_mapping[largest]) {
+        largest <- size
+      }
+    }
+    return(largest)
+  }
+  events |>
+    filter(event_stage_in_path == 1) |>
+    group_by(initial_museum_id) |>
+    summarize(largest_share=paste0("'", categorical_max(collection_size), "'")) |>
+    ungroup() |>
+    select(
+      museum_id=initial_museum_id,
+      largest_share
     )
 }
 

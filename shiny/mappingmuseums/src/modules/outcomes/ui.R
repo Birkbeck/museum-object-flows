@@ -25,6 +25,7 @@ outcomesUI <- function(id) {
               "Outcome event type",
               "Outcome recipient type",
               "Outcome recipient count",
+              "Outcome largest recipient share",
               "Outcome destination type"
             ),
             selected="Outcome event type"
@@ -44,6 +45,7 @@ outcomesUI <- function(id) {
                 "Outcome event type",
                 "Outcome recipient type",
                 "Outcome recipient count",
+                "Outcome largest recipient share",
                 "Outcome destination type"
               ),
               selected="Governance"

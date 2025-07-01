@@ -937,6 +937,12 @@ short_labels <- c(
   "mostly within the UK"="mostly within the UK",
   "mostly abroad"="mostly abroad",
   "mixed destinations"="mixed destinations",
+  # collection share
+  "'few'"="'few'",
+  "'some'"="'some'",
+  "'half'"="'half'",
+  "'most'"="'most'",
+  "'all'"="'all'",
   # recipient count outcome
   "many"="many",
   "> 5"="> 5",
@@ -1176,6 +1182,12 @@ very_short_labels <- c(
   "mostly within the UK"="mostly within the UK",
   "mostly abroad"="mostly abroad",
   "mixed destinations"="mixed destinations",
+  # collection share
+  "'few'"="'few'",
+  "'some'"="'some'",
+  "'half'"="'half'",
+  "'most'"="'most'",
+  "'all'"="'all'",
   # recipient count outcome
   "many"="many",
   "> 5"="> 5",
@@ -1272,7 +1284,7 @@ museum_attribute_ordering <- c(
   "Yorks & Humber",
   "East Midlands",
   "West Midlands",
-  "East",
+  "East of England",
   "London",
   "South East",
   "South West",
@@ -1415,6 +1427,12 @@ museum_attribute_ordering <- c(
   "mostly within the UK",
   "mostly abroad",
   "mixed destinations",
+  # collection share
+  "'few'",
+  "'some'",
+  "'half'",
+  "'most'",
+  "'all'",
   # recipient count outcome
   "many",
   "> 5",

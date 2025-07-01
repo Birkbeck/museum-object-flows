@@ -46,6 +46,8 @@ outcomesServer <- function(id) {
         return("outcome_recipient_type")
       } else if (input$outcomeType == "Outcome recipient count") {
         return("outcome_recipient_count")
+      } else if (input$outcomeType == "Outcome largest recipient share") {
+        return("largest_share")
       } else {
         return("outcome_destination_type")
       }
@@ -61,6 +63,8 @@ outcomesServer <- function(id) {
         return("outcome_recipient_count")
       } else if (input$museumGrouping == "Outcome destination type") {
         return("outcome_destination_type")
+      } else if (input$museumGrouping == "Outcome largest recipient share") {
+        return("largest_share")
       } else if (input$museumGrouping == "Core reason for closure") {
         return("reason_core")
       }
