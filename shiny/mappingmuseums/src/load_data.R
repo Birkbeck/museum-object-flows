@@ -48,7 +48,10 @@ dispersal_events <- read_csv(dispersal_events_csv) |>
       collection_status == "loan" ~ "Items loaned to a museum",
       collection_status == "handling" ~ "Items for handling",
       collection_status == "museum-stuff" ~ "Other items (e.g. furniture)"
-    )
+    ),
+    initial_museum_all = "all",
+    sender_all = ifelse(!is.na(sender_size), "all", NA),
+    recipient_all = ifelse(!is.na(recipient_size), "all", NA)
   )
 
 senders <- dispersal_events |>

@@ -9,7 +9,7 @@ dispersalServer <- function(id) {
       updateCheckboxInput(session=session, inputId="showTransactionCounts", value=FALSE)
       updateRadioButtons(session=session, inputId="countOrPercentage", selected="count")
       updateSwitchInput(session=session, inputId="firepower", value=FALSE)
-      updateSelectInput(session=session, inputId="grouping", selected="Actor Sector")
+      updateSelectInput(session=session, inputId="grouping", selected="Actor type (core categories)")
       updateSelectInput(session=session, inputId="groupingMuseums", selected="Governance")
       updatePickerInput(
         session=session,
@@ -77,10 +77,10 @@ dispersalServer <- function(id) {
     grouping_field <- reactive({input$grouping})
     actor_grouping <- reactive({
       list(
-        "Actor Sector"="sector",
-        "Actor Type (Core Categories)"="core_type",
-        "Actor Type (Most General)"="general_type",
-        "Actor Type (Most Specific)"="type"
+        "Actor sector"="sector",
+        "Actor type (core categories)"="core_type",
+        "Actor type (most specific)"="type",
+        "Actor region/country"="region"
       )[input$grouping]
     })
     sender_grouping <- reactive({
@@ -109,7 +109,7 @@ dispersalServer <- function(id) {
       }
     })
     scatter_grouping_field <- reactive({
-      if (input$groupingMuseums == "All museums") {
+      if (input$groupingMuseums == "All") {
         return("initial_museum_all")
       } else if (input$groupingMuseums == "Size") {
         return("initial_museum_size")
@@ -321,7 +321,7 @@ dispersalServer <- function(id) {
     })
 
     museum_grouping <- reactive({
-      if (input$groupingMuseums == "All museums") {
+      if (input$groupingMuseums == "All") {
         return("all")
       } else if (input$groupingMuseums == "Size") {
         return("size")

@@ -158,49 +158,49 @@ if __name__ == "__main__":
             FormulaColumn(
                 "longitude",
                 formula=lambda table, row_index: formulae.get_longitude(
-                    table, row_index, postcode_to_lat_long
+                    table, row_index, "postcode", postcode_to_lat_long
                 ),
                 property_of="place_id",
             ),
             FormulaColumn(
                 "latitude",
                 formula=lambda table, row_index: formulae.get_latitude(
-                    table, row_index, postcode_to_lat_long
+                    table, row_index, "postcode", postcode_to_lat_long
                 ),
                 property_of="place_id",
             ),
             FormulaColumn(
                 "bng_x",
                 formula=lambda table, row_index: formulae.get_bng_x(
-                    table, row_index, postcode_to_lat_long
+                    table, row_index, "postcode", postcode_to_lat_long
                 ),
                 property_of="place_id",
             ),
             FormulaColumn(
                 "bng_y",
                 formula=lambda table, row_index: formulae.get_bng_y(
-                    table, row_index, postcode_to_lat_long
+                    table, row_index, "postcode", postcode_to_lat_long
                 ),
                 property_of="place_id",
             ),
             FormulaColumn(
                 "region",
                 formula=lambda table, row_index: formulae.get_region(
-                    table, row_index, postcode_to_lat_long
+                    table, row_index, "postcode", postcode_to_lat_long
                 ),
                 property_of="place_id",
             ),
             FormulaColumn(
                 "local_authority_code",
                 formula=lambda table, row_index: formulae.get_local_authority_code(
-                    table, row_index, postcode_to_lat_long
+                    table, row_index, "postcode", postcode_to_lat_long
                 ),
                 property_of="place_id",
             ),
             FormulaColumn(
                 "local_authority_name",
                 formula=lambda table, row_index: formulae.get_local_authority_name(
-                    table, row_index, postcode_to_lat_long
+                    table, row_index, "postcode", postcode_to_lat_long
                 ),
                 property_of="place_id",
             ),
@@ -281,7 +281,13 @@ if __name__ == "__main__":
             OptionalColumn("year_opened_2", property_of="actor_id"),
             OptionalColumn("year_closed_1", property_of="actor_id"),
             OptionalColumn("year_closed_2", property_of="actor_id"),
-            OptionalColumn("region", property_of="actor_id"),
+            FormulaColumn(
+                "region",
+                formula=lambda table, row_index: formulae.get_region(
+                    table, row_index, "actor_postcode", postcode_to_lat_long
+                ),
+                property_of="actor_id",
+            ),
             OptionalColumn("country", property_of="actor_id"),
             FormulaColumn(
                 "has_location",

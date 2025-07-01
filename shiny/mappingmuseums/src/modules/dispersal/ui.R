@@ -35,7 +35,7 @@ dispersalUI <- function(id) {
             label="",
             value=2,
             min=1,
-            max=7,
+            max=6,
             step=1,
             ticks=FALSE,
             width="50%"
@@ -66,11 +66,12 @@ dispersalUI <- function(id) {
             NS(id, "grouping"),
             label="",
             choices=c(
-              "Actor Sector",
-              "Actor Type (Core Categories)",
-              "Actor Type (Most Specific)"
+              "Actor sector",
+              "Actor type (core categories)",
+              "Actor type (most specific)",
+              "Actor region/country"
             ),
-            selected="Actor Type (Core Categories)"
+            selected="Actor type (core categories)"
           )
         ),
             
@@ -80,7 +81,7 @@ dispersalUI <- function(id) {
           selectInput(
             NS(id, "groupingMuseums"),
             label="",
-            choices=c("All museums", field_names$name),
+            choices=field_names$name,
             selected="Governance"
           )
         ),

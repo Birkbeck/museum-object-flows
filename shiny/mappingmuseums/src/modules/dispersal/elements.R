@@ -63,10 +63,10 @@ sequences_table_selected <- c(
 )
 
 grouping_dimension_map <- list(
-  "Actor Sector"="sector",
-  "Actor Type (Core Categories)"="core_type",
-  "Actor Type (Most General)"="general_type",
-  "Actor Type (Most Specific)"="type"
+  "Actor sector"="sector",
+  "Actor type (core categories)"="core_type",
+  "Actor type (most specific)"="type",
+  "Actor region/country"="region"
 ) 
 
 get_dispersal_initial_museums <- function(dispersal_events,
@@ -100,13 +100,14 @@ get_actor_choices <- function(grouping_dimension, museum_grouping_dimension) {
   grouping_dimension <- grouping_dimension_map[grouping_dimension]
   recipient_grouping_dimension <- paste0("recipient_", grouping_dimension)
   recipient_museum_grouping_dimension <- paste0("recipient_", museum_grouping_dimension)
-  choices_table <- dispersal_events |>
-    mutate(
-      initial_museum_all="all",
-      sender_all=ifelse(!is.na(sender_size), "all", NA),
-      recipient_all=ifelse(!is.na(recipient_size), "all", NA),
-    ) |>
-    group_by(.data[[recipient_museum_grouping_dimension]], .data[[recipient_grouping_dimension]]) |>
+  if (recipient_museum_grouping_dimension == recipient_grouping_dimension) {
+    grouped_events <- dispersal_events |>
+      group_by(.data[[recipient_grouping_dimension]])
+  } else {
+    grouped_events <- dispersal_events |>
+      group_by(.data[[recipient_museum_grouping_dimension]], .data[[recipient_grouping_dimension]])
+  }
+  choices_table <- grouped_events |>
     summarize(
       to=paste(.data[[recipient_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], sep="@"),
       label=ifelse(
@@ -142,10 +143,11 @@ get_filtered_sequences <- function(events_data,
                                    steps_or_first_last) {
   sequences <- events_data |>
     mutate(
-      sender_all=ifelse(!is.na(sender_size), "all", NA),
-      recipient_all=ifelse(!is.na(recipient_size), "all", NA)
-    )
-  sequences <- sequences |>
+      sender_group=.data[[paste0("sender_", grouping_dimension)]],
+      sender_museum_group=.data[[paste0("sender_", museum_grouping_dimension)]],
+      recipient_group=.data[[paste0("recipient_", grouping_dimension)]],
+      recipient_museum_group=.data[[paste0("recipient_", museum_grouping_dimension)]]
+    ) |>
     filter(initial_museum_id %in% initial_museum_ids) |>
     find_events_to_show(show_transaction_types) |>
     find_previous_events() |>
@@ -455,35 +457,17 @@ get_pathways_layout <- function(sequences,
                                 museum_grouping_dimension,
                                 steps_or_first_last) {
 
-  sender_grouping_dimension <- paste0("sender_", grouping_dimension)
-  recipient_grouping_dimension <- paste0("recipient_", grouping_dimension)
-  sender_museum_grouping_dimension <- paste0("sender_", museum_grouping_dimension)
-  recipient_museum_grouping_dimension <- paste0("recipient_", museum_grouping_dimension)
-
  dendrogram_data <- sequences |>
    # TODO: move filtering to datatable creation
    filter(recipient_position <= end_position) |>
    give_individual_names_to_nodes_in_different_paths(steps_or_first_last) |>
-   add_central_node_if_there_are_many_starting_points(
-     sender_grouping_dimension,
-     sender_museum_grouping_dimension,
-     recipient_grouping_dimension,
-     recipient_museum_grouping_dimension
-   )
+   add_central_node_if_there_are_many_starting_points()
 
   from_nodes <- get_nodes(
-    dendrogram_data,
-    "from",
-    "sender",
-    sender_grouping_dimension,
-    sender_museum_grouping_dimension
+    dendrogram_data, "from", "sender", "sender_group", "sender_museum_group"
   )
   to_nodes <- get_nodes(
-    dendrogram_data,
-    "to",
-    "recipient",
-    recipient_grouping_dimension,
-    recipient_museum_grouping_dimension
+    dendrogram_data, "to", "recipient", "recipient_group", "recipient_museum_group"
   )
   nodes <- merge_from_and_to_nodes(from_nodes, to_nodes) |>
     # TODO: move filtering to datatable creation
@@ -499,6 +483,22 @@ get_pathways_layout <- function(sequences,
           paste(actor_group, "sector")
         )
       )
+  } else if (museum_grouping_dimension == "region" && grouping_dimension == "region") {
+     nodes <- nodes |> 
+      mutate(
+        name=paste(museum_group, actor_group, sep="@"),
+        label=actor_group
+      )
+  } else if (grouping_dimension == "region") {
+     nodes <- nodes |>
+      mutate(
+        name=paste(museum_group, actor_group, sep="@"),
+        label = ifelse(
+          !is.na(museum_group),
+          paste(actor_group, museum_group, "museum"),
+          paste(actor_group, "other")
+        )
+      )
   } else {
     nodes <- nodes |>
       mutate(
@@ -511,14 +511,8 @@ get_pathways_layout <- function(sequences,
       )
   }
 
-  edges <- get_edges(
-    dendrogram_data,
-    nodes,
-    sender_grouping_dimension,
-    sender_museum_grouping_dimension,
-    recipient_grouping_dimension,
-    recipient_museum_grouping_dimension
-  )
+  edges <- get_edges(dendrogram_data, nodes)
+  write_csv(edges, "edges.csv")
   count_edges <- edges |> filter(label != "")
 
   dendrogram_graph <- graph_from_data_frame(count_edges)
@@ -548,24 +542,11 @@ get_sequences_layout <- function(sequences,
                                  grouping_dimension,
                                  museum_grouping_dimension) {
 
-  sender_grouping_dimension <- paste0("sender_", grouping_dimension)
-  recipient_grouping_dimension <- paste0("recipient_", grouping_dimension)
-  sender_museum_grouping_dimension <- paste0("sender_", museum_grouping_dimension)
-  recipient_museum_grouping_dimension <- paste0("recipient_", museum_grouping_dimension)
-
   from_nodes <- get_nodes(
-    sequences,
-    "from",
-    "sender",
-    sender_grouping_dimension,
-    sender_museum_grouping_dimension
+    sequences, "from", "sender", "sender_group", "sender_museum_group"
   )
   to_nodes <- get_nodes(
-    sequences,
-    "to",
-    "recipient",
-    recipient_grouping_dimension,
-    recipient_museum_grouping_dimension
+    sequences, "to", "recipient", "recipient_group", "recipient_museum_group"
   )
   nodes <- merge_from_and_to_nodes(from_nodes, to_nodes) |>
     mutate(name=paste(museum_group, actor_group, sep="@")) |>
@@ -591,6 +572,23 @@ get_sequences_layout <- function(sequences,
         )
       ) |> 
       select(-museum_type, -sector)
+  } else if (museum_grouping_dimension == "region" && grouping_dimension == "region") {
+    name_mapping <- name_mapping |> 
+      mutate(
+        label = sapply(strsplit(name, "@"), `[`, 1)
+      )
+  } else if (grouping_dimension == "region") {
+    name_mapping <- name_mapping |>
+      mutate(
+        museum_type = sapply(strsplit(name, "@"), `[`, 1),
+        region = sapply(strsplit(name, "@"), `[`, 2),
+        label = ifelse(
+          museum_type != "NA",
+          paste(region, museum_type, "museum"),
+          paste(region, "other")
+        )
+      ) |>
+      select(-museum_type, -region)
   } else {
     name_mapping <- name_mapping |> 
       mutate(
@@ -608,17 +606,10 @@ get_sequences_layout <- function(sequences,
   nodes <- nodes |>
     left_join(name_mapping, by = "name")
 
-  edges <- get_edges(
-    sequences,
-    nodes,
-    sender_grouping_dimension,
-    sender_museum_grouping_dimension,
-    recipient_grouping_dimension,
-    recipient_museum_grouping_dimension
-  ) |>
+  edges <- get_edges(sequences, nodes) |>
     mutate(
-      from_name=paste(.data[[sender_museum_grouping_dimension]], .data[[sender_grouping_dimension]], sep="@"),
-      to_name=paste(.data[[recipient_museum_grouping_dimension]], .data[[recipient_grouping_dimension]], sep="@"),
+      from_name=paste(sender_museum_group, sender_group, sep="@"),
+      to_name=paste(recipient_museum_group, recipient_group, sep="@"),
       label=ifelse(!is.na(label), as.character(label), ""),
       from_position=as.numeric(sapply(str_split(from, "@"), function(x) if(length(x) > 2) x[3] else NA)),
       to_position=as.numeric(sapply(str_split(to, "@"), function(x) if(length(x) > 2) x[3] else NA)),
@@ -640,6 +631,8 @@ get_sequences_layout <- function(sequences,
       ),
       label_position_y = mean(c(from_position, to_position)) + random_offset,
     )
+
+  write_csv(edges, "edges-sequences.csv")
 
   list("nodes"=nodes, "edges"=edges, "name_mapping"=name_mapping)
 }
@@ -677,20 +670,16 @@ give_individual_names_to_nodes_in_different_paths <- function(sequences, steps_o
   sequences
 }
 
-add_central_node_if_there_are_many_starting_points <- function(sequences,
-                                                               sender_grouping_dimension,
-                                                               sender_museum_grouping_dimension,
-                                                               recipient_grouping_dimension,
-                                                               recipient_museum_grouping_dimension) {
+add_central_node_if_there_are_many_starting_points <- function(sequences) {
   # because a dendrogram layout is being used, a single root node is needed so that paths form a tree.
   # if there are many starting points, a dummy root node is created as an invisible starting point.
-  initial_senders <- sequences |>
-    filter(event_stage_in_path == 1) |>
-    select(.data[[sender_museum_grouping_dimension]], .data[[sender_grouping_dimension]]) |>
+  stage_1_events <- sequences |>
+    filter(event_stage_in_path == 1)
+  initial_senders <- stage_1_events |>
+    select(sender_museum_group, sender_group) |>
     distinct()
   if(nrow(initial_senders) > 1) {
-    dummy_rows <- sequences |>
-      filter(event_stage_in_path == 1) |>
+    dummy_rows <- stage_1_events |>
       mutate(
         event_id = "",
         event_stage_in_path = 0,
@@ -700,10 +689,10 @@ add_central_node_if_there_are_many_starting_points <- function(sequences,
         recipient_id = sender_id,
         sender_id = "",
         recipient_sector = sender_sector,
-        !!sym(recipient_museum_grouping_dimension) := .data[[sender_museum_grouping_dimension]],
-        !!sym(sender_museum_grouping_dimension) := "dummy",
-        !!sym(recipient_grouping_dimension) := .data[[sender_grouping_dimension]],
-        !!sym(sender_grouping_dimension) := "",
+        recipient_museum_group = sender_museum_group,
+        sender_museum_group = "dummy",
+        recipient_group = sender_group,
+        sender_group = "",
         recipient_position = sender_position,
         sender_position = 0,
         recipient_quantity = sender_quantity,
@@ -790,12 +779,7 @@ merge_from_and_to_nodes <- function(from_nodes, to_nodes) {
     )
 }
 
-get_edges <- function(sequences,
-                      nodes,
-                      sender_grouping_dimension,
-                      sender_museum_grouping_dimension,
-                      recipient_grouping_dimension,
-                      recipient_museum_grouping_dimension) {
+get_edges <- function(sequences, nodes) {
   museum_sizes = c(
     "huge"=3e6,
     "large"=5e5,
@@ -812,15 +796,15 @@ get_edges <- function(sequences,
     group_by(
       from,
       to,
-      .data[[sender_grouping_dimension]],
-      .data[[sender_museum_grouping_dimension]],
-      .data[[recipient_grouping_dimension]],
-      .data[[recipient_museum_grouping_dimension]]
+      sender_group,
+      sender_museum_group,
+      recipient_group,
+      recipient_museum_group,
     ) |>
     summarize(count = n()) |>
     ungroup() |>
     mutate(label=count)
-  sequences |>
+  edges <- sequences |>
     mutate(
       size_mid = ifelse(is.na(collection_estimated_size), 1, collection_estimated_size),
       size_max = ifelse(is.na(collection_estimated_size_max), 1, collection_estimated_size_max),
@@ -830,10 +814,10 @@ get_edges <- function(sequences,
       sender_id,
       from,
       to,
-      .data[[sender_grouping_dimension]],
-      .data[[sender_museum_grouping_dimension]],
-      .data[[recipient_grouping_dimension]],
-      .data[[recipient_museum_grouping_dimension]]
+      sender_group,
+      sender_museum_group,
+      recipient_group,
+      recipient_museum_group
     ) |>
     summarize(
       # this initial summing of transaction sizes is from each individual sender to each recipient type
@@ -845,10 +829,10 @@ get_edges <- function(sequences,
     group_by(
       from,
       to,
-      .data[[sender_grouping_dimension]],
-      .data[[sender_museum_grouping_dimension]],
-      .data[[recipient_grouping_dimension]],
-      .data[[recipient_museum_grouping_dimension]]
+      sender_group,
+      sender_museum_group,
+      recipient_group,
+      recipient_museum_group
     ) |>
     summarize(
       # the totals can now be summed for edges from each sender type to each recipient type
@@ -877,6 +861,7 @@ get_edges <- function(sequences,
     mutate(label="") |>
     rbind(count_edges) |>
     left_join(nodes |> select(from=id, from_sector_label=sector_label), by="from")
+  edges
 }
 
 pathway_dendrogram <- function(layout, show_transaction_counts) {
