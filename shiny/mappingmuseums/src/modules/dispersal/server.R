@@ -94,7 +94,7 @@ dispersalServer <- function(id) {
     })
 
     museum_grouping_field <- reactive({
-      if (input$groupingMuseums == "All museums") {
+      if (input$groupingMuseums == "All") {
         return("all")
       } else if (input$groupingMuseums == "Size") {
         return("size")
@@ -109,19 +109,7 @@ dispersalServer <- function(id) {
       }
     })
     scatter_grouping_field <- reactive({
-      if (input$groupingMuseums == "All") {
-        return("initial_museum_all")
-      } else if (input$groupingMuseums == "Size") {
-        return("initial_museum_size")
-      } else if (input$groupingMuseums == "Governance") {
-        return("initial_museum_governance_broad")
-      } else if (input$groupingMuseums == "Accreditation") {
-        return("initial_museum_accreditation")
-      } else if (input$groupingMuseums == "Subject Matter") {
-        return("initial_museum_subject_broad")
-      } else if (input$groupingMuseums == "Country/Region") {
-        return("initial_museum_region")
-      }
+      paste0("initial_museum_", museum_grouping_field())
     })
 
     transaction_type_filter <- reactive({input$transactionTypeFilter})
