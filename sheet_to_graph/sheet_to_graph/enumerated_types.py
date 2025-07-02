@@ -34,6 +34,18 @@ uk_constituents = {
     "",
 }
 
+english_regions = {
+    "South West",
+    "South East",
+    "London",
+    "East of England",
+    "East Midlands",
+    "West Midlands",
+    "Yorks & Humber",
+    "North West",
+    "North East",
+}
+
 collection_statuses = {
     "": "",
     "C": "collection",

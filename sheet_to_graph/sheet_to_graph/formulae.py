@@ -10,6 +10,7 @@ from .enumerated_types import (
     museum_max_sizes,
     museum_min_sizes,
     uk_constituents,
+    english_regions,
 )
 
 
@@ -106,6 +107,21 @@ def get_region(table, row_index, postcode_column, postcode_to_lat_long):
     return region
 
 
+def get_country(table, row_index):
+    region = table[row_index]["region"]
+    if region in english_regions:
+        return "England"
+    if region in {
+        "Wales",
+        "Scotland",
+        "Northern Ireland",
+        "Channel Islands",
+        "Isle of Man",
+    }:
+        return region
+    return table[row_index]["actor_country"]
+
+
 def get_local_authority_code(table, row_index, postcode_column, postcode_to_lat_long):
     postcode = table[row_index][postcode_column]
     return postcode_to_lat_long.get_local_authority_code(postcode)
@@ -147,7 +163,7 @@ def get_actor_location(table, row_index, places):
         village_town_city=actor["actor_town_city"],
         county=actor["actor_county"],
         postcode=actor["actor_postcode"],
-        country=actor["actor_country"],
+        actor_country=actor["actor_country"],
     )[0]["place_id"]
 
 

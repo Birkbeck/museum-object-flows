@@ -153,7 +153,7 @@ if __name__ == "__main__":
             OptionalColumn("address_3", property_of="place_id"),
             Column("village_town_city", property_of="place_id"),
             Column("county", property_of="place_id"),
-            OptionalColumn("country", property_of="place_id"),
+            OptionalColumn("actor_country", property_of="place_id"),
             Column("postcode", property_of="place_id"),
             FormulaColumn(
                 "longitude",
@@ -188,6 +188,11 @@ if __name__ == "__main__":
                 formula=lambda table, row_index: formulae.get_region(
                     table, row_index, "postcode", postcode_to_lat_long
                 ),
+                property_of="place_id",
+            ),
+            FormulaColumn(
+                "country",
+                formula=lambda table, row_index: formulae.get_country(table, row_index),
                 property_of="place_id",
             ),
             FormulaColumn(
@@ -666,7 +671,7 @@ if __name__ == "__main__":
             "actor_town_city": "village_town_city",
             "actor_county": "county",
             "actor_postcode": "postcode",
-            "actor_country": "country",
+            "actor_country": "actor_country",
         },
     )
     places.import_from_list_of_lists(
@@ -678,7 +683,7 @@ if __name__ == "__main__":
             "village_town_city": "village_town_city",
             "english_county": "county",
             "postcode": "postcode",
-            "nation": "country",
+            "country": "actor_country",
         },
     )
     places.import_from_list_of_lists(

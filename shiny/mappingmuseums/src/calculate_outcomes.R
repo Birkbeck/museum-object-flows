@@ -9,6 +9,14 @@ sizes_mapping <- c(
 non_outcome_events <- c(
   "recorded"
 )
+uk_countries <- c(
+  "England",
+  "Scotland",
+  "Wales",
+  "Northern Ireland",
+  "Channel Islands",
+  "Isle of Man"
+)
 
 get_outcomes_by_museum <- function(events_table) {
   initial_events <- events_table |>
@@ -37,7 +45,7 @@ get_outcomes_by_museum <- function(events_table) {
         is.na(destination_latitude) ~ "unknown",
         origin_lad==destination_lad ~ "within the same LAD",
         origin_region==destination_region ~ "within the same region",
-        origin_country==destination_country ~ "within the UK",
+        destination_country %in% uk_countries ~ "within the UK",
         TRUE ~ "abroad"
       )
     )
@@ -162,7 +170,7 @@ get_outcomes_by_museum_for_type <- function(events_with_numeric_collection_size,
           `within the same LAD` >= 50 ~ "mostly within the same LAD",
           `within the same region` >= 50 ~ "mostly within the same region",
           `within the UK` >= 50 ~ "mostly within the UK",
-          `abroad` >= 50 ~ "mostly abroad",
+          #`abroad` >= 50 ~ "mostly abroad",
           .data[[unknown_label]] >= 50 ~ paste("mostly", unknown_label),
           TRUE ~ "mixed destinations"
         )
