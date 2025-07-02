@@ -113,9 +113,13 @@ events_per_museum_boxplots <- function(data_by_museum) {
       data=data_by_museum |> filter(number_of_events >= 20),
       aes(label=museum_name),
       position=position_jitter(width=0.8, height=0.1, seed=1)
-      #nudge_x = 0.5
     ) +
     coord_flip() +
+    labs(
+      title="Events per Museum by Subject Matter",
+      x="Subject matter of museum",
+      y="Number of events recorded"
+    ) +
     standard_bars_theme
 }
 
@@ -132,6 +136,37 @@ events_per_museum <- function() {
       title="Granularity of Data Collected for Each Museum",
       x="Number of events recorded",
       y="Number of collections/objects recorded"
+    ) +
+    standard_bars_theme
+}
+
+events_per_collection <- function() {
+  summary <- dispersal_events |>
+    select(
+      museum_id=initial_museum_id,
+      museum_name=initial_museum_name,
+      subject_broad=initial_museum_subject_broad,
+      collection_id,
+      event_stage_in_path
+    ) |>
+    group_by(museum_id, museum_name, collection_id, subject_broad) |>
+    summarize(sequence_length = max(event_stage_in_path)) |>
+    ungroup() |>
+    group_by(museum_id, museum_name, subject_broad) |>
+    summarize(events_per_collection=mean(sequence_length)) |>
+    ungroup()
+  ggplot(summary, aes(x=subject_broad, y=events_per_collection)) +
+    geom_boxplot() +
+    geom_text(
+      data=summary |> filter(events_per_collection >= 3),
+      aes(label=museum_name),
+      position=position_jitter(width=0.8, height=0.1, seed=1)
+    ) +
+    coord_flip() +
+    labs(
+      title="Events per Collection by Subject Matter",
+      x="Subject matter of museum",
+      y="Events per collection"
     ) +
     standard_bars_theme
 }
@@ -156,9 +191,15 @@ collection_distribution_bars <- function() {
     summarize(
       number_of_collections = n()
     ) |>
-    ungroup()
+    ungroup() |>
+    mutate(
+      percentage_of_collections = round(number_of_collections / sum(number_of_collections) * 100, 1)
+    )
   ggplot(summary, aes(x=number_of_collections, y=collection_size)) +
-    geom_col() +
+    geom_col(fill="lightblue") +
+    geom_text(
+      aes(label=paste0(number_of_collections, "\n(", percentage_of_collections, "%)"))
+    ) +
     scale_y_discrete(
       limits=c(
         "1",
@@ -176,7 +217,7 @@ collection_distribution_bars <- function() {
     ) +
     labs(
       title="Distribution of Collection Sizes",
-      y="Collection Size Quantity/Category",
+      y="Collection size quantity/category",
       x="Number of collections in size category"
     ) +
     standard_bars_theme
@@ -205,7 +246,6 @@ collection_distribution_heatmap <- function() {
     group_by(initial_museum_subject_broad, collection_size) |>
     summarize(
       count = n()
-      # TODO: calculate count per number of museums in category
     ) |>
     ungroup() |>
     left_join(museums_in_subject, by="initial_museum_subject_broad") |>
@@ -234,8 +274,8 @@ collection_distribution_heatmap <- function() {
     heatmap_fill_scale +
     labs(
       title="Distribution of Collection Sizes (collections per museum)",
-      y="Museum Subject Matter",
-      x="Collection Size Quantity/Category"
+      y="Subject matter of museum",
+      x="Collection size quantity/category"
     ) +
     standard_bars_theme +
     theme(

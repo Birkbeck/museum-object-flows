@@ -13,8 +13,8 @@ dataServer <- function(id) {
       events_per_museum_boxplots(data_by_museum)
     })
 
-    output$eventsPerMuseum <- renderPlotly({
-      events_per_museum()
+    output$eventsPerCollection <- renderPlotly({
+      events_per_collection()
     })
 
     output$collectionGranularity <- renderPlotly({
@@ -40,7 +40,7 @@ dataServer <- function(id) {
           region,
           accreditation,
         )
-    })
+    }, options=list(pageLength=100))
 
   })
 }

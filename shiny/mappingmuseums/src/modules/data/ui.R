@@ -9,7 +9,7 @@ dataUI <- function(id) {
     plotlyOutput(NS(id, "eventsPerMuseumMatrix"), width="80%", height="1000px"),
 
     p(
-      "Why are there 84 museums with no events/collections data? 530 museums (including Channel Islands) definitely closed in or after 2000. Our database records 458 super events with at least one event. 5 of these super events are for museums that are no longer considered closed. 7 of these super events are for museums that might not have closed in or after 2000. 530 - (458 - 5 - 7) = 84"
+      "Why are there 84 museums with no events/collections data? 530 museums (including Channel Islands) definitely closed in or after 2000. Our database records 458 super events with at least one event. 5 of these super events are for museums that are no longer considered closed. 7 of these super events are for museums that might not have closed in or after 2000. 530 - (458 - 5 - 7) = 84. Should those 5 and or 7 museums' dispersal events be excluded from analysis?"
     ),
 
     p(
@@ -20,11 +20,16 @@ dataUI <- function(id) {
     ),
     plotlyOutput(NS(id, "eventsPerMuseumBoxplots"), width="80%", height="1000px"),
 
+    p(
+      "Most collections are involved in one event (the median number of events per collection is 1 for most subject matters). The above outlier museums therefore tend to have a similar number of events and number of collections. Some collections are involved in multiple sequential events. Some museums therefore have multiple events per collection. These are mostly different from the above outliers and are from a wider range of subject matters. When considering multi-step sequences, these outlier museums will dominate the later steps."
+    ),
+    plotlyOutput(NS(id, "eventsPerCollection"), width="80%", height="1000px"),
+
     hr(),
 
     h3("Collection Sizes"),
     p(
-      "Collections recorded in the data also have a wide range of sizes. The chart below shows the distribution of these. Approximately x% of collections have been given a numeric size and the remainder are described according to the proportion they took up of their original museum's total collection."
+      "Collections recorded in the data also have a wide range of sizes. The chart below shows the distribution of these. About 30% of collections have been given a numeric size (number of objects). The rest are only described according to the proportion they took up of their original museum's total collection."
     ),
     plotlyOutput(NS(id, "collectionGranularity"), width="80%", height="1000px"),
 
