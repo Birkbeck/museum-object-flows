@@ -189,6 +189,7 @@ museums_including_crown_dependencies <- museums_including_crown_dependencies |>
     outcome_event_type=factor(outcome_event_type, museum_attribute_ordering),
     outcome_recipient_type=factor(outcome_recipient_type, museum_attribute_ordering),
     outcome_recipient_count=factor(outcome_recipient_count, museum_attribute_ordering),
+    outcome_largest_share=factor(outcome_largest_share, museum_attribute_ordering),
     outcome_destination_type=factor(outcome_destination_type, museum_attribute_ordering)
   )
 museums <- museums_including_crown_dependencies |>

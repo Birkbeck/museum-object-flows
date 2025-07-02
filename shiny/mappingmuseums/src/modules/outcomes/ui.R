@@ -1,7 +1,7 @@
 outcomesUI <- function(id) {
   fluidPage(
 
-    text_box("OUTCOMES-TOP"),
+    text_box("OUTCOMES-TOP - note: there are some cases of 'all' the collection going to multiple recipients. These are either due to a recipient having a quantity of 'many' or because of collections being divided into all+few or all+some"),
 
     sidebarLayout(
       sidebarPanel(

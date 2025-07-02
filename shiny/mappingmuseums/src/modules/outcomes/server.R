@@ -47,7 +47,7 @@ outcomesServer <- function(id) {
       } else if (input$outcomeType == "Outcome recipient count") {
         return("outcome_recipient_count")
       } else if (input$outcomeType == "Outcome largest recipient share") {
-        return("largest_share")
+        return("outcome_largest_share")
       } else {
         return("outcome_destination_type")
       }
@@ -64,7 +64,7 @@ outcomesServer <- function(id) {
       } else if (input$museumGrouping == "Outcome destination type") {
         return("outcome_destination_type")
       } else if (input$museumGrouping == "Outcome largest recipient share") {
-        return("largest_share")
+        return("outcome_largest_share")
       } else if (input$museumGrouping == "Core reason for closure") {
         return("reason_core")
       }
@@ -247,6 +247,7 @@ outcomesServer <- function(id) {
           outcome_event_type,
           outcome_recipient_type,
           outcome_recipient_count,
+          outcome_largest_share,
           outcome_destination_type,
           size,
           governance,
