@@ -95,8 +95,6 @@ calculate_largest_recipient_shares <- function(events) {
   categorical_max <- function(sizes) {
     largest <- "NA"
     for (size in sizes) {
-      print(size)
-      print(sizes_mapping[size])
       if (is.na(size)) {
         next
       }

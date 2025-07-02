@@ -17,6 +17,25 @@ core_actor_types_with_children <- c(
   "transport provider"
 )
 
+calculate_distance <- function(lat1, lon1, lat2, lon2) {
+  # Convert degrees to radians
+  radians <- function(degrees) {
+    degrees * pi / 180
+  }
+  earth_radius <- 6371
+  dlat <- radians(lat2 - lat1)
+  dlon <- radians(lon2 - lon1)
+  lat1 <- radians(lat1)
+  lat2 <- radians(lat2)
+  # Haversine formula
+  a <- sin(dlat / 2) * sin(dlat / 2) +
+    cos(lat1) * cos(lat2) * sin(dlon / 2) * sin(dlon / 2)
+  c <- 2 * atan2(sqrt(a), sqrt(1 - a))
+  # Distance in kilometers
+  distance <- earth_radius * c
+  return(distance)
+}
+
 dispersal_events_csv <- "data/query_results/dispersal_events.csv"
 dispersal_events <- read_csv(dispersal_events_csv) |>
   mutate(
@@ -51,7 +70,26 @@ dispersal_events <- read_csv(dispersal_events_csv) |>
     ),
     initial_museum_all = "all",
     sender_all = ifelse(!is.na(sender_size), "all", NA),
-    recipient_all = ifelse(!is.na(recipient_size), "all", NA)
+    recipient_all = ifelse(!is.na(recipient_size), "all", NA),
+    distance=calculate_distance(
+      origin_latitude,
+      origin_longitude,
+      destination_latitude,
+      destination_longitude
+    ),
+    distance_category=case_when(
+      is.na(distance) ~ "unknown",
+      distance == 0 ~ "0",
+      distance < 1 ~ "0 - 1",
+      distance < 10 ~ "1 - 10",
+      distance < 100 ~ "10 - 100",
+      distance < 1000 ~ "100 - 1,000",
+      TRUE ~ "1,001+"
+    ),
+    distance_category=factor(
+      distance_category,
+      c("all", "unknown", "0", "0 - 1", "1 - 10", "10 - 100", "100 - 1,000", "1,001+")
+    )
   )
 
 senders <- dispersal_events |>

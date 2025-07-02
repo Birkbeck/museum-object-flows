@@ -8,6 +8,8 @@ sequences_table_choices <- c(
   "event_type_uncertainty",
   "event_is_change_of_custody",
   "event_is_change_of_ownership",
+  "distance",
+  "distance_category",
   "collection_id",
   "collection_description",
   "collection_status",
@@ -47,6 +49,7 @@ sequences_table_selected <- c(
   "event_date_from",
   "event_date_to",
   "event_type",
+  "distance_category",
   "collection_description",
   "collection_status",
   "collection_types",
@@ -1358,25 +1361,6 @@ movements_map_small <- function(layout) {
     )
 }
 
-calculate_distance <- function(lat1, lon1, lat2, lon2) {
-  # Convert degrees to radians
-  radians <- function(degrees) {
-    degrees * pi / 180
-  }
-  earth_radius <- 6371
-  dlat <- radians(lat2 - lat1)
-  dlon <- radians(lon2 - lon1)
-  lat1 <- radians(lat1)
-  lat2 <- radians(lat2)
-  # Haversine formula
-  a <- sin(dlat / 2) * sin(dlat / 2) +
-    cos(lat1) * cos(lat2) * sin(dlon / 2) * sin(dlon / 2)
-  c <- 2 * atan2(sqrt(a), sqrt(1 - a))
-  # Distance in kilometers
-  distance <- earth_radius * c
-  return(distance)
-}
-
 get_movements_distances <- function(sequences,
                                     start_position,
                                     end_position,
@@ -1388,9 +1372,7 @@ get_movements_distances <- function(sequences,
   data <- sequences |>
     filter(
       sender_position >= start_position,
-      recipient_position <= end_position,
-      !is.na(origin_x),
-      !is.na(destination_x)
+      recipient_position <= end_position
     ) |>
     mutate(
       all="all",
@@ -1400,19 +1382,6 @@ get_movements_distances <- function(sequences,
         sender_name,
         "to:",
         recipient_name
-      ),
-      distance=calculate_distance(
-        origin_latitude,
-        origin_longitude,
-        destination_latitude,
-        destination_longitude
-      ),
-      distance_category=case_when(
-        distance < 1 ~ "0 - 1",
-        distance < 10 ~ "1 - 10",
-        distance < 100 ~ "10 - 100",
-        distance < 1000 ~ "100 - 1,000",
-        TRUE ~ "1,000+"
       )
     )
   data_2_way <- data |>
@@ -1490,7 +1459,7 @@ movements_heatmap <- function(jumps, grouping_dimension, grouping_title, count_o
     geom_tile(aes(fill=.data[[count_or_percentage]]), show.legend=FALSE) +
     geom_text(aes(label=.data[[count_or_percentage]])) +
     geom_hline(aes(yintercept=1.5), colour="black") +
-    geom_vline(aes(xintercept=4.5), colour="black") +
+    geom_vline(aes(xintercept=1.5), colour="black") +
     scale_y_discrete(labels=tidy_labels) +
     heatmap_fill_scale +
     labs(
@@ -1515,7 +1484,7 @@ movements_heatmap_small <- function(jumps, grouping_dimension, grouping_title) {
     geom_tile(aes(fill=count)) +
     geom_text(aes(label=count)) +
     geom_hline(aes(yintercept=1.5), colour="black") +
-    geom_vline(aes(xintercept=4.5), colour="black") +
+    geom_vline(aes(xintercept=1.5), colour="black") +
     scale_y_discrete(labels=tidy_labels) +
     heatmap_fill_scale +
     labs(
