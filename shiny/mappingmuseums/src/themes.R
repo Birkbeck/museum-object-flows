@@ -121,7 +121,7 @@ country_region_colours <- c(
   "West Midlands"="#E69F00",
   "South East"="#F0E442",
   "South West"="#F0E442",
-  "East"="#F0E442",
+  "East of England"="#F0E442",
   "London"="#F0E442"
 )
 accreditation_colours <- c(
