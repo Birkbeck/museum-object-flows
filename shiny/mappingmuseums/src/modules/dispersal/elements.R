@@ -1387,9 +1387,12 @@ get_movements_distances <- function(sequences,
         "to:",
         recipient_name
       )
-    )
+    ) |>
+    group_by(collection_id) |>
+    filter(event_stage_in_path==max(event_stage_in_path)) |>
+    ungroup()
   data_2_way <- data |>
-    group_by(.data[[grouping_dimension]], distance_category) |>
+    group_by(.data[[grouping_dimension]], distance_from_initial_museum_category) |>
     summarize(
       count = n()
     ) |>
@@ -1399,7 +1402,7 @@ get_movements_distances <- function(sequences,
       percentage_y = round(count / sum(count) * 100, 1)
     ) |>
     ungroup() |>
-    group_by(distance_category) |>
+    group_by(distance_from_initial_museum_category) |>
     mutate(
       percentage_x = round(count / sum(count) * 100, 1)
     ) |>
@@ -1417,12 +1420,12 @@ get_movements_distances <- function(sequences,
     ) |>
     ungroup() |>
     mutate(
-      distance_category = "all",
+      distance_from_initial_museum_category = "all",
       percentage = round(count / sum(count) * 100, 1),
       percentage_y = 100
     )
   data_distance_totals <- data |>
-    group_by(distance_category) |>
+    group_by(distance_from_initial_museum_category) |>
     summarize(
       count = n()
     ) |>
@@ -1441,7 +1444,7 @@ get_movements_distances <- function(sequences,
     ) |>
     mutate(
       !!sym(grouping_dimension) := "all",
-      distance_category = "all",
+      distance_from_initial_museum_category = "all",
       percentage = 100,
       percentage_x = 100,
       percentage_y = 100
@@ -1456,7 +1459,7 @@ movements_heatmap <- function(jumps, grouping_dimension, grouping_title, count_o
   ggplot(
     jumps,
     aes(
-      x=distance_category,
+      x=distance_from_initial_museum_category,
       y=factor(.data[[grouping_dimension]], museum_attribute_ordering)
     )
   ) +
@@ -1468,7 +1471,7 @@ movements_heatmap <- function(jumps, grouping_dimension, grouping_title, count_o
     heatmap_fill_scale +
     labs(
       title = "Distances travelled by collections\n<sup>(Number of collections/objects)</sup>",
-      x = "Distance travelled (km)",
+      x = "Distance from initial museum (km)",
       y = paste0("Origin museum (", grouping_title, ")")
     ) +
     standard_bars_theme +
@@ -1481,7 +1484,7 @@ movements_heatmap_small <- function(jumps, grouping_dimension, grouping_title) {
   ggplot(
     jumps,
     aes(
-      x=distance_category,
+      x=distance_from_initial_museum_category,
       y=factor(.data[[grouping_dimension]], museum_attribute_ordering)
     )
   ) +
