@@ -1165,8 +1165,7 @@ get_map_layout <- function(sequences,
     distinct() |>
     filter(
       !is.na(x),
-      !is.na(y),
-      y < 2e6
+      !is.na(y)
     )
 
   edges <- sequences |>
@@ -1294,6 +1293,8 @@ movements_map <- function(layout) {
       alpha=0.9
     ) +
     coord_fixed() +
+    map_x_scale +
+    map_y_scale +
     scale_size_continuous(range=c(5, 20)) +
     scale_linewidth(range=c(0.5,5)) +
     public_private_fill_scale +
@@ -1344,6 +1345,8 @@ movements_map_small <- function(layout) {
       alpha=0.9
     ) +
     coord_fixed() +
+    map_x_scale +
+    map_y_scale +
     scale_size_continuous(range=c(5, 20)) +
     scale_linewidth(range=c(0.5,5)) +
     public_private_fill_scale +

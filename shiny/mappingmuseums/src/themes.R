@@ -214,3 +214,11 @@ generate_title <- function(title_text) {
     return(title_text)
   }
 }
+
+# restrict maps to britain and ireland
+BNG_MIN_X <- -5e4
+BNG_MAX_X <- 7e5
+BNG_MIN_Y <- 0
+BNG_MAX_Y <- 1.3e6
+map_x_scale <- scale_x_continuous(limits=c(BNG_MIN_X, BNG_MAX_X))
+map_y_scale <- scale_y_continuous(limits=c(BNG_MIN_Y, BNG_MAX_Y))
