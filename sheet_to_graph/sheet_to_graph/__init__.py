@@ -9,3 +9,4 @@ from .neo4j_connection import Neo4jConnection
 from .postcode_to_lat_long import PostcodeToLatLong
 from .queries import Queries
 from .table import Table
+from .wikidata_connection import WikidataConnection

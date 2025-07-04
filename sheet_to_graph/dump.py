@@ -243,6 +243,10 @@ RETURN {
       (recipient_type)-[:SUB_TYPE_OF*0..]->(recipient_general_type:Type)-[:SUB_TYPE_OF]->(:Type {type_name: "actor"})
       | recipient_general_type.type_name
     ][0],
+    initial_museum_latitude: initial_museum_location.latitude,
+    initial_museum_longitude: initial_museum_location.longitude,
+    initial_museum_x: initial_museum_location.bng_x,
+    initial_museum_y: initial_museum_location.bng_y,
     origin_id: origin.place_id,
     origin_latitude: origin.latitude,
     origin_longitude: origin.longitude,

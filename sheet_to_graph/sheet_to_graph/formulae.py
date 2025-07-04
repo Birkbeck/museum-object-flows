@@ -79,32 +79,89 @@ def get_place_id(table, row_index):
     return f"place{row_index}"
 
 
-def get_longitude(table, row_index, postcode_column, postcode_to_lat_long):
-    postcode = table[row_index][postcode_column]
-    return postcode_to_lat_long.get_longitude(postcode)
+def get_longitude(
+    postcode_to_lat_long,
+    table,
+    row_index,
+    postcode_column,
+    town_city_column,
+    county_column,
+    country_column,
+):
+    return postcode_to_lat_long.get_longitude(
+        postcode=table[row_index][postcode_column],
+        town_city=table[row_index][town_city_column],
+        county=table[row_index][county_column],
+        country=table[row_index][country_column],
+    )
 
 
-def get_latitude(table, row_index, postcode_column, postcode_to_lat_long):
-    postcode = table[row_index][postcode_column]
-    return postcode_to_lat_long.get_latitude(postcode)
+def get_latitude(
+    postcode_to_lat_long,
+    table,
+    row_index,
+    postcode_column,
+    town_city_column,
+    county_column,
+    country_column,
+):
+    return postcode_to_lat_long.get_latitude(
+        postcode=table[row_index][postcode_column],
+        town_city=table[row_index][town_city_column],
+        county=table[row_index][county_column],
+        country=table[row_index][country_column],
+    )
 
 
-def get_bng_x(table, row_index, postcode_column, postcode_to_lat_long):
-    postcode = table[row_index][postcode_column]
-    return postcode_to_lat_long.get_bng_x(postcode)
+def get_bng_x(
+    postcode_to_lat_long,
+    table,
+    row_index,
+    postcode_column,
+    town_city_column,
+    county_column,
+    country_column,
+):
+    return postcode_to_lat_long.get_bng_x(
+        postcode=table[row_index][postcode_column],
+        town_city=table[row_index][town_city_column],
+        county=table[row_index][county_column],
+        country=table[row_index][country_column],
+    )
 
 
-def get_bng_y(table, row_index, postcode_column, postcode_to_lat_long):
-    postcode = table[row_index][postcode_column]
-    return postcode_to_lat_long.get_bng_y(postcode)
+def get_bng_y(
+    postcode_to_lat_long,
+    table,
+    row_index,
+    postcode_column,
+    town_city_column,
+    county_column,
+    country_column,
+):
+    return postcode_to_lat_long.get_bng_y(
+        postcode=table[row_index][postcode_column],
+        town_city=table[row_index][town_city_column],
+        county=table[row_index][county_column],
+        country=table[row_index][country_column],
+    )
 
 
-def get_region(table, row_index, postcode_column, postcode_to_lat_long):
-    postcode = table[row_index][postcode_column]
-    region = postcode_to_lat_long.get_region(postcode)
-    if region == "Yorkshire and The Humber":
-        return "Yorks & Humber"
-    return region
+def get_region(
+    postcode_to_lat_long,
+    table,
+    row_index,
+    postcode_column,
+    town_city_column,
+    county_column,
+    country_column,
+):
+    return postcode_to_lat_long.get_region(
+        postcode=table[row_index][postcode_column],
+        town_city=table[row_index][town_city_column],
+        county=table[row_index][county_column],
+        country=table[row_index][country_column],
+    )
 
 
 def get_country(table, row_index):
@@ -122,14 +179,38 @@ def get_country(table, row_index):
     return table[row_index]["actor_country"]
 
 
-def get_local_authority_code(table, row_index, postcode_column, postcode_to_lat_long):
-    postcode = table[row_index][postcode_column]
-    return postcode_to_lat_long.get_local_authority_code(postcode)
+def get_local_authority_code(
+    postcode_to_lat_long,
+    table,
+    row_index,
+    postcode_column,
+    town_city_column,
+    county_column,
+    country_column,
+):
+    return postcode_to_lat_long.get_local_authority_code(
+        postcode=table[row_index][postcode_column],
+        town_city=table[row_index][town_city_column],
+        county=table[row_index][county_column],
+        country=table[row_index][country_column],
+    )
 
 
-def get_local_authority_name(table, row_index, postcode_column, postcode_to_lat_long):
-    postcode = table[row_index][postcode_column]
-    return postcode_to_lat_long.get_local_authority_name(postcode)
+def get_local_authority_name(
+    postcode_to_lat_long,
+    table,
+    row_index,
+    postcode_column,
+    town_city_column,
+    county_column,
+    country_column,
+):
+    return postcode_to_lat_long.get_local_authority_name(
+        postcode=table[row_index][postcode_column],
+        town_city=table[row_index][town_city_column],
+        county=table[row_index][county_column],
+        country=table[row_index][country_column],
+    )
 
 
 def get_subject_matter_broad(table, row_index):

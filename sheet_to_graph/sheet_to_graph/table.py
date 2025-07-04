@@ -113,6 +113,8 @@ class Table:
         """
         new_rows = []
         for row in self.rows:
+            if "longitude" not in row:
+                print(row)
             if keep_blank_rows and all(
                 [
                     row[column.name] == ""

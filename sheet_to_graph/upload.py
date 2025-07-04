@@ -9,7 +9,13 @@ The script does the following:
 
 import json
 
-from sheet_to_graph import Column, FileLoader, PostcodeToLatLong, Table
+from sheet_to_graph import (
+    Column,
+    FileLoader,
+    PostcodeToLatLong,
+    Table,
+    WikidataConnection,
+)
 from sheet_to_graph.columns import (
     BooleanColumn,
     ExtendedDateTimeColumn,
@@ -45,8 +51,7 @@ if __name__ == "__main__":
         file_loader = FileLoader(config)
 
     postcode_to_lat_long = PostcodeToLatLong(
-        "postcode_directory.json",
-        "../data/ONSPD_FEB_2024_UK",
+        "../data/ONSPD_FEB_2024_UK", WikidataConnection()
     )
 
     print("Defining Tables")
@@ -158,35 +163,65 @@ if __name__ == "__main__":
             FormulaColumn(
                 "longitude",
                 formula=lambda table, row_index: formulae.get_longitude(
-                    table, row_index, "postcode", postcode_to_lat_long
+                    postcode_to_lat_long,
+                    table,
+                    row_index,
+                    postcode_column="postcode",
+                    town_city_column="village_town_city",
+                    county_column="county",
+                    country_column="actor_country",
                 ),
                 property_of="place_id",
             ),
             FormulaColumn(
                 "latitude",
                 formula=lambda table, row_index: formulae.get_latitude(
-                    table, row_index, "postcode", postcode_to_lat_long
+                    postcode_to_lat_long,
+                    table,
+                    row_index,
+                    postcode_column="postcode",
+                    town_city_column="village_town_city",
+                    county_column="county",
+                    country_column="actor_country",
                 ),
                 property_of="place_id",
             ),
             FormulaColumn(
                 "bng_x",
                 formula=lambda table, row_index: formulae.get_bng_x(
-                    table, row_index, "postcode", postcode_to_lat_long
+                    postcode_to_lat_long,
+                    table,
+                    row_index,
+                    postcode_column="postcode",
+                    town_city_column="village_town_city",
+                    county_column="county",
+                    country_column="actor_country",
                 ),
                 property_of="place_id",
             ),
             FormulaColumn(
                 "bng_y",
                 formula=lambda table, row_index: formulae.get_bng_y(
-                    table, row_index, "postcode", postcode_to_lat_long
+                    postcode_to_lat_long,
+                    table,
+                    row_index,
+                    postcode_column="postcode",
+                    town_city_column="village_town_city",
+                    county_column="county",
+                    country_column="actor_country",
                 ),
                 property_of="place_id",
             ),
             FormulaColumn(
                 "region",
                 formula=lambda table, row_index: formulae.get_region(
-                    table, row_index, "postcode", postcode_to_lat_long
+                    postcode_to_lat_long,
+                    table,
+                    row_index,
+                    postcode_column="postcode",
+                    town_city_column="village_town_city",
+                    county_column="county",
+                    country_column="actor_country",
                 ),
                 property_of="place_id",
             ),
@@ -198,14 +233,26 @@ if __name__ == "__main__":
             FormulaColumn(
                 "local_authority_code",
                 formula=lambda table, row_index: formulae.get_local_authority_code(
-                    table, row_index, "postcode", postcode_to_lat_long
+                    postcode_to_lat_long,
+                    table,
+                    row_index,
+                    postcode_column="postcode",
+                    town_city_column="village_town_city",
+                    county_column="county",
+                    country_column="actor_country",
                 ),
                 property_of="place_id",
             ),
             FormulaColumn(
                 "local_authority_name",
                 formula=lambda table, row_index: formulae.get_local_authority_name(
-                    table, row_index, "postcode", postcode_to_lat_long
+                    postcode_to_lat_long,
+                    table,
+                    row_index,
+                    postcode_column="postcode",
+                    town_city_column="village_town_city",
+                    county_column="county",
+                    country_column="actor_country",
                 ),
                 property_of="place_id",
             ),
@@ -289,7 +336,13 @@ if __name__ == "__main__":
             FormulaColumn(
                 "region",
                 formula=lambda table, row_index: formulae.get_region(
-                    table, row_index, "actor_postcode", postcode_to_lat_long
+                    postcode_to_lat_long,
+                    table,
+                    row_index,
+                    postcode_column="actor_postcode",
+                    town_city_column="actor_town_city",
+                    county_column="actor_county",
+                    country_column="actor_country",
                 ),
                 property_of="actor_id",
             ),
@@ -749,9 +802,14 @@ OPTIONAL MATCH (preceding_event:Event)-[:PRECEDES]->(sent_to_auction)
 MATCH (sender:Actor)<-[:HAS_SENDER]-(sent_to_auction)-[:HAS_RECIPIENT]->(auction_house:Actor)
     <-[has_auction_house_sender:HAS_SENDER]-(sold_at_auction)
 DELETE has_auction_house_sender
+WITH preceding_event, sent_to_auction, sold_at_auction, sender, auction_house
+MATCH (origin:Place)<-[:HAS_ORIGIN]-(sent_to_auction)-[:HAS_DESTINATION]->(destination:Place)
+    <-[has_auction_house_origin:HAS_ORIGIN]-(sold_at_auction)
+DELETE has_auction_house_origin
 SET sold_at_auction.stage_in_path = sent_to_auction.stage_in_path
 CREATE (preceding_event)-[:PRECEDES]->(sold_at_auction)
 CREATE (sender)<-[:HAS_SENDER]-(sold_at_auction)-[:HAS_ENABLER]->(auction_house)
+CREATE (origin)<-[:HAS_ORIGIN]-(sold_at_auction)
 DETACH DELETE sent_to_auction
     """  # this will orphan events involving a sub-collection that are not sold after being sent to auction house
 
@@ -765,8 +823,13 @@ WITH sent_to_auction, precedes, was_removed_from, sold_at_auction
 MATCH (sender:Actor)<-[:HAS_SENDER]-(sent_to_auction)-[:HAS_RECIPIENT]->(auction_house:Actor)
     <-[has_auction_house_sender:HAS_SENDER]-(sold_at_auction)
 DELETE has_auction_house_sender
+WITH sent_to_auction, precedes, was_removed_from, sold_at_auction, sender, auction_house
+MATCH (origin:Place)<-[:HAS_ORIGIN]-(sent_to_auction)-[:HAS_DESTINATION]->(destination:Place)
+    <-[has_auction_house_origin:HAS_ORIGIN]-(sold_at_auction)
+DELETE has_auction_house_origin
 SET sold_at_auction.stage_in_path = sent_to_auction.stage_in_path
 CREATE (sender)<-[:HAS_SENDER]-(sold_at_auction)-[:HAS_ENABLER]->(auction_house)
+CREATE (origin)<-[:HAS_ORIGIN]-(sold_at_auction)
 DELETE was_removed_from
 DELETE precedes 
     """
@@ -783,10 +846,15 @@ OPTIONAL MATCH (preceding_event:Event)-[:PRECEDES]->(sent_to_auction)
 MATCH (sender:Actor)<-[:HAS_SENDER]-(sent_to_auction)-[:HAS_RECIPIENT]->(auction_house:Actor)
     <-[has_auction_house_sender:HAS_SENDER]-(sold_at_auction)
 DELETE has_auction_house_sender
+WITH sent_to_auction, precedes, was_removed_from, sold_at_auction, sender, auction_house
+MATCH (origin:Place)<-[:HAS_ORIGIN]-(sent_to_auction)-[:HAS_DESTINATION]->(destination:Place)
+    <-[has_auction_house_origin:HAS_ORIGIN]-(sold_at_auction)
+DELETE has_auction_house_origin
 DELETE precedes 
 SET sold_at_auction.stage_in_path = sent_to_auction.stage_in_path
 CREATE (preceding_event)-[:PRECEDES]->(sold_at_auction)
 CREATE (sender)<-[:HAS_SENDER]-(sold_at_auction)-[:HAS_ENABLER]->(auction_house)
+CREATE (origin)<-[:HAS_ORIGIN]-(sold_at_auction)
     """
 
     sheet_to_graph = TablesToGraph(

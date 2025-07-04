@@ -3,6 +3,8 @@ import json
 
 from bng_latlon import WGS84toOSGB36
 
+from .wikidata_connection import WikidataConnection
+
 
 class PostcodeToLatLong:
     """This class is used to define a mapping from postcodes to latitudes, longitudes,
@@ -19,7 +21,7 @@ class PostcodeToLatLong:
     regions_map = {
         "E12000001": "North East",
         "E12000002": "North West",
-        "E12000003": "Yorkshire and The Humber",
+        "E12000003": "Yorks & Humber",
         "E12000004": "East Midlands",
         "E12000005": "West Midlands",
         "E12000006": "East of England",
@@ -33,48 +35,108 @@ class PostcodeToLatLong:
         "M99999999": "Isle of Man",
     }
 
-    def __init__(self, saved_geo_info_file_name: str, postcode_directory_path: str):
-        self.saved_geo_info_file_name = saved_geo_info_file_name
+    def __init__(
+        self, postcode_directory_path: str, wikidata_connection: WikidataConnection
+    ):
         self.postcode_directory_path = postcode_directory_path
-        self.saved_geo_info = None
+        self.wikidata_connection = wikidata_connection
+        self._saved_lookups = {}
         self._lads_map = None
+        self._lads_to_regions_map = None
 
-    def get_latitude(self, postcode: str):
-        return self._get_geo_info(postcode)["lat"]
+    @property
+    def postcode_lookup(self):
+        return self.get_lookup("postcode")
 
-    def get_longitude(self, postcode: str):
-        return self._get_geo_info(postcode)["long"]
+    @property
+    def city_country_lookup(self):
+        return self.get_lookup("city_country")
 
-    def get_bng_x(self, postcode: str):
-        return self._get_geo_info(postcode)["bng_x"]
+    @property
+    def town_county_lookup(self):
+        return self.get_lookup("town_county")
 
-    def get_bng_y(self, postcode: str):
-        return self._get_geo_info(postcode)["bng_y"]
-
-    def get_region(self, postcode: str):
-        return self._get_geo_info(postcode)["region"]
-
-    def get_local_authority_code(self, postcode: str):
-        return self._get_geo_info(postcode)["lad23cd"]
-
-    def get_local_authority_name(self, postcode: str):
-        return self._get_geo_info(postcode)["lad23nm"]
-
-    def _get_geo_info(self, postcode: str):
-        if self.saved_geo_info is None:
-            self._open_saved_geo_info()
+    def get_lookup(self, lookup_name: str):
         try:
-            return self.saved_geo_info[postcode]
+            return self._saved_lookups[lookup_name]
         except KeyError:
-            self._add_new_postcode(postcode)
-            return self._get_geo_info(postcode)
+            self._open_lookup(lookup_name)
+        return self._saved_lookups[lookup_name]
 
-    def _open_saved_geo_info(self):
+    def get_latitude(self, postcode: str, town_city: str, county: str, country: str):
+        return self._get_geo_info(postcode, town_city, county, country)["lat"]
+
+    def get_longitude(self, postcode: str, town_city: str, county: str, country: str):
+        lon = self._get_geo_info(postcode, town_city, county, country)["long"]
+        return lon
+
+    def get_bng_x(self, postcode: str, town_city: str, county: str, country: str):
+        return self._get_geo_info(postcode, town_city, county, country)["bng_x"]
+
+    def get_bng_y(self, postcode: str, town_city: str, county: str, country: str):
+        return self._get_geo_info(postcode, town_city, county, country)["bng_y"]
+
+    def get_region(self, postcode: str, town_city: str, county: str, country: str):
+        return self._get_geo_info(postcode, town_city, county, country)["region"]
+
+    def get_local_authority_code(
+        self, postcode: str, town_city: str, county: str, country: str
+    ):
+        return self._get_geo_info(postcode, town_city, county, country)["lad23cd"]
+
+    def get_local_authority_name(
+        self, postcode: str, town_city: str, county: str, country: str
+    ):
+        return self._get_geo_info(postcode, town_city, county, country)["lad23nm"]
+
+    def _get_geo_info(self, postcode: str, town_city: str, county: str, country: str):
+        if country not in ("", "England", "Scotland", "Wales", "Northern Ireland"):
+            # find coordinates of non-UK locations
+            key = f"{town_city}, {country}" if town_city != "" else country
+            try:
+                info = self.city_country_lookup[key]
+            except KeyError:
+                self._add_new_city_country(key)
+                info = self._get_geo_info(postcode, town_city, county, country)
+            return info
+        if postcode != "":
+            # find geographical information for UK locations with postcodes
+            try:
+                info = self.postcode_lookup[postcode]
+            except KeyError:
+                self._add_new_postcode(postcode)
+                info = self._get_geo_info(postcode, town_city, county, country)
+            return info
+        if town_city != "" or county != "":
+            # find geographical information for UK locations without postcodes
+            if town_city != "" and county != "":
+                key = f"{town_city}, {county}"
+            elif town_city != "":
+                key = town_city
+            else:
+                key = county
+            try:
+                info = self.town_county_lookup[key]
+            except KeyError:
+                self._add_new_town_county(key)
+                info = self._get_geo_info(postcode, town_city, county, country)
+            return info
+        return {
+            "lat": None,
+            "long": None,
+            "bng_x": None,
+            "bng_y": None,
+            "region": None,
+            "lad23cd": None,
+            "lad23nm": None,
+        }
+
+    def _open_lookup(self, lookup_name: str):
         try:
-            with open(self.saved_geo_info_file_name, "r") as f:
-                self.saved_geo_info = json.load(f)
+            with open(f"{lookup_name}_lookup.json", "r") as f:
+                self._saved_lookups[lookup_name] = json.load(f)
         except (FileNotFoundError, json.decoder.JSONDecodeError):
-            self.saved_geo_info = {}
+            self._saved_lookups[lookup_name] = {}
 
     def _add_new_postcode(self, postcode: str):
         blank_details = {
@@ -87,7 +149,7 @@ class PostcodeToLatLong:
             "lad23nm": None,
         }
         if postcode == "":
-            return self._update_saved_geo_info(postcode, blank_details)
+            return self._update_saved_info("postcode", postcode, blank_details)
         initial_letter = self._get_initial_letters(postcode)
         postcode_file = (
             f"{self.postcode_directory_path}/Data/multi_csv/"
@@ -101,7 +163,8 @@ class PostcodeToLatLong:
                         lat = float(row["lat"])
                         lon = float(row["long"])
                         bng = WGS84toOSGB36(lat, lon)
-                        return self._update_saved_geo_info(
+                        return self._update_saved_info(
+                            "postcode",
                             postcode,
                             {
                                 "lat": lat,
@@ -117,12 +180,80 @@ class PostcodeToLatLong:
             print(f"No postcode directory found for postcode '{initial_letter}'")
         except Exception as e:
             print(str(e))
-        return self._update_saved_geo_info(postcode, blank_details)
+        return self._update_saved_info("postcode", postcode, blank_details)
 
-    def _update_saved_geo_info(self, postcode: str, geo_info: dict):
-        self.saved_geo_info[postcode] = geo_info
-        with open(self.saved_geo_info_file_name, "w") as f:
-            f.write(json.dumps(self.saved_geo_info))
+    def _add_new_city_country(self, key: str):
+        geo_info = {
+            "lat": None,
+            "long": None,
+            "bng_x": None,
+            "bng_y": None,
+            "region": None,
+            "lad23cd": None,
+            "lad23nm": None,
+        }
+        results = self.wikidata_connection.search_entities(key)
+        results = results if results is not None else []
+        for result in results:
+            properties = self.wikidata_connection.get_entity_properties(result["id"])
+            try:
+                coordinates = properties["P625"]
+                geo_info["lat"] = coordinates["latitude"]
+                geo_info["long"] = coordinates["longitude"]
+                bng = WGS84toOSGB36(geo_info["lat"], geo_info["long"])
+                geo_info["bng_x"] = bng[0]
+                geo_info["bng_y"] = bng[1]
+                break
+            except KeyError:
+                continue
+        return self._update_saved_info("city_country", key, geo_info)
+
+    def _add_new_town_county(self, key: str):
+        # town -> located in the administrative territorial entity (P131) -> LAD
+        # -> population (P1082) less than 100,000 then get coordinates (P625)
+        geo_info = {
+            "lat": None,
+            "long": None,
+            "bng_x": None,
+            "bng_y": None,
+            "region": None,
+            "lad23cd": None,
+            "lad23nm": None,
+        }
+        for lad_code, lad_name in self.lads_map.items():
+            lad_name = lad_name.split(", ")[0]  # remove ", City of" from lad names
+            keys = key.split(", ")  # split town/city from county
+            for k in keys:
+                if k == lad_name:
+                    geo_info["lad23cd"] = lad_code
+                    geo_info["lad23nm"] = lad_name
+                    geo_info["region"] = self.lads_to_regions_map[lad_code]
+                    break
+        results = self.wikidata_connection.search_entities(key)
+        results = results if results is not None else []
+        for result in results:
+            properties = self.wikidata_connection.get_entity_properties(result["id"])
+            try:
+                population = int(properties["P1082"]["amount"][1:]) * int(
+                    properties["P1082"]["unit"]
+                )
+                if population < 1e5:
+                    # large towns/cities/counties such as London, Cornwall are too big for accurate coordinates
+                    coordinates = properties["P625"]
+                    geo_info["lat"] = coordinates["latitude"]
+                    geo_info["long"] = coordinates["longitude"]
+                    bng = WGS84toOSGB36(geo_info["lat"], geo_info["long"])
+                    geo_info["bng_x"] = bng[0]
+                    geo_info["bng_y"] = bng[1]
+                break
+            except KeyError:
+                continue
+        return self._update_saved_info("town_county", key, geo_info)
+
+    def _update_saved_info(self, lookup_name: str, key: str, geo_info: dict):
+        self._saved_lookups[lookup_name][key] = geo_info
+        with open(f"{lookup_name}_lookup.json", "w") as f:
+            f.write(json.dumps(self._saved_lookups[lookup_name]))
 
     def _get_initial_letters(self, postcode: str):
         letters = ""
@@ -140,8 +271,29 @@ class PostcodeToLatLong:
                 f"{self.postcode_directory_path}/Documents/{lads_map_file_name}"
             )
             with open(lads_map_file, "r") as f:
-                postcode_table = csv.DictReader(f)
+                lad_table = csv.DictReader(f)
                 self._lads_map = {
-                    row["\ufeffLAD23CD"]: row["LAD23NM"] for row in postcode_table
+                    row["\ufeffLAD23CD"]: row["LAD23NM"] for row in lad_table
+                }
+        return self._lads_map
+
+    @property
+    def lads_to_regions_map(self):
+        def tidy_region_name(region_name: str):
+            region_name = region_name.split(" (")[0]
+            if region_name == "Yorkshire and The Humber":
+                region_name = "Yorks & Humber"
+            return region_name
+
+        if self._lads_to_regions_map is None:
+            lads_map_file_name = "LAD23_LAU121_ITL321_ITL221_ITL121_UK_LU.csv"
+            lads_map_file = (
+                f"{self.postcode_directory_path}/Documents/{lads_map_file_name}"
+            )
+            with open(lads_map_file, "r") as f:
+                lad_table = csv.DictReader(f)
+                self._lads_map = {
+                    row["\ufeffLAD23CD"]: tidy_region_name(row["ITL121NM"])
+                    for row in lad_table
                 }
         return self._lads_map
