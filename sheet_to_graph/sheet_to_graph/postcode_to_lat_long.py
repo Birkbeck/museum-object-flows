@@ -283,6 +283,8 @@ class PostcodeToLatLong:
             region_name = region_name.split(" (")[0]
             if region_name == "Yorkshire and The Humber":
                 region_name = "Yorks & Humber"
+            if region_name == "East":
+                region_name = "East of England"
             return region_name
 
         if self._lads_to_regions_map is None:
@@ -292,8 +294,8 @@ class PostcodeToLatLong:
             )
             with open(lads_map_file, "r") as f:
                 lad_table = csv.DictReader(f)
-                self._lads_map = {
+                self._lads_to_regions_map = {
                     row["\ufeffLAD23CD"]: tidy_region_name(row["ITL121NM"])
                     for row in lad_table
                 }
-        return self._lads_map
+        return self._lads_to_regions_map
