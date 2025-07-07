@@ -19,7 +19,7 @@ reasonsUI <- function(id) {
 
         form_item(
           "Reason type level",
-          "<p>Select how reasons for closure should be displayed on the diagrams.</p><p><strong>Top-level:</strong> the most general categories for closure reasons.</p><p><strong>Mid-level:</strong> Categories in between the most general and most specific categories for closure reasons.</p> <p><strong>Low-level:</strong> the most specific categories for closure reasons.</p>",
+          tooltip_reason_type_level,
           selectInput(
             NS(id, "reasonLevel"),
             label="",
@@ -30,7 +30,7 @@ reasonsUI <- function(id) {
 
         form_item(
           "Group museums by (for heatmaps only)",
-          "<p>For the 2-dimensional heatmap.</p><p>Select which museum attribute to show on the <i>x</i>-axis.</p>",
+          tooltip_secondary_attribute,
           disabled(
             selectInput(
               NS(id, "museumGrouping"),
@@ -45,7 +45,7 @@ reasonsUI <- function(id) {
 
         form_item(
           "Reason core category",
-          "<p>Show only museums where at least one of their reasons for closure belongs to the selected reason core categories.</p>",
+          tooltip_reason_filter,
           pickerInput(
             NS(id, "reasonFilter"),
             label="",
@@ -62,7 +62,7 @@ reasonsUI <- function(id) {
 
         form_item(
           "Museum governance",
-          "<p>The governance structure of the museum</p>",
+          tooltip_museum_governance,
           pickerInput(
             NS(id, "governanceFilter"), 
             "",
@@ -79,7 +79,7 @@ reasonsUI <- function(id) {
         
         form_item(
           "Museum size",
-          "<p>The size of the museum. Museum sizes are based on approximate annual visitor numbers:</p><p><strong>Small: </strong>0 - 10,000 annual visitors.</p><p><strong>Medium: </strong>10,000 - 50,000 annual visitors</p><p><strong>Large: </strong>50,000 - 1,000,000 annual visitors.</p><p><strong>Huge: </strong>More than 1,000,000 annual visitors.</p>",
+          tooltip_museum_size,
           pickerInput(
             NS(id, "sizeFilter"), 
             "",
@@ -96,7 +96,7 @@ reasonsUI <- function(id) {
         
         form_item(
           "Museum subject",
-          "<p>The subject matter of the museum.</p>",
+          tooltip_museum_subject,
           pickerInput(
             NS(id, "subjectFilter"), 
             "",
@@ -113,7 +113,7 @@ reasonsUI <- function(id) {
         
         form_item(
           "Museum subject (specific)",
-          "<p>Specific categories of museum subject matter.</p>",
+          tooltip_museum_subject_specific,
           pickerInput(
             NS(id, "subjectSpecificFilter"), 
             "",
@@ -130,7 +130,7 @@ reasonsUI <- function(id) {
         
         form_item(
           "Museum country/region",
-          "<p>Where in the United Kingdom the museum is located.</p>",
+          tooltip_museum_country_region,
           pickerInput(
             NS(id, "regionFilter"), 
             "",
@@ -147,7 +147,7 @@ reasonsUI <- function(id) {
         
         form_item(
           "Museum accreditation",
-          "<p>Whether or not the museum was accredited at the time of closure.</p>",
+          tooltip_museum_accreditation,
           pickerInput(
             NS(id, "accreditationFilter"), 
             "",

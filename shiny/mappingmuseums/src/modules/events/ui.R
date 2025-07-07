@@ -17,7 +17,7 @@ eventsUI <- function(id) {
 
         form_item(
           "Main axis",
-          "<p>Select which part of the event to view on the y-axis</p>",
+          tooltip_main_attribute_events,
           selectInput(
             NS(id, "yAxis"),
             label="",
@@ -28,7 +28,7 @@ eventsUI <- function(id) {
         
         form_item(
           "Secondary axis",
-          "<p>Select which part of the event to view on the x-axis</p>",
+          tooltip_secondary_attribute_events,
           selectInput(
             NS(id, "xAxis"),
             label="",
@@ -39,7 +39,7 @@ eventsUI <- function(id) {
         
         form_item(
           "Display",
-          "<p><strong>Steps in path:</strong> View intermediate actors in the sequences of ownership and/or custody changes</p><p><strong>First and last actors:</strong> View only the initial museum and the last known actor in the sequence.</p>",
+          tooltip_steps_or_last,
           radioButtons(
             NS(id, "stepsOrLast"),
             label="",
@@ -51,7 +51,7 @@ eventsUI <- function(id) {
 
         form_item(
           "Stepwise events",
-          "<p>Select the start and end point of sequences. Step 1 shows the initial museums where collections originated.</p><p>Use the slider to increase the number of steps away from the museum shown on the diagram.</p>",
+          tooltip_stepwise_events,
           pickerInput(
             NS(id, "stagesInPath"),
             "",
@@ -68,11 +68,7 @@ eventsUI <- function(id) {
 
         form_item(
           "Counts or percentages",
-          "<p><strong>Number of events:</strong> The number of events with the event/participant types</p>
-<p><strong>Percentage of events:</strong> The percentage of all events with the event/participant types.</p>
-<p><strong>Rowwise percentages:</strong> The percentage of all events with each y-axis attribute that have each x-axis attribute</p>
-<p><strong>Columnwise percentages:</strong> The percentage of all events with each x-axis attribute that have each y-axis attribute</p>
-",
+          tooltip_count_or_percentage_events,
           radioButtons(
             inputId = NS(id, "countOrPercentage"),
             label = "",
@@ -87,7 +83,7 @@ eventsUI <- function(id) {
 
         form_item(
           "Group events by",
-          "<p>Select which level of the event hierarchy should be used to classify events.</p>",
+          tooltip_group_events_level,
           selectInput(
             NS(id, "eventGrouping"),
             label="",
@@ -98,7 +94,7 @@ eventsUI <- function(id) {
 
         form_item(
           "Group actors by",
-          "<p>Select which level of the actor hierarchy should be used to classify actors.</p>",
+          tooltip_group_actors_level,
           selectInput(
             NS(id, "actorGrouping"),
             label="",
@@ -109,7 +105,7 @@ eventsUI <- function(id) {
         
         form_item(
           "Group museums by",
-          "<p>Select which attribute museums should be grouped by</p>",
+          tooltip_group_museums_by,
           selectInput(
             NS(id, "museumGrouping"),
             label="",
@@ -122,7 +118,7 @@ eventsUI <- function(id) {
         
         form_item(
           "Event type",
-          "<p>Show only events of a specified type.</p>",
+          tooltip_event_types,
           pickerInput(
             NS(id, "eventTypeFilter"), 
             "",
@@ -139,7 +135,7 @@ eventsUI <- function(id) {
         
         form_item(
           "Sender type",
-          "<p>Show only events with a sender of a specified type.</p>",
+          tooltip_sender_types,
           pickerInput(
             NS(id, "senderTypeFilter"), 
             "",
@@ -156,7 +152,7 @@ eventsUI <- function(id) {
         
         form_item(
           "Recipient type",
-          "<p>Show only events with a recipient of a specified type.</p>",
+          tooltip_recipient_types,
           pickerInput(
             NS(id, "recipientTypeFilter"), 
             "",
@@ -173,7 +169,7 @@ eventsUI <- function(id) {
         
         form_item(
           "Collection type",
-          "<p>Show only events with a collection of a specified type.</p><p>Some collections have more than one type. Any collection which has at least one of the types selected in this filter will contribute to the chart.</p>",
+          tooltip_collection_type,
           pickerInput(
             NS(id, "collectionTypeFilter"), 
             "",
@@ -190,7 +186,7 @@ eventsUI <- function(id) {
 
         form_item(
           "Collection status",
-          "<p>Show only events with a collection of a specified status.</p>",
+          tooltip_collection_status,
           pickerInput(
             NS(id, "collectionStatusFilter"), 
             "",
@@ -207,7 +203,7 @@ eventsUI <- function(id) {
         
         form_item(
           "Initial museum governance",
-          "<p>The governance structure of the museum</p>",
+          tooltip_museum_governance,
           pickerInput(
             NS(id, "governanceFilter"), 
             "",
@@ -224,7 +220,7 @@ eventsUI <- function(id) {
         
         form_item(
           "Initial museum size",
-          "<p>The size of the museum. Museum sizes are based on approximate annual visitor numbers:</p><p><strong>Small: </strong>0 - 10,000 annual visitors.</p><p><strong>Medium: </strong>10,000 - 50,000 annual visitors</p><p><strong>Large: </strong>50,000 - 1,000,000 annual visitors.</p><p><strong>Huge: </strong>More than 1,000,000 annual visitors.</p>",
+          tooltip_museum_size,
           pickerInput(
             NS(id, "sizeFilter"), 
             "",
@@ -241,7 +237,7 @@ eventsUI <- function(id) {
         
         form_item(
           "Initial museum subject",
-          "<p>The subject matter of the museum.</p>",
+          tooltip_museum_subject,
           pickerInput(
             NS(id, "subjectFilter"), 
             "",
@@ -258,7 +254,7 @@ eventsUI <- function(id) {
         
         form_item(
           "Initial museum subject (specific)",
-          "<p>Specific categories of museum subject matter.</p>",
+          tooltip_museum_subject_specific,
           pickerInput(
             NS(id, "subjectSpecificFilter"), 
             "",
@@ -275,7 +271,7 @@ eventsUI <- function(id) {
         
         form_item(
           "Initial museum country/region",
-          "<p>Where in the United Kingdom the museum is located.</p>",
+          tooltip_museum_country_region,
           pickerInput(
             NS(id, "regionFilter"), 
             "",
@@ -292,7 +288,7 @@ eventsUI <- function(id) {
         
         form_item(
           "Initial museum accreditation",
-          "<p>Whether or not the museum was accredited at the time of closure.</p>",
+          tooltip_museum_accreditation,
           pickerInput(
             NS(id, "accreditationFilter"), 
             "",

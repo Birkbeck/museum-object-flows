@@ -33,7 +33,7 @@ changesUI <- function(id) {
 
         form_item(
           "Main museum attribute",
-          "<p>Select which attribute to group museums by</p>",
+          tooltip_main_attribute,
           selectInput(
             NS(id, "mainAxis"),
             label="",
@@ -44,7 +44,7 @@ changesUI <- function(id) {
 
         form_item(
           "Secondary museum attribute (for heatmaps only)",
-          "<p>Select a second museum attribute to group museums by on the horizontal axis of the heatmap.</p>",
+          tooltip_secondary_attribute,
           disabled(
             selectInput(
               NS(id, "secondAxis"),
@@ -61,7 +61,7 @@ changesUI <- function(id) {
 
         form_item(
           "Museum governance",
-          "<p>The governance structure of the museum</p>",
+          tooltip_museum_governance,
           pickerInput(
             NS(id, "governanceFilter"), 
             "",
@@ -78,7 +78,7 @@ changesUI <- function(id) {
         
         form_item(
           "Museum size",
-          "<p>The size of the museum. Museum sizes are based on approximate annual visitor numbers:</p><p><strong>Small: </strong>0 - 10,000 annual visitors.</p><p><strong>Medium: </strong>10,000 - 50,000 annual visitors</p><p><strong>Large: </strong>50,000 - 1,000,000 annual visitors.</p><p><strong>Huge: </strong>More than 1,000,000 annual visitors.</p>",
+          tooltip_museum_size,
           pickerInput(
             NS(id, "sizeFilter"), 
             "",
@@ -95,7 +95,7 @@ changesUI <- function(id) {
         
         form_item(
           "Museum subject",
-          "<p>The subject matter of the museum.</p>",
+          tooltip_museum_subject,
           pickerInput(
             NS(id, "subjectFilter"), 
             "",
@@ -112,7 +112,7 @@ changesUI <- function(id) {
         
         form_item(
           "Museum subject (specific)",
-          "<p>Specific categories of museum subject matter.</p>",
+          tooltip_museum_subject_specific,
           pickerInput(
             NS(id, "subjectSpecificFilter"), 
             "",
@@ -129,7 +129,7 @@ changesUI <- function(id) {
         
         form_item(
           "Museum country/region",
-          "<p>Where in the United Kingdom the museum is located.</p>",
+          tooltip_museum_country_region,
           pickerInput(
             NS(id, "regionFilter"), 
             "",
@@ -146,7 +146,7 @@ changesUI <- function(id) {
         
         form_item(
           "Museum accreditation",
-          "<p>Whether or not the museum was accredited at the time of closure.</p>",
+          tooltip_museum_accreditation,
           pickerInput(
             NS(id, "accreditationFilter"), 
             "",

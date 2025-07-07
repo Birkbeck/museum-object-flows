@@ -17,7 +17,7 @@ outcomesUI <- function(id) {
 
         form_item(
           "Main axis",
-          "<p>Select how outcomes should be displayed on the diagrams.</p><p><strong>Main event:</strong> Show outcomes of closure in terms of events</p><p><strong>Main actor:</strong> Show outcomes of closure in terms of recipients</p>",
+          tooltip_main_attribute_outcomes,
           selectInput(
             NS(id, "outcomeType"),
             label="",
@@ -34,7 +34,7 @@ outcomesUI <- function(id) {
 
         form_item(
           "Secondary axis (for heatmaps only)",
-          "<p>For the 2-dimensional heatmap.</p><p>Select which museum attribute to show on the <i>x</i>-axis.</p>",
+          tooltip_secondary_attribute,
           disabled(
             selectInput(
               NS(id, "museumGrouping"),
@@ -54,8 +54,8 @@ outcomesUI <- function(id) {
         ),
 
         form_item(
-          "Show only outcomes",
-          "<p>Select which outcomes should appear in the visualizations. Removing some outcomes could improve the readability of charts.</p>",
+          "!! Show only outcomes",
+          tooltip_show_only_outcomes,
           pickerInput(
             NS(id, "outcomeFilter"),
             label="",
@@ -76,7 +76,7 @@ outcomesUI <- function(id) {
 
         form_item(
           "Museum governance",
-          "<p>The governance structure of the museum</p>",
+          tooltip_museum_governance,
           pickerInput(
             NS(id, "governanceFilter"), 
             "",
@@ -93,7 +93,7 @@ outcomesUI <- function(id) {
         
         form_item(
           "Museum size",
-          "<p>The size of the museum. Museum sizes are based on approximate annual visitor numbers:</p><p><strong>Small: </strong>0 - 10,000 annual visitors.</p><p><strong>Medium: </strong>10,000 - 50,000 annual visitors</p><p><strong>Large: </strong>50,000 - 1,000,000 annual visitors.</p><p><strong>Huge: </strong>More than 1,000,000 annual visitors.</p>",
+          tooltip_museum_size,
           pickerInput(
             NS(id, "sizeFilter"), 
             "",
@@ -110,7 +110,7 @@ outcomesUI <- function(id) {
         
         form_item(
           "Museum subject",
-          "<p>The subject matter of the museum.</p>",
+          tooltip_museum_subject,
           pickerInput(
             NS(id, "subjectFilter"), 
             "",
@@ -127,7 +127,7 @@ outcomesUI <- function(id) {
         
         form_item(
           "Museum subject (specific)",
-          "<p>Specific categories of museum subject matter.</p>",
+          tooltip_museum_subject_specific,
           pickerInput(
             NS(id, "subjectSpecificFilter"), 
             "",
@@ -144,7 +144,7 @@ outcomesUI <- function(id) {
         
         form_item(
           "Museum country/region",
-          "<p>Where in the United Kingdom the museum is located.</p>",
+          tooltip_museum_country_region,
           pickerInput(
             NS(id, "regionFilter"), 
             "",
@@ -161,7 +161,7 @@ outcomesUI <- function(id) {
         
         form_item(
           "Museum accreditation",
-          "<p>Whether or not the museum was accredited at the time of closure.</p>",
+          tooltip_museum_accreditation,
           pickerInput(
             NS(id, "accreditationFilter"), 
             "",

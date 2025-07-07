@@ -18,8 +18,8 @@ lengthUI <- function(id) {
         div(uiOutput(NS(id, "mainPlotOptions"))),
 
         form_item(
-          "Group museums by",
-          "<p>Select which attribute museums should be grouped by.</p>",
+          "Main attribute",
+          tooltip_main_attribute,
           selectInput(
             NS(id, "museumGrouping"),
             label="",
@@ -32,7 +32,7 @@ lengthUI <- function(id) {
 
         form_item(
           "Museum governance",
-          "<p>The governance structure of the museum</p>",
+          tooltip_museum_governance,
           pickerInput(
             NS(id, "governanceFilter"), 
             "",
@@ -49,7 +49,7 @@ lengthUI <- function(id) {
         
         form_item(
           "Museum size",
-          "<p>The size of the museum. Museum sizes are based on approximate annual visitor numbers:</p><p><strong>Small: </strong>0 - 10,000 annual visitors.</p><p><strong>Medium: </strong>10,000 - 50,000 annual visitors</p><p><strong>Large: </strong>50,000 - 1,000,000 annual visitors.</p><p><strong>Huge: </strong>More than 1,000,000 annual visitors.</p>",
+          tooltip_museum_size,
           pickerInput(
             NS(id, "sizeFilter"), 
             "",
@@ -66,7 +66,7 @@ lengthUI <- function(id) {
         
         form_item(
           "Museum subject",
-          "<p>The subject matter of the museum.</p>",
+          tooltip_museum_subject,
           pickerInput(
             NS(id, "subjectFilter"), 
             "",
@@ -83,7 +83,7 @@ lengthUI <- function(id) {
         
         form_item(
           "Museum subject (specific)",
-          "<p>Specific categories of museum subject matter.</p>",
+          tooltip_museum_subject_specific,
           pickerInput(
             NS(id, "subjectSpecificFilter"), 
             "",
@@ -100,7 +100,7 @@ lengthUI <- function(id) {
         
         form_item(
           "Museum country/region",
-          "<p>Where in the United Kingdom the museum is located.</p>",
+          tooltip_museum_country_region,
           pickerInput(
             NS(id, "regionFilter"), 
             "",
@@ -117,7 +117,7 @@ lengthUI <- function(id) {
         
         form_item(
           "Museum accreditation",
-          "<p>Whether or not the museum was accredited at the time of closure.</p>",
+          tooltip_museum_accreditation,
           pickerInput(
             NS(id, "accreditationFilter"), 
             "",
@@ -134,7 +134,7 @@ lengthUI <- function(id) {
 
         form_item(
           "Example museum",
-          "<p>Select a museum to display its closure timelines.</p>",
+          tooltip_example_museum,
           virtualSelectInput(
             NS(id, "exampleMuseum"),
             "",

@@ -17,7 +17,7 @@ dispersalUI <- function(id) {
 
         form_item(
           "Display",
-          "<p><strong>Steps in path:</strong> View intermediate actors in the sequences of ownership and/or custody changes</p><p><strong>First and last actors:</strong> View only the initial museum and the last known actor in the sequence.</p>",
+          tooltip_steps_or_first_last,
           radioButtons(
             NS(id, "stepsOrFirstLast"),
             label="",
@@ -29,7 +29,7 @@ dispersalUI <- function(id) {
 
         form_item(
           "Steps in path",
-          "<p>Select the start and end point of sequences. Step 1 shows the initial museums where collections originated.</p><p>Use the slider to increase the number of steps away from the museum shown on the diagram.</p>",
+          tooltip_steps_in_path,
           sliderInput(
             NS(id, "stagesInOwnershipPath"),
             label="",
@@ -52,7 +52,7 @@ dispersalUI <- function(id) {
 
         form_item(
           "!! Firepower",
-          "Transactions involving collections originating from Firepower are automatically excluded from the diagrams. Switch on in order to include them.",
+          tooltip_include_firepower,
           switchInput(
             NS(id, "firepower"),
             value=FALSE
@@ -61,7 +61,7 @@ dispersalUI <- function(id) {
 
         form_item(
           "Group actors by",
-          "<p>Select how to group and display actors on the diagram.</p><p>Museums from the Mapping Museums Database are always grouped according to governance.</p><p>Other actors can be grouped according to:</p><p><strong>Actor sector:</strong> The sector of the economy (<i>public</i>, <i>private</i>, <i>third</i>, <i>etc.</i>) that they belong to.</p><p><strong>Most specific actor type:</strong> The most specific actor type that actors are known to belong to.</p><p><strong>Core category actor type:</strong> The core category that they belong to. Refer to the actor types hierarchy to see which types are included as core categories.</p><p><strong>Most general actor type:</strong> The most general actor type that actors are known to belong to (<i>organisation</i>, <i>individual</i>, or <i>historic house</i>).</p>",
+          tooltip_group_actors_by,
           selectInput(
             NS(id, "grouping"),
             label="",
@@ -77,7 +77,7 @@ dispersalUI <- function(id) {
             
         form_item(
           "Group museums by",
-          "<p>Select how to group and display museums on the diagram.</p><p>Museums from the Mapping Museums Database are always grouped according to governance.</p><p>Other actors can be grouped according to:</p><p><strong>Actor sector:</strong> The sector of the economy (<i>public</i>, <i>private</i>, <i>third</i>, <i>etc.</i>) that they belong to.</p><p><strong>Most specific actor type:</strong> The most specific actor type that actors are known to belong to.</p><p><strong>Core category actor type:</strong> The core category that they belong to. Refer to the actor types hierarchy to see which types are included as core categories.</p><p><strong>Most general actor type:</strong> The most general actor type that actors are known to belong to (<i>organisation</i>, <i>individual</i>, or <i>historic house</i>).</p>",
+          tooltip_group_actors_by,
           selectInput(
             NS(id, "groupingMuseums"),
             label="",
@@ -90,7 +90,7 @@ dispersalUI <- function(id) {
 
         form_item(
           "Show transfer types",
-          "<p>Select which transactions should appear on the diagram.</p><p>Most <strong>changes of ownership</strong> are also changes of custody, but occasionally an item is sold without being sent to its new owner.</p><p><strong>Changes of custody</strong> include a wider range of movements than changes of ownership (e.g. <i>loaned</i> and <i>stored</i>).</p><p><strong>End of existence</strong> is represented as a transfer to no recipient.</p>",
+          tooltip_transaction_types,
           pickerInput(
             NS(id, "transactionTypeFilter"), 
             label="",
@@ -107,7 +107,7 @@ dispersalUI <- function(id) {
 
         form_item(
           "Show event types",
-          "<p>Select which (core category) event types should appear on the diagram.</p><p>Refer to the events tab to see which events belong to each core category and for a definition of each event type.</p>",
+          tooltip_event_types,
           pickerInput(
             NS(id, "eventTypeFilter"), 
             "", 
@@ -124,7 +124,7 @@ dispersalUI <- function(id) {
 
         form_item(
           "Show events with uncertainty level",
-          "<p>Filter for events with certain or uncertain types.</p><p><strong>Certain: </strong>Events where the type of event is certain.</p><p><strong>?+: </strong>Events where the type of event is highly likely.</p><p><strong?: </strong>Events where the type of event is probable.</p><p><strong>?-: Events where the type of event is possible.</p>",
+          tooltip_event_uncertainty,
           pickerInput(
             NS(id, "eventTypeUncertaintyFilter"), 
             "", 
@@ -141,7 +141,7 @@ dispersalUI <- function(id) {
 
         form_item(
            "Status of collection involved in events",
-           "<p><strong>Items from a museum's collection: </strong>Items that originally formed part of a now closed museum's collection</p><p><strong>Items loaned to a museum: </strong>Loaned items that were in the custody of a museum when it closed</p><p><strong>Items for handling: </strong>Items that belonged to a now closed museum, but that were not part of the official collection and could be handled for educational purposes.</p><p><strong>Other items: </strong>Items that belonged to a now closed museum, but that were not museum objects. For example display cases and other furniture.</p>",
+           tooltip_collection_status,
            pickerInput(
              NS(id, "collectionStatusFilter"), 
              "", 
@@ -158,7 +158,7 @@ dispersalUI <- function(id) {
             
         form_item(
           "Initial museum",
-          "<p>The initial closed museums from which the depicted sequences begin.</p><p>This field updates with a list of museums according to the filters below.</p><p>It is possible to search for and select an individual museum so that only collection transfers starting at that museum are shown in the diagram.</p>",
+          tooltip_initial_museum,
           virtualSelectInput(
             NS(id, "initialMuseum"),
             "",
@@ -172,7 +172,7 @@ dispersalUI <- function(id) {
 
         form_item(
            "Initial museum governance",
-           "<p>The governance structure of the museum</p>",
+           tooltip_museum_governance,
            pickerInput(
              NS(id, "startGovernanceFilter"), 
              "",
@@ -189,7 +189,7 @@ dispersalUI <- function(id) {
 
         form_item(
           "Initial museum size",
-          "<p>The size of the initial museum. Museum sizes are based on approximate annual visitor numbers:</p><p><strong>Small: </strong>0 - 10,000 annual visitors.</p><p><strong>Medium: </strong>10,000 - 50,000 annual visitors</p><p><strong>Large: </strong>50,000 - 1,000,000 annual visitors.</p><p><strong>Huge: </strong>More than 1,000,000 annual visitors.</p>",
+          tooltip_museum_size,
           pickerInput(
             NS(id, "startSizeFilter"), 
             "",
@@ -206,7 +206,7 @@ dispersalUI <- function(id) {
 
         form_item(
          "Initial museum subject",
-         "<p>The subject matter of the initial museum.</p>",
+         tooltip_museum_subject,
          pickerInput(
            NS(id, "startSubjectFilter"), 
            "",
@@ -222,25 +222,25 @@ dispersalUI <- function(id) {
         ),
             
         form_item(
-           "Initial museum subject (specific)",
-           "<p>Specific categories of museum subject matter.</p>",
-           pickerInput(
-             NS(id, "startSubjectSpecificFilter"), 
-             "",
-             choices=NULL,
-             selected=NULL,
-             options=pickerOptions(
-               actionsBox=TRUE, 
-               size=10,
-               selectedTextFormat="count > 3"
-             ), 
-             multiple=TRUE
-           )
+          "Initial museum subject (specific)",
+          tooltip_museum_subject_specific,
+          pickerInput(
+            NS(id, "startSubjectSpecificFilter"), 
+            "",
+            choices=NULL,
+            selected=NULL,
+            options=pickerOptions(
+              actionsBox=TRUE, 
+              size=10,
+              selectedTextFormat="count > 3"
+            ), 
+            multiple=TRUE
+          )
         ),
 
         form_item(
          "Initial museum country/region",
-         "<p>Where in the United Kingdom the museum is located.</p>",
+         tooltip_museum_country_region,
          pickerInput(
            NS(id, "startRegionFilter"), 
            "",
@@ -256,25 +256,25 @@ dispersalUI <- function(id) {
         ),
 
         form_item(
-           "Initial museum accreditation",
-           "<p>Whether or not the museum was accredited at the time of closure.</p>",
-           pickerInput(
-             NS(id, "startAccreditationFilter"), 
-             "",
-             choices=accreditation_labels$label,
-             selected=accreditation_labels$label,
-             options=pickerOptions(
-               actionsBox=TRUE, 
-               size=10,
-               selectedTextFormat="count > 3"
-             ), 
-             multiple=TRUE
-           )   
+          "Initial museum accreditation",
+          tooltip_museum_accreditation,
+          pickerInput(
+            NS(id, "startAccreditationFilter"), 
+            "",
+            choices=accreditation_labels$label,
+            selected=accreditation_labels$label,
+            options=pickerOptions(
+              actionsBox=TRUE, 
+              size=10,
+              selectedTextFormat="count > 3"
+            ), 
+            multiple=TRUE
+          )   
         ),
 
         form_item(
           "Final destination",
-          "<p>The final actor in the sequence of transfers. The values in this field update according to how actors are grouped on the diagram.</p>",
+          tooltip_final_destination,
           pickerInput(
             NS(id, "sequenceEnd"), 
             "",
@@ -291,7 +291,7 @@ dispersalUI <- function(id) {
 
         form_item(
           "Passes through",
-          "<p>Filter sequences that only pass through specified actors at some point in the sequence of transfers. The values in this field update according to how actors are grouped on the diagram.</p>",
+          tooltip_passes_through,
           pickerInput(
             NS(id, "sequencePassesThrough"), 
             "",
