@@ -5,6 +5,11 @@ glossaryUI <- function(id) {
     h3("Museum Attributes"),
     p("In the visualizations, museums can be grouped according to their attributes: size, governance, subject matter, and accreditation."),
     h4("Size"),
+    p(tags$strong("Small: "), "0 - 10,000 annual visitors."),
+    p(tags$strong("Medium: "), "10,000 - 50,000 annual visitors."),
+    p(tags$strong("Large: "), "50,000 - 1,000,000 annual visitors."),
+    p(tags$strong("Huge: "), "More than 1,000,000 annual visitors."),
+
     p(""),
     h4("Governance"),
     p(""),
