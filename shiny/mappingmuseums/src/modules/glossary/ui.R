@@ -9,6 +9,7 @@ glossaryUI <- function(id) {
     p(tags$strong("Medium: "), "10,000 - 50,000 annual visitors."),
     p(tags$strong("Large: "), "50,000 - 1,000,000 annual visitors."),
     p(tags$strong("Huge: "), "More than 1,000,000 annual visitors."),
+    p(tags$strong("Unknown size: "), "Unknown annual visitors."),
 
     p(""),
     h4("Governance"),
