@@ -337,6 +337,12 @@ eventsServer <- function(id) {
       )
     })
 
+    output$errorMessage <- renderUI({
+      if (nrow(filtered_events_and_participants()) == 0) {
+        p("The filters returned no results. Try less specific filters")
+      }
+    })
+
     output$mainPlot <- renderPlotly({
       event_heatmap(
         events_summary(),

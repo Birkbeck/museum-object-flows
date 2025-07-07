@@ -13,7 +13,7 @@ lengthUI <- function(id) {
           actionButton(NS(id, "reset"), "Reset options")
         ),
 
-        h3("View"),
+        form_subtitle("View", tooltip_view),
 
         div(uiOutput(NS(id, "mainPlotOptions"))),
 
@@ -28,7 +28,7 @@ lengthUI <- function(id) {
           )
         ),
 
-        h3("Filters"),
+        form_subtitle("Filter", tooltip_filter),
 
         form_item(
           "Museum governance",
@@ -148,6 +148,7 @@ lengthUI <- function(id) {
       ),
 
       mainPanel(
+        uiOutput(NS(id, "errorMessage")),
         plotlyOutput(NS(id, "mainPlot"), height="720px", width="100%"),
         uiOutput(NS(id, "mainPlotExplanation")),
         fluidRow(

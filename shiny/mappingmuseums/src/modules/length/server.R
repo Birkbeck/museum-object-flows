@@ -157,6 +157,12 @@ lengthServer <- function(id) {
     observeEvent(input$lengthScatter, { currentMainPlot("lengthScatter") })
     observeEvent(input$exampleTimelines, { currentMainPlot("exampleTimelines") })
 
+    output$errorMessage <- renderUI({
+      if (nrow(filtered_closure_lengths()) == 0) {
+        p("The filters returned no results. Try less specific filters")
+      }
+    })
+
     output$mainPlot <- renderPlotly({
       if (currentMainPlot() == "lengthTileChart") {
         length_tile_chart(lengths_two_way_table(), count_or_percentage(), museum_grouping())

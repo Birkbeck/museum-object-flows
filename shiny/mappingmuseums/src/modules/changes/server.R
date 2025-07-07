@@ -341,6 +341,12 @@ changesServer <- function(id) {
       )
     })
 
+    output$errorMessage <- renderUI({
+      if (nrow(filtered_museums()) == 0) {
+        p("The filters returned no results. Try less specific filters")
+      }
+    })
+
     output$mainPlot <- renderPlotly({
       if (current_main_plot() == "openingsVsClosuresScatter") {
         openings_vs_closures_scatter(

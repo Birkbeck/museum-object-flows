@@ -13,7 +13,7 @@ eventsUI <- function(id) {
           actionButton(NS(id, "reset"), "Reset options")
         ),
 
-        h3("View"),
+        form_subtitle("View", tooltip_view),
 
         form_item(
           "Main axis",
@@ -118,7 +118,7 @@ eventsUI <- function(id) {
           )
         ),
         
-        h3("Filters"),
+        form_subtitle("Filter", tooltip_filter),
         
         form_item(
           "Event type",
@@ -310,6 +310,7 @@ eventsUI <- function(id) {
       ),
       
       mainPanel(
+        uiOutput(NS(id, "errorMessage")),
         plotlyOutput(NS(id, "mainPlot"), width="100%", height="1200px"),
         div(uiOutput(NS(id, "mainPlotExplanation")), style = "margin-top: 20px;")
       )

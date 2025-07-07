@@ -13,7 +13,7 @@ changesUI <- function(id) {
           actionButton(NS(id, "reset"), "Reset options")
         ),
 
-        h3("View"),
+        form_subtitle("View", tooltip_view),
 
         form_item(
           "Time Period",
@@ -57,7 +57,7 @@ changesUI <- function(id) {
 
         uiOutput(NS(id, "mainPlotOptions")),
 
-        h3("Filters"),
+        form_subtitle("Filter", tooltip_filter),
 
         form_item(
           "Museum governance",
@@ -164,6 +164,7 @@ changesUI <- function(id) {
       ),
 
       mainPanel(
+        uiOutput(NS(id, "errorMessage")),
         plotlyOutput(NS(id, "mainPlot"), height="720px", width="100%"),
         uiOutput(NS(id, "mainPlotExplanation")),
         fluidRow(

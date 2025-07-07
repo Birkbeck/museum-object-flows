@@ -273,6 +273,12 @@ snapshotServer <- function(id) {
       )
     })
 
+    output$errorMessage <- renderUI({
+      if (nrow(filtered_museums()) == 0) {
+        p("The filters returned no results. Try less specific filters")
+      }
+    })
+
     output$mainPlot <- renderPlotly({
       if (mainPlot() == "museumMap") {
         museum_map(

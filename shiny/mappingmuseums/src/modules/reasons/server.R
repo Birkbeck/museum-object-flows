@@ -153,6 +153,12 @@ reasonsServer <- function(id) {
       return(input$countOrPercentage)
     })
 
+    output$errorMessage <- renderUI({
+      if (nrow(filtered_reasons()) == 0) {
+        p("The filters returned no results. Try less specific filters")
+      }
+    })
+
     output$mainPlot <- renderUI({
       if (mainPlot() == "reasonsBarChart") {
         ggplotly(

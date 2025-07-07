@@ -373,6 +373,12 @@ dispersalServer <- function(id) {
     observeEvent(input$map, { currentMainPlot("map") })
     observeEvent(input$distances, { currentMainPlot("distances") })
 
+    output$errorMessage <- renderUI({
+      if (nrow(filtered_sequences()) == 0) {
+        p("The filters returned no results. Try less specific filters")
+      }
+    })
+
     output$mainPlotOptions <- renderUI({
       if(currentMainPlot() == "distances") {
         radioButtons(

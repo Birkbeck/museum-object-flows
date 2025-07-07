@@ -16,6 +16,28 @@ $(document).ready(function() {
   });
 });")
 
+form_subtitle <- function(title, content) {
+  tagList(
+    tags$div(
+      tags$h3(
+        style = "display: inline-block; margin-right: 8px;",
+        title
+      ),
+      tags$span(
+        tags$i(
+          class = "fa fa-info-circle",
+          style = "color: #007bff; cursor: pointer; vertical-align: middle;",
+          `data-toggle` = "popover",
+          `data-placement` = "right",
+          title = title,
+          `data-content` = content
+        )
+      )
+    ),
+    tags$script(popover_js)
+  )
+}
+
 form_item <- function(title, content, item) {
   tagList(
     tags$span(

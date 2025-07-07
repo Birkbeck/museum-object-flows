@@ -13,7 +13,7 @@ outcomesUI <- function(id) {
           actionButton(NS(id, "reset"), "Reset options")
         ),
 
-        h3("View"),
+        form_subtitle("View", tooltip_view),
 
         form_item(
           "Main axis",
@@ -72,7 +72,7 @@ outcomesUI <- function(id) {
 
         div(uiOutput(NS(id, "mainPlotOptions"))),
 
-        h3("Filters"),
+        form_subtitle("Filter", tooltip_filter),
 
         form_item(
           "Museum governance",
@@ -178,6 +178,7 @@ outcomesUI <- function(id) {
       ),
 
       mainPanel(
+        uiOutput(NS(id, "errorMessage")),
         div(uiOutput(NS(id, "mainPlot")), style = "height: 1200px; width: 100%;"),
         div(uiOutput(NS(id, "mainPlotExplanation")), style = "margin-top: 20px;"),
         fluidRow(

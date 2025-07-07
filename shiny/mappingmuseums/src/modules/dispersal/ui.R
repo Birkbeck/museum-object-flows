@@ -13,7 +13,7 @@ dispersalUI <- function(id) {
           actionButton(NS(id, "reset"), "Reset options")
         ),
 
-        h3("View"),
+        form_subtitle("View", tooltip_view),
 
         form_item(
           "Display",
@@ -86,7 +86,7 @@ dispersalUI <- function(id) {
           )
         ),
 
-        h3("Filters"),
+        form_subtitle("Filter", tooltip_filter),
 
         form_item(
           "Show transfer types",
@@ -309,6 +309,7 @@ dispersalUI <- function(id) {
       ),
 
       mainPanel(
+        uiOutput(NS(id, "errorMessage")),
         plotlyOutput(NS(id, "mainPlot"), width="100%", height="850px"),
         img(src='actor-sector-key.png', align="left", width="150px"),
         fluidRow(

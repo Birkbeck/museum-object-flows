@@ -160,6 +160,37 @@ outcomesServer <- function(id) {
       return(input$countOrPercentage)
     })
 
+    filtered_museums <- reactive({
+      museums_including_crown_dependencies |>
+        filter(
+          !is.na(outcome_event_type),
+          .data[[outcome_type()]] %in% outcome_filter(),
+          size %in% size_filter_choices(),
+          governance_broad %in% governance_filter_choices(),
+          accreditation %in% accreditation_filter_choices(),
+          subject_broad %in% subject_filter_choices(),
+          subject %in% specific_subject_filter_choices(),
+          region %in% region_filter_choices()
+        )
+    })
+    summary_table <- reactive({
+      closure_outcomes_summary_table(filtered_museums(), outcome_type())
+    })
+    two_way_summary_table <- reactive({
+      closure_outcomes_two_way_summary_table(
+        filtered_museums(), outcome_type(), museum_grouping()
+      )
+    })
+    over_time_table <- reactive({
+      closure_outcomes_over_time_table(filtered_museums(), outcome_type())
+    })
+
+    output$errorMessage <- renderUI({
+      if (nrow(filtered_museums()) == 0) {
+        p("The filters returned no results. Try less specific filters")
+      }
+    })
+
     output$mainPlot <- renderUI({
       if (mainPlot() == "outcomesBarChart") {
         ggplotly(
@@ -186,30 +217,6 @@ outcomesServer <- function(id) {
       }
     })
 
-    filtered_museums <- reactive({
-      museums_including_crown_dependencies |>
-        filter(
-          !is.na(outcome_event_type),
-          .data[[outcome_type()]] %in% outcome_filter(),
-          size %in% size_filter_choices(),
-          governance_broad %in% governance_filter_choices(),
-          accreditation %in% accreditation_filter_choices(),
-          subject_broad %in% subject_filter_choices(),
-          subject %in% specific_subject_filter_choices(),
-          region %in% region_filter_choices()
-        )
-    })
-    summary_table <- reactive({
-      closure_outcomes_summary_table(filtered_museums(), outcome_type())
-    })
-    two_way_summary_table <- reactive({
-      closure_outcomes_two_way_summary_table(
-        filtered_museums(), outcome_type(), museum_grouping()
-      )
-    })
-    over_time_table <- reactive({
-      closure_outcomes_over_time_table(filtered_museums(), outcome_type())
-    })
 
     output$outcomesBarChartSmall <- renderPlot({
       closure_outcomes_bar_chart_small(summary_table(), outcome_type())
