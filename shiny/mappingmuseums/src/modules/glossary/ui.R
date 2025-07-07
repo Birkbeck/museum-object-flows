@@ -8,6 +8,7 @@ glossaryUI <- function(id) {
     p(""),
     h4("Governance"),
     p(""),
+    img(src='governance_types.png', width="80%"),
     h4("Subject Matter"),
     p(""),
     h4("Accreditation"),

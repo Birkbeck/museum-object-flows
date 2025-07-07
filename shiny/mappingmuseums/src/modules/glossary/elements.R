@@ -1,3 +1,57 @@
+governance_taxonomy <- function(governance_types) {
+  governance_edges <- governance_types |>
+    mutate(sub_type_of=ifelse(is.na(sub_type_of), "governance", sub_type_of)) |>
+    arrange(sub_type_of, type_name) |>
+    select(
+      from=sub_type_of,
+      to=type_name
+    )
+
+  graph <- graph_from_data_frame(governance_edges, directed=TRUE)
+  V(graph)$distance_to_root <- distances(graph, v=V(graph), to=which(V(graph)$name == "governance"))
+  max_distance <- max(V(graph)$distance_to_root)
+  layout <- create_layout(graph, layout="dendrogram", circular=FALSE) |>
+    left_join(governance_types |> select(name=type_name, is_broad), by="name")
+  layout$y <- layout$distance_to_root - max_distance
+  layout$x <- -layout$x
+
+  ggraph(layout) + 
+    geom_edge_diagonal(
+      colour="lightgrey",
+      show.legend=FALSE
+    ) +
+    geom_node_point(
+      data=layout,
+      aes(fill=name, colour=is_broad),
+      shape=21,
+      size=4,
+      stroke=2
+    ) +
+    geom_node_text(
+      data = layout |> filter(name != "governance"),
+      aes(label=name),
+      size=4,
+      angle=0,
+      vjust="center",
+      hjust="left",
+      nudge_y=0.05
+    ) +
+    coord_flip() +
+    scale_y_continuous(limits=c(-3,1)) +
+    scale_fill_manual(values=governance_colours, guide="none") +
+    scale_colour_manual(
+      values=c("TRUE"="black", "FALSE"="lightgrey"),
+      labels=c("TRUE"="'broad' governance types", "FALSE"="sub-types of independent museum"),
+      name="",
+      guide=guide_legend(reverse=TRUE),
+      na.translate=FALSE
+    ) +
+    labs(
+      title="Taxonomy of museum governance"
+    ) +
+    taxonomy_theme
+}
+
 actors_taxonomy <- function() {
   # add dummy types to use as spaces between groups
   actor_types <- actor_types |>
@@ -91,7 +145,7 @@ actors_taxonomy <- function() {
   layout$y <- layout$distance_to_root - max_distance
   layout$is_core_category <- layout$name %in% core_actor_types$type_name
   layout$is_dummy <- layout$name %in% dummy_actor_types$type_name
-  
+
   ggraph(layout) + 
     geom_edge_diagonal(
       aes(colour = ifelse(is_to_dummy, "dummy", "normal")),
@@ -127,7 +181,7 @@ actors_taxonomy <- function() {
         "Mixed/Unknown"="lightgrey"
       ), 
       name="",
-      na.value="black"
+      na.value="black",
     ) +
     scale_colour_manual(
       values=c("TRUE"="black", "FALSE"="lightgrey"),

@@ -6,6 +6,7 @@ library(tidyverse)
 library(readr)
 
 source("shiny/mappingmuseums/src/modules/glossary/elements.R")
+source("shiny/mappingmuseums/src/themes.R")
 
 taxonomy_theme <- theme(
   panel.background = element_rect(fill="white"),
@@ -63,11 +64,37 @@ actor_types <- read_csv(actor_types_csv)
 event_types_csv <- "data/query_results/event_types.csv"
 event_types <- read_csv(event_types_csv)
 
+governance_types_csv <- "data/governance_types.csv"
+governance_types <- read_csv(governance_types_csv)
+
+governance_hierarchy <- governance_taxonomy(governance_types)
+ggsave(
+  file="shiny/mappingmuseums/www/governance_types.png",
+  plot=governance_hierarchy,
+  width=14,
+  height=6
+)
+
 actor_type_hierarchy <- actors_taxonomy()
-ggsave(file="shiny/mappingmuseums/www/actor_types.png", plot=actor_type_hierarchy, width=14, height=16)
+ggsave(
+  file="shiny/mappingmuseums/www/actor_types.png",
+  plot=actor_type_hierarchy,
+  width=14,
+  height=16
+)
 
 event_type_hierarchy <- events_taxonomy()
-ggsave(file="shiny/mappingmuseums/www/event_types.png", plot=event_type_hierarchy, width=14, height=12)
+ggsave(
+  file="shiny/mappingmuseums/www/event_types.png",
+  plot=event_type_hierarchy,
+  width=14,
+  height=12
+)
 
 reason_type_hierarchy <- reasons_taxonomy()
-ggsave(file="shiny/mappingmuseums/www/reason_types.png", plot=reason_type_hierarchy, width=14, height=16)
+ggsave(
+  file="shiny/mappingmuseums/www/reason_types.png",
+  plot=reason_type_hierarchy,
+  width=14,
+  height=16
+)

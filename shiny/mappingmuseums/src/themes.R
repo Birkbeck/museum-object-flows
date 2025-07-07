@@ -15,9 +15,9 @@ public_private_colours <- c(
   "mostly hybrid"="#EAC8DB",
   "unknown"="darkgrey"
 )
-public_private_colours_js <- JS(
-  'd3.scaleOrdinal().domain(["private", "third", "public", "university", "hybrid", "unknown"]).range(["#E69F00", "#0072B2", "#D81B60", "#009E73", "#CC79A7", "darkgrey"])'
-)
+#public_private_colours_js <- JS(
+#  'd3.scaleOrdinal().domain(["private", "third", "public", "university", "hybrid", "unknown"]).range(["#E69F00", "#0072B2", "#D81B60", "#009E73", "#CC79A7", "darkgrey"])'
+#)
 
 public_private_fill_scale <- scale_fill_manual(
   values=public_private_colours,
