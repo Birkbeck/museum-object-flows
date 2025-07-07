@@ -84,11 +84,11 @@ dispersal_events <- read_csv(dispersal_events_csv) |>
       distance < 10 ~ "1 - 10",
       distance < 100 ~ "10 - 100",
       distance < 1000 ~ "100 - 1,000",
-      TRUE ~ "1,001+"
+      TRUE ~ "1,000+"
     ),
     distance_category=factor(
       distance_category,
-      c("all", "unknown", "0", "0 - 1", "1 - 10", "10 - 100", "100 - 1,000", "1,001+")
+      c("all", "unknown", "0", "0 - 1", "1 - 10", "10 - 100", "100 - 1,000", "1,000+")
     ),
     distance_from_initial_museum=calculate_distance(
       initial_museum_latitude,
@@ -103,11 +103,11 @@ dispersal_events <- read_csv(dispersal_events_csv) |>
       distance < 10 ~ "1 - 10",
       distance < 100 ~ "10 - 100",
       distance < 1000 ~ "100 - 1,000",
-      TRUE ~ "1,001+"
+      TRUE ~ "1,000+"
     ),
     distance_from_initial_museum_category=factor(
       distance_from_initial_museum_category,
-      c("all", "unknown", "0", "0 - 1", "1 - 10", "10 - 100", "100 - 1,000", "1,001+")
+      c("all", "unknown", "0", "0 - 1", "1 - 10", "10 - 100", "100 - 1,000", "1,000+")
     )
   )
 
