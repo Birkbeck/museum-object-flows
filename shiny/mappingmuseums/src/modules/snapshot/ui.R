@@ -160,7 +160,7 @@ snapshotUI <- function(id) {
         ),
         
         form_item(
-          "Museum country or region",
+          "Museum location",
           tooltip_museum_country_region,
           pickerInput(
             NS(id, "regionFilter"), 

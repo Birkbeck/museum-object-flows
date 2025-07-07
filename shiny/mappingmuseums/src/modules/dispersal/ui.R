@@ -60,7 +60,7 @@ dispersalUI <- function(id) {
         ),
 
         form_item(
-          "Group actors by",
+          "Actors - level of detail",
           tooltip_group_actors_by,
           selectInput(
             NS(id, "grouping"),
@@ -76,7 +76,7 @@ dispersalUI <- function(id) {
         ),
             
         form_item(
-          "Group museums by",
+          "Museums attribute",
           tooltip_group_actors_by,
           selectInput(
             NS(id, "groupingMuseums"),
@@ -140,7 +140,7 @@ dispersalUI <- function(id) {
         ),
 
         form_item(
-           "Status of collection involved in events",
+           "Collection status",
            tooltip_collection_status,
            pickerInput(
              NS(id, "collectionStatusFilter"), 
@@ -239,7 +239,7 @@ dispersalUI <- function(id) {
         ),
 
         form_item(
-         "Initial museum country/region",
+         "Initial museum location",
          tooltip_museum_country_region,
          pickerInput(
            NS(id, "startRegionFilter"), 

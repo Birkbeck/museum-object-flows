@@ -33,7 +33,7 @@ outcomesUI <- function(id) {
         ),
 
         form_item(
-          "Secondary axis (for heatmaps only)",
+          "Museums attribute (for heatmaps only)",
           tooltip_secondary_attribute,
           disabled(
             selectInput(
@@ -143,7 +143,7 @@ outcomesUI <- function(id) {
         ),
         
         form_item(
-          "Museum country/region",
+          "Museum location",
           tooltip_museum_country_region,
           pickerInput(
             NS(id, "regionFilter"), 

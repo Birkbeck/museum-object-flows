@@ -18,7 +18,7 @@ lengthUI <- function(id) {
         div(uiOutput(NS(id, "mainPlotOptions"))),
 
         form_item(
-          "Main attribute",
+          "Museums attribute",
           tooltip_main_attribute,
           selectInput(
             NS(id, "museumGrouping"),
@@ -99,7 +99,7 @@ lengthUI <- function(id) {
         ),
         
         form_item(
-          "Museum country/region",
+          "Museum location",
           tooltip_museum_country_region,
           pickerInput(
             NS(id, "regionFilter"), 

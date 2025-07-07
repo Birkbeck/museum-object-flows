@@ -128,7 +128,7 @@ changesUI <- function(id) {
         ),
         
         form_item(
-          "Museum country/region",
+          "Museum location",
           tooltip_museum_country_region,
           pickerInput(
             NS(id, "regionFilter"), 

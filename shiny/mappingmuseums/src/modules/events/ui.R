@@ -16,7 +16,7 @@ eventsUI <- function(id) {
         form_subtitle("View", tooltip_view),
 
         form_item(
-          "Main axis",
+          "Y-axis",
           tooltip_main_attribute_events,
           selectInput(
             NS(id, "yAxis"),
@@ -27,7 +27,7 @@ eventsUI <- function(id) {
         ),
         
         form_item(
-          "Secondary axis",
+          "X-axis",
           tooltip_secondary_attribute_events,
           selectInput(
             NS(id, "xAxis"),
@@ -50,7 +50,7 @@ eventsUI <- function(id) {
         ),
 
         form_item(
-          "Stepwise events",
+          "Steps in path",
           tooltip_stepwise_events,
           pickerInput(
             NS(id, "stagesInPath"),
@@ -82,7 +82,7 @@ eventsUI <- function(id) {
         ),
 
         form_item(
-          "Group events by",
+          "Events - level of detail",
           tooltip_group_events_level,
           selectInput(
             NS(id, "eventGrouping"),
@@ -93,7 +93,7 @@ eventsUI <- function(id) {
         ),
 
         form_item(
-          "Group actors by",
+          "Actors - level of detail",
           tooltip_group_actors_level,
           selectInput(
             NS(id, "actorGrouping"),
@@ -104,7 +104,7 @@ eventsUI <- function(id) {
         ),
         
         form_item(
-          "Group museums by",
+          "Museums attribute",
           tooltip_group_museums_by,
           selectInput(
             NS(id, "museumGrouping"),
@@ -270,7 +270,7 @@ eventsUI <- function(id) {
         ),
         
         form_item(
-          "Initial museum country/region",
+          "Initial museum location",
           tooltip_museum_country_region,
           pickerInput(
             NS(id, "regionFilter"), 

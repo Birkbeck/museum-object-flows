@@ -18,18 +18,7 @@ reasonsUI <- function(id) {
         div(uiOutput(NS(id, "mainPlotOptions"))),
 
         form_item(
-          "Reason type level",
-          tooltip_reason_type_level,
-          selectInput(
-            NS(id, "reasonLevel"),
-            label="",
-            choices=c("Core categories", "Core categories and their sub-categories", "Most specific"),
-            selected="Core categories"
-          )
-        ),
-
-        form_item(
-          "Group museums by (for heatmaps only)",
+          "Museums attribute (for heatmaps only)",
           tooltip_secondary_attribute,
           disabled(
             selectInput(
@@ -38,6 +27,17 @@ reasonsUI <- function(id) {
               choices=field_names$name,
               selected="Governance"
             )
+          )
+        ),
+
+        form_item(
+          "Reasons - level of detail",
+          tooltip_reason_type_level,
+          selectInput(
+            NS(id, "reasonLevel"),
+            label="",
+            choices=c("Core categories", "Core categories and their sub-categories", "Most specific"),
+            selected="Core categories"
           )
         ),
 
@@ -129,7 +129,7 @@ reasonsUI <- function(id) {
         ),
         
         form_item(
-          "Museum country/region",
+          "Museum location",
           tooltip_museum_country_region,
           pickerInput(
             NS(id, "regionFilter"), 
