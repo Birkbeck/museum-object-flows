@@ -9,7 +9,7 @@ dataUI <- function(id) {
     plotlyOutput(NS(id, "eventsPerMuseumMatrix"), width="80%", height="1000px"),
 
     p(
-      "Why are there 84 museums with no events/collections data? 530 museums (including Channel Islands) definitely closed in or after 2000. Our database records 458 super events with at least one event. 5 of these super events are for museums that are no longer considered closed. 7 of these super events are for museums that might not have closed in or after 2000. 530 - (458 - 5 - 7) = 84. Should those 5 and or 7 museums' dispersal events be excluded from analysis?"
+      "Why are there 91 museums with no events/collections data? 539 museums (including Channel Islands) definitely closed in or after 2000. Our database records 458 super events with at least one event. 3 of these super events are for museums that are no longer considered closed (Baked bean museum of excellence, Charlestown shipwreck and heritage centre, Marshland maritime museum). 7 of these super events are for museums that might not have closed in or after 2000. 539 - (458 - 3 - 7) = 91. Should those 3 and or 7 museums' dispersal events be excluded from analysis?"
     ),
 
     p(

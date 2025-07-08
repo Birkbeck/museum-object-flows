@@ -14,7 +14,7 @@ deploy-app: generate-taxonomies
 	@$(R_CMD) --no-save --no-restore --quiet -e "library(rsconnect); rsconnect::deployApp('$(PATH_TO_APP)', forceUpdate=TRUE)"
 
 load-mm-data:
-	@cd sheet_to_graph && pipenv run load_mapping_museums_data.py
+	@cd sheet_to_graph && pipenv run python load_mapping_museums_data.py
 
 reset-db:
 	@cd sheet_to_graph && pipenv run python reset.py

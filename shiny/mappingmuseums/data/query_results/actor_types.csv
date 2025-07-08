@@ -1,5 +1,5 @@
 unknown_instances,private_instances,public_instances,type_name,is_core_category,university_instances,sub_type_of,hybrid_instances,total_instances,third_instances
-625,992,1243,actor,False,124,,1,5097,2112
+572,1007,1255,actor,False,124,,1,5099,2140
 0,12,1,transport provider,True,0,actor,0,15,2
 0,1,0,shipyard,False,0,transport provider,0,1,0
 0,0,1,transport authority,False,0,transport provider,0,1,0
@@ -41,7 +41,7 @@ unknown_instances,private_instances,public_instances,type_name,is_core_category,
 0,0,0,charity,False,0,other organisation,0,19,19
 0,0,1,broadcaster,False,0,other organisation,0,1,0
 1,0,25,museum service,True,0,actor,0,26,0
-357,795,1028,museum,True,112,actor,0,4349,2057
+304,810,1040,museum,True,112,actor,0,4351,2085
 0,3,31,library/archive,True,3,actor,0,39,2
 0,0,14,library,False,1,library/archive,0,15,0
 0,3,17,archive,False,2,library/archive,0,24,2
