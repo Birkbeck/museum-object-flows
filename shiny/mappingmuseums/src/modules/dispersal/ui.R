@@ -311,7 +311,9 @@ dispersalUI <- function(id) {
       mainPanel(
         uiOutput(NS(id, "errorMessage")),
         plotlyOutput(NS(id, "mainPlot"), width="100%", height="850px"),
-        img(src='actor-sector-key.png', align="left", width="150px"),
+        fluidRow(
+          img(src='actor-sector-key.png', align="left", width="450px")
+        ),
         fluidRow(
           text_box("DISPERSAL-BOTTOM Click on one of the small charts below to see it enlarged in the main panel above.")
         ),
