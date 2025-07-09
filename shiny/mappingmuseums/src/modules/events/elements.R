@@ -242,3 +242,70 @@ event_heatmap <- function(table, x_label, y_label, count_or_percentage) {
     geom_hline(yintercept=1.5) +
     geom_vline(xintercept=1.5)
 }
+
+
+event_origin_destination_heatmap <- function(table, x_label, y_label, count_or_percentage) {
+  table <- dispersal_events |>
+    filter(recipient_type != "N/A") |>
+    mutate(
+      origin_region = case_when(
+        !is.na(origin_region) ~ origin_region,
+        !is.na(origin_country) ~ "abroad",
+        sender_type=="end of existence" ~ "end of existence",
+        recipient_type=="end of existence" & !is.na(sender_region) ~ sender_region,
+        TRUE ~ "unknown"
+      ),
+      destination_region = case_when(
+        !is.na(destination_region) ~ destination_region,
+        !is.na(destination_country) ~ "abroad",
+        recipient_type=="end of existence" ~ "end of existence",
+        TRUE ~ "unknown"
+      )
+    ) |>
+    group_by(origin_region, destination_region) |>
+    summarize(
+      count = n()
+    ) |>
+    ungroup()
+  ordering <- c(
+    "N/A",
+    "unknown",
+    "end of existence",
+    "abroad",
+    "Isle of Man",
+    "Channel Islands",
+    "Northern Ireland",
+    "Wales",
+    "Scotland",
+    "England",
+    "North East",
+    "North West",
+    "Yorks & Humber",
+    "East Midlands",
+    "West Midlands",
+    "East of England",
+    "London",
+    "South East",
+    "South West"
+  )
+  plot <- ggplot(
+    table,
+    aes(
+      x=factor(destination_region, ordering),
+      y=factor(origin_region, ordering),
+      fill=count
+    )
+  ) +
+    geom_tile(show.legend=FALSE) +
+    geom_text(aes(label=count), size=5) +
+    heatmap_fill_scale +
+    labs(
+      title="Event counts according to origin and destination region/country",
+      x="Destination",
+      y="Origin"
+    ) +
+    standard_bars_theme +
+    theme(
+      axis.text.x=element_text(angle=45, hjust=1, vjust=1)
+    )
+}
