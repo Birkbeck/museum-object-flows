@@ -1023,7 +1023,8 @@ sequence_network <- function(layout, start_position, end_position, show_transact
     geom_point(
       aes(
         fill=sector_label,
-        size=count
+        size=count,
+        label=actor_group
       ),
       pch=21,
       colour="black",
@@ -1074,7 +1075,7 @@ sequence_network <- function(layout, start_position, end_position, show_transact
   transaction_sequence_plot
 
   transaction_sequence_plot |>
-    ggplotly(tooltip=c("label", "count")) |>
+    ggplotly(tooltip=c("actor_group", "count")) |>
     layout(
       showlegend=FALSE
     )
