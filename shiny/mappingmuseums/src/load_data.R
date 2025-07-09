@@ -78,6 +78,7 @@ dispersal_events <- read_csv(dispersal_events_csv) |>
       destination_longitude
     ),
     distance_category=case_when(
+      recipient_type == "end of existence" ~ "end of existence",
       is.na(distance) ~ "unknown",
       distance == 0 ~ "0",
       distance < 1 ~ "0 - 1",
@@ -88,7 +89,7 @@ dispersal_events <- read_csv(dispersal_events_csv) |>
     ),
     distance_category=factor(
       distance_category,
-      c("all", "unknown", "0", "0 - 1", "1 - 10", "10 - 100", "100 - 1,000", "1,000+")
+      c("all", "unknown", "end of existence", "0", "0 - 1", "1 - 10", "10 - 100", "100 - 1,000", "1,000+")
     ),
     distance_from_initial_museum=calculate_distance(
       initial_museum_latitude,
@@ -97,6 +98,7 @@ dispersal_events <- read_csv(dispersal_events_csv) |>
       destination_longitude
     ),
     distance_from_initial_museum_category=case_when(
+      recipient_type == "end of existence" ~ "end of existence",
       is.na(distance) ~ "unknown",
       distance == 0 ~ "0",
       distance < 1 ~ "0 - 1",
@@ -107,7 +109,7 @@ dispersal_events <- read_csv(dispersal_events_csv) |>
     ),
     distance_from_initial_museum_category=factor(
       distance_from_initial_museum_category,
-      c("all", "unknown", "0", "0 - 1", "1 - 10", "10 - 100", "100 - 1,000", "1,000+")
+      c("all", "unknown", "end of existence", "0", "0 - 1", "1 - 10", "10 - 100", "100 - 1,000", "1,000+")
     )
   )
 
