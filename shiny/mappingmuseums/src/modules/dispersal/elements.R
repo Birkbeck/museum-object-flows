@@ -147,9 +147,17 @@ get_filtered_sequences <- function(events_data,
   sequences <- events_data |>
     mutate(
       sender_group=.data[[paste0("sender_", grouping_dimension)]],
-      sender_museum_group=.data[[paste0("sender_", museum_grouping_dimension)]],
+      sender_museum_group=ifelse(
+        !is.na(sender_all),
+        .data[[paste0("sender_", museum_grouping_dimension)]],
+        NA
+      ),
       recipient_group=.data[[paste0("recipient_", grouping_dimension)]],
-      recipient_museum_group=.data[[paste0("recipient_", museum_grouping_dimension)]]
+      recipient_museum_group=ifelse(
+        !is.na(recipient_all),
+        .data[[paste0("recipient_", museum_grouping_dimension)]],
+        NA
+      )
     ) |>
     filter(initial_museum_id %in% initial_museum_ids) |>
     find_events_to_show(show_transaction_types) |>
@@ -325,15 +333,15 @@ add_sender_details <- function(events_data, grouping_dimension, museum_grouping_
           sep="@"
         ),
         paste(
-          .data[[paste0("sender_", museum_grouping_dimension)]],
-          .data[[paste0("sender_", grouping_dimension)]],
+          sender_museum_group,
+          sender_group,
           sender_position,
           sep="@"
         )
       ),
       to=paste(
-        .data[[paste0("recipient_", museum_grouping_dimension)]],
-        .data[[paste0("recipient_", grouping_dimension)]],
+        recipient_museum_group,
+        recipient_group,
         recipient_position,
         sep="@"
       ),
@@ -384,8 +392,8 @@ filter_by_intermediary_recipient <- function(events_data,
   events_recipients <- events_data |>
     mutate(
       recipient=paste(
-        .data[[paste0("recipient_", museum_grouping_dimension)]],
-        .data[[paste0("recipient_", grouping_dimension)]],
+        recipient_museum_group,
+        recipient_group,
         sep="@"
       )
     )
@@ -440,8 +448,8 @@ remove_sequence_middle <- function(events_data, grouping_dimension, museum_group
         sep="@"
       ),
       to=paste(
-        .data[[paste0("recipient_", museum_grouping_dimension)]],
-        .data[[paste0("recipient_", grouping_dimension)]],
+        recipient_museum_group,
+        recipient_group,
         recipient_position,
         sep="@"
       )
@@ -463,6 +471,7 @@ get_pathways_layout <- function(sequences,
 
  dendrogram_data <- sequences |>
    # TODO: move filtering to datatable creation
+   # TODO: need to ensure that from and to labels are created taking into consideration whether or not node is a museum so that country/region grouping doesn't break
    filter(recipient_position <= end_position) |>
    give_individual_names_to_nodes_in_different_paths(steps_or_first_last) |>
    add_central_node_if_there_are_many_starting_points()
@@ -490,7 +499,11 @@ get_pathways_layout <- function(sequences,
   } else if (museum_grouping_dimension == "region" && grouping_dimension == "region") {
      nodes <- nodes |> 
       mutate(
-        name=paste(museum_group, actor_group, sep="@"),
+        name=ifelse(
+          is_museum,
+          paste(museum_group, actor_group, sep="@"),
+          paste("NA", actor_group, sep="@")
+        ),
         label=actor_group
       )
   } else if (grouping_dimension == "region") {
@@ -553,7 +566,13 @@ get_sequences_layout <- function(sequences,
     sequences, "to", "recipient", "recipient_group", "recipient_museum_group"
   )
   nodes <- merge_from_and_to_nodes(from_nodes, to_nodes) |>
-    mutate(name=paste(museum_group, actor_group, sep="@")) |>
+    mutate(
+      name=ifelse(
+        is_museum,
+        paste(museum_group, actor_group, sep="@"),
+        paste("NA", actor_group, sep="@")
+      )
+    ) |>
     # TODO: move filtering to datatable creation
     filter(position >= start_position & position <= end_position)
 
@@ -577,10 +596,17 @@ get_sequences_layout <- function(sequences,
       ) |> 
       select(-museum_type, -sector)
   } else if (museum_grouping_dimension == "region" && grouping_dimension == "region") {
-    name_mapping <- name_mapping |> 
+    name_mapping <- name_mapping |>
       mutate(
-        label = sapply(strsplit(name, "@"), `[`, 1)
-      )
+        museum_type = sapply(strsplit(name, "@"), `[`, 1),
+        region = sapply(strsplit(name, "@"), `[`, 2),
+        label = ifelse(
+          museum_type != "NA",
+          paste(museum_type, "museum"),
+          paste(region, "other")
+        )
+      ) |>
+      select(-museum_type, -region)
   } else if (grouping_dimension == "region") {
     name_mapping <- name_mapping |>
       mutate(
@@ -692,6 +718,7 @@ add_central_node_if_there_are_many_starting_points <- function(sequences) {
         from = "",
         recipient_id = sender_id,
         sender_id = "",
+        recipient_all = sender_all,
         recipient_sector = sender_sector,
         recipient_museum_group = sender_museum_group,
         sender_museum_group = "dummy",
@@ -720,11 +747,12 @@ get_nodes <- function(sequences, endpoint, actor_role, grouping_dimension, museu
       sector=.data[[paste0(actor_role, "_sector")]],
       museum_group=.data[[museum_grouping_dimension]],
       actor_group=.data[[grouping_dimension]],
-      position=.data[[paste0(actor_role, "_position")]]
+      position=.data[[paste0(actor_role, "_position")]],
+      is_museum=!is.na(.data[[paste0(actor_role, "_all")]])
     ) |>
-    select(id, actor_id, quantity, count, sector, museum_group, actor_group, position) |>
+    select(id, actor_id, quantity, count, sector, museum_group, actor_group, position, is_museum) |>
     distinct() |>
-    group_by(id, museum_group, actor_group, position) |>
+    group_by(id, museum_group, actor_group, position, is_museum) |>
     summarize(
       !!sym(endpoint_count):=sum(count),
       !!sym(endpoint_count_suffix):=ifelse("many" %in% quantity, "+", ""),
@@ -760,7 +788,7 @@ get_nodes <- function(sequences, endpoint, actor_role, grouping_dimension, museu
 
 merge_from_and_to_nodes <- function(from_nodes, to_nodes) {
   from_nodes |>
-    full_join(to_nodes, by=c("id", "museum_group", "actor_group", "position")) |>
+    full_join(to_nodes, by=c("id", "museum_group", "actor_group", "position", "is_museum")) |>
     mutate(
       count=case_when(
         is.na(to_count) ~ from_count,

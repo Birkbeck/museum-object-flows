@@ -460,7 +460,8 @@ dispersalServer <- function(id) {
     )
 
     output$pathwaysTable <- renderDT({
-      pathway_table(filtered_sequences(), selected_columns())
+      #pathway_table(filtered_sequences(), selected_columns())
+      pathways_layout()$nodes |> select(id, name, count, count_label)
     }, options=list(pageLength=100))
 
   })
