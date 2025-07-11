@@ -165,7 +165,9 @@ changesUI <- function(id) {
 
       mainPanel(
         uiOutput(NS(id, "errorMessage")),
-        plotlyOutput(NS(id, "mainPlot"), height="720px", width="100%"),
+        withSpinner(
+          plotlyOutput(NS(id, "mainPlot"), height="720px", width="100%")
+        ),
         uiOutput(NS(id, "mainPlotExplanation")),
         fluidRow(
           text_box("CHANGES-BOTTOM Click on one of the small charts below to see it enlarged in the main panel above.")
@@ -174,154 +176,184 @@ changesUI <- function(id) {
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "openingsClosuresSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "openingsClosures")
+            withSpinner(
+              plotOutput(
+                NS(id, "openingsClosuresSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "openingsClosures")
+              )
             )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "startEndSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "startEnd")
+            withSpinner(
+              plotOutput(
+                NS(id, "startEndSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "startEnd")
+              )
             )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "changeSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "change")
+            withSpinner(
+              plotOutput(
+                NS(id, "changeSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "change")
+              )
             )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "openingsVsClosuresScatterSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "openingsVsClosuresScatter")
-            )
-          ),
-
-          column(
-            3,
-            style=card_style,
-            plotOutput(
-              NS(id, "timeSeriesSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "timeSeriesLine")
-            )
-          ),
-          column(
-            3,
-            style=card_style,
-            plotOutput(
-              NS(id, "openingRatesSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "openingRateLine")
-            )
-          ),
-          column(
-            3,
-            style=card_style,
-            plotOutput(
-              NS(id, "closureRatesSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "closureRateLine")
-            )
-          ),
-          column(
-            3,
-            style=card_style,
-            plotOutput(
-              NS(id, "openingClosureRatesSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "openingClosureRateLine")
+            withSpinner(
+              plotOutput(
+                NS(id, "openingsVsClosuresScatterSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "openingsVsClosuresScatter")
+              )
             )
           ),
 
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "openingsSmall2Way"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "openings2Way")
+            withSpinner(
+              plotOutput(
+                NS(id, "timeSeriesSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "timeSeriesLine")
+              )
             )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "closuresSmall2Way"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "closures2Way")
+            withSpinner(
+              plotOutput(
+                NS(id, "openingRatesSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "openingRateLine")
+              )
             )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "openStartSmall2Way"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "openStart2Way")
+            withSpinner(
+              plotOutput(
+                NS(id, "closureRatesSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "closureRateLine")
+              )
             )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "openEndSmall2Way"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "openEnd2Way")
-            )
-          ),
-          column(
-            3,
-            style=card_style,
-            plotOutput(
-              NS(id, "changeSmall2Way"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "change2Way")
+            withSpinner(
+              plotOutput(
+                NS(id, "openingClosureRatesSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "openingClosureRateLine")
+              )
             )
           ),
 
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "openingsMap"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "openingsMap")
+            withSpinner(
+              plotOutput(
+                NS(id, "openingsSmall2Way"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "openings2Way")
+              )
             )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "closuresMap"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "closuresMap")
+            withSpinner(
+              plotOutput(
+                NS(id, "closuresSmall2Way"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "closures2Way")
+              )
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            withSpinner(
+              plotOutput(
+                NS(id, "openStartSmall2Way"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "openStart2Way")
+              )
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            withSpinner(
+              plotOutput(
+                NS(id, "openEndSmall2Way"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "openEnd2Way")
+              )
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            withSpinner(
+              plotOutput(
+                NS(id, "changeSmall2Way"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "change2Way")
+              )
+            )
+          ),
+
+          column(
+            3,
+            style=card_style,
+            withSpinner(
+              plotOutput(
+                NS(id, "openingsMap"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "openingsMap")
+              )
+            )
+          ),
+          column(
+            3,
+            style=card_style,
+            withSpinner(
+              plotOutput(
+                NS(id, "closuresMap"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "closuresMap")
+              )
             )
           )
         )

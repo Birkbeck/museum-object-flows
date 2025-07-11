@@ -165,7 +165,10 @@ reasonsUI <- function(id) {
 
       mainPanel(
         uiOutput(NS(id, "errorMessage")),
-        div(uiOutput(NS(id, "mainPlot")), style = "height: 1200px; width: 100%;"),
+        div(
+          withSpinner(uiOutput(NS(id, "mainPlot"))),
+          style = "height: 1200px; width: 100%;"
+        ),
         div(uiOutput(NS(id, "mainPlotExplanation")), style = "margin-top: 20px;"),
         fluidRow(
           text_box("REASONS-BOTTOM Click on one of the small charts below to see it enlarged in the main panel above.")
@@ -174,31 +177,37 @@ reasonsUI <- function(id) {
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "reasonsBarChartSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "reasonsBarChart")
-            ),
+            withSpinner(
+              plotOutput(
+                NS(id, "reasonsBarChartSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "reasonsBarChart")
+              )
+            )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "reasonsHeatmapSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "reasonsHeatmap")
-            ),
+            withSpinner(
+              plotOutput(
+                NS(id, "reasonsHeatmapSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "reasonsHeatmap")
+              )
+            )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "reasonsLineChartSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "reasonsLineChart")
+            withSpinner(
+              plotOutput(
+                NS(id, "reasonsLineChartSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "reasonsLineChart")
+              )
             )
           )
         )

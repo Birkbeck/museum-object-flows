@@ -149,7 +149,9 @@ lengthUI <- function(id) {
 
       mainPanel(
         uiOutput(NS(id, "errorMessage")),
-        plotlyOutput(NS(id, "mainPlot"), height="720px", width="100%"),
+        withSpinner(
+          plotlyOutput(NS(id, "mainPlot"), height="720px", width="100%")
+        ),
         uiOutput(NS(id, "mainPlotExplanation")),
         fluidRow(
           text_box("LENGTH-BOTTOM Click on one of the small charts below to see it enlarged in the main panel above.")
@@ -158,41 +160,49 @@ lengthUI <- function(id) {
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "lengthTileChartSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "lengthTileChart")
-            ),
+            withSpinner(
+              plotOutput(
+                NS(id, "lengthTileChartSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "lengthTileChart")
+              )
+            )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "lengthLineChartSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "lengthLineChart")
-            ),
+            withSpinner(
+              plotOutput(
+                NS(id, "lengthLineChartSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "lengthLineChart")
+              )
+            )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "lengthScatterSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "lengthScatter")
-            ),
+            withSpinner(
+              plotOutput(
+                NS(id, "lengthScatterSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "lengthScatter")
+              )
+            )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "exampleTimelinesSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "exampleTimelines")
+            withSpinner(
+              plotOutput(
+                NS(id, "exampleTimelinesSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "exampleTimelines")
+              )
             )
           )
         )

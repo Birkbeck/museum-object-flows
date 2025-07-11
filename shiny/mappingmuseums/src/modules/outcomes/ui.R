@@ -179,7 +179,10 @@ outcomesUI <- function(id) {
 
       mainPanel(
         uiOutput(NS(id, "errorMessage")),
-        div(uiOutput(NS(id, "mainPlot")), style = "height: 1200px; width: 100%;"),
+        div(
+          withSpinner(uiOutput(NS(id, "mainPlot"))),
+          style = "height: 1200px; width: 100%;"
+        ),
         div(uiOutput(NS(id, "mainPlotExplanation")), style = "margin-top: 20px;"),
         fluidRow(
           text_box("OUTCOMES-BOTTOM Click on one of the small charts below to see it enlarged in the main panel above.")
@@ -188,31 +191,37 @@ outcomesUI <- function(id) {
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "outcomesBarChartSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "outcomesBarChart")
-            ),
+            withSpinner(
+              plotOutput(
+                NS(id, "outcomesBarChartSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "outcomesBarChart")
+              )
+            )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "outcomesHeatmapSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "outcomesHeatmap")
-            ),
+            withSpinner(
+              plotOutput(
+                NS(id, "outcomesHeatmapSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "outcomesHeatmap")
+              )
+            )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "outcomesLineChartSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "outcomesLineChart")
+            withSpinner(
+              plotOutput(
+                NS(id, "outcomesLineChartSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "outcomesLineChart")
+              )
             )
           )
         )

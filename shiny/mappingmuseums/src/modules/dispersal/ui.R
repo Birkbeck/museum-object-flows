@@ -310,52 +310,64 @@ dispersalUI <- function(id) {
 
       mainPanel(
         uiOutput(NS(id, "errorMessage")),
-        plotlyOutput(NS(id, "mainPlot"), width="100%", height="850px"),
+        withSpinner(
+          plotlyOutput(NS(id, "mainPlot"), width="100%", height="850px")
+        ),
         fluidRow(
           img(src='actor-sector-key.png', align="left", width="450px")
         ),
         fluidRow(
-          text_box("DISPERSAL-BOTTOM Click on one of the small charts below to see it enlarged in the main panel above.")
+          text_box(
+            "DISPERSAL-BOTTOM Click on one of the small charts below to see it enlarged in the main panel above."
+          )
         ),
         fluidRow(
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "pathwaysSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "pathways")
+            withSpinner(
+              plotOutput(
+                NS(id, "pathwaysSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "pathways")
+              )
             )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "sequencesSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "sequences")
+            withSpinner(
+              plotOutput(
+                NS(id, "sequencesSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "sequences")
+              )
             )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "mapSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "map")
+            withSpinner(
+              plotOutput(
+                NS(id, "mapSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "map")
+              )
             )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "distancesSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "distances")
+            withSpinner(
+              plotOutput(
+                NS(id, "distancesSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "distances")
+              )
             )
           )
         )

@@ -12,6 +12,7 @@ library(ggraph)
 library(ggrepel)
 library(tidyverse)
 library(readr)
+library(shinycssloaders)
 
 source("src/labels.R")
 source("src/texts.R")

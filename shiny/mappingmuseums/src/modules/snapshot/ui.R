@@ -196,7 +196,9 @@ snapshotUI <- function(id) {
 
       mainPanel(
         uiOutput(NS(id, "errorMessage")),
-        plotlyOutput(NS(id, "mainPlot"), height="800px", width="100%"),
+        withSpinner(
+          plotlyOutput(NS(id, "mainPlot"), height="800px", width="100%")
+        ),
         uiOutput(NS(id, "mainPlotExplanation")),
         fluidRow(
           text_box("SNAPSHOT-BOTTOM Click on one of the small charts below to see it enlarged in the main panel above.")
@@ -205,31 +207,37 @@ snapshotUI <- function(id) {
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "museumMapSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "museumMap")
-            ),
+            withSpinner(
+              plotOutput(
+                NS(id, "museumMapSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "museumMap")
+              )
+            )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "museumCountsSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "museumCounts")
-            ),
+            withSpinner(
+              plotOutput(
+                NS(id, "museumCountsSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "museumCounts")
+              )
+            )
           ),
           column(
             3,
             style=card_style,
-            plotOutput(
-              NS(id, "museumHeatmapSmall"),
-              width=small_chart_size_px,
-              height=small_chart_size_px,
-              click=NS(id, "museumHeatmap")
+            withSpinner(
+              plotOutput(
+                NS(id, "museumHeatmapSmall"),
+                width=small_chart_size_px,
+                height=small_chart_size_px,
+                click=NS(id, "museumHeatmap")
+              )
             )
           )
         )
