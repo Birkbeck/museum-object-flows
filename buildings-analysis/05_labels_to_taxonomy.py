@@ -7,7 +7,13 @@ from sklearn.cluster import KMeans, MiniBatchKMeans
 from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import normalize
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, set_seed
+from transformers import (
+    AutoTokenizer,
+    AutoModelForCausalLM,
+    AutoModelForSeq2SeqLM,
+    pipeline,
+    set_seed,
+)
 
 NOTES_WITH_LABELS_FILE = "classifications/llama3-mixed-longer-5shots-t0.5.csv"
 NOTES_LABELS_EMBEDDINGS_FILE = "classifications/labels-notes-and-embeddings.parquet"
@@ -15,20 +21,18 @@ NOTES_LABELS_EMBEDDINGS_FILE = "classifications/labels-notes-and-embeddings.parq
 # SENTENCE_MODEL = SentenceTransformer("all-mpnet-base-v2")
 SENTENCE_MODEL = SentenceTransformer("BAAI/bge-large-en-v1.5")
 
-# CLUSTER_LABEL_MODEL_NAME = "microsoft/phi-3-mini-4k-instruct"
-CLUSTER_LABEL_MODEL_NAME = "gpt2"
+CLUSTER_LABEL_MODEL_NAME = "google/flan-t5-base"
 CLUSTER_LABEL_MODEL = pipeline(
-    "text-generation",
-    model=AutoModelForCausalLM.from_pretrained(
+    "text2text-generation",
+    model=AutoModelForSeq2SeqLM.from_pretrained(
         CLUSTER_LABEL_MODEL_NAME,
-        trust_remote_code=True,
+        device_map="auto",
+        torch_dtype=(
+            torch.float16 if torch.backends.mps.is_available() else torch.float32
+        ),
     ),
-    tokenizer=AutoTokenizer.from_pretrained(
-        CLUSTER_LABEL_MODEL_NAME,
-        trust_remote_code=True,
-    ),
-    device=0,
-    pad_token_id=0,
+    tokenizer=AutoTokenizer.from_pretrained(CLUSTER_LABEL_MODEL_NAME),
+    max_new_tokens=8,
 )
 
 
@@ -132,7 +136,6 @@ def _l2_normalize(v):
 
 
 def list_unique(df, column):
-    # now column is already single-label after explode, so just unique non-empty
     vals = df[column].dropna().astype(str).map(_normalize_label)
     return sorted(set(v for v in vals if v))
 
@@ -190,11 +193,15 @@ def name_clusters(df: pd.DataFrame, cluster_id_column: str):
 
 
 def _label_labels(labels: list) -> str:
-    prompt = f"{labels} are all:"
-    response = CLUSTER_LABEL_MODEL(
-        prompt, max_new_tokens=4, num_return_sequences=1, temperature=0.1
-    )[0]["generated_text"]
-    return response[len(prompt) :]
+    prompt = (
+        "You create short taxonomy labels. "
+        "Return ONLY a concise and general 2–4 word category (no punctuation) that all of these sub-categories belong to.\n\n"
+        "Sub-categories: " + ", ".join(labels) + "\nCategory:"
+    )
+    response = CLUSTER_LABEL_MODEL(prompt, do_sample=False, num_beams=1)[0][
+        "generated_text"
+    ]
+    return response.strip()
 
 
 if __name__ == "__main__":
