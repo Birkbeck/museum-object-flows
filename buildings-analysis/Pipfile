@@ -15,7 +15,6 @@ fastparquet = "*"
 transformers = ">=4.45.0"
 accelerate = ">=0.33.0"
 torch = ">=2.3"
-statsmodels = "*"
 
 [dev-packages]
 
