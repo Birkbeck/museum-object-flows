@@ -17,6 +17,8 @@ from transformers import (
 
 NOTES_WITH_LABELS_FILE = "classifications/llama3-mixed-longer-5shots-t0.5.csv"
 NOTES_LABELS_EMBEDDINGS_FILE = "classifications/labels-notes-and-embeddings.parquet"
+NOTES_LABELS_CLUSTERED_FILE = "classifications/labels-notes-clustered.csv"
+BUILDING_USE_HIERARCHY_FILE = "classifications/building-use-types.csv"
 
 # SENTENCE_MODEL = SentenceTransformer("all-mpnet-base-v2")
 SENTENCE_MODEL = SentenceTransformer("BAAI/bge-large-en-v1.5")
@@ -157,7 +159,6 @@ def kmeans_on_embedding_column(
         ),
         norm="l2",
     )
-    print(embeddings)
     highest_score = 0
     best_clusters = None
     for k in range(min_k, max_k + 1):
@@ -174,7 +175,6 @@ def kmeans_on_embedding_column(
             if k > 1 and len(np.unique(clusters)) > 1
             else np.nan
         )
-        print(k, score)
         if score > highest_score:
             highest_score = score
             best_clusters = clusters
@@ -188,7 +188,7 @@ def name_clusters(df: pd.DataFrame, cluster_id_column: str):
         unique_labels = sorted(set(subset["label"].dropna()))
         cluster_to_name[cluster_id] = _label_labels(unique_labels)
     out = df.copy()
-    out["cluster_name"] = out[cluster_id_column].map(cluster_to_name)
+    out[f"{cluster_id_column}_name"] = out[cluster_id_column].map(cluster_to_name)
     return out
 
 
@@ -201,27 +201,75 @@ def _label_labels(labels: list) -> str:
     response = CLUSTER_LABEL_MODEL(prompt, do_sample=False, num_beams=1)[0][
         "generated_text"
     ]
-    return response.strip()
+    return response.strip().lower()
 
 
 if __name__ == "__main__":
     labelled_texts_with_embeddings = get_labels_and_texts_with_embeddings()
 
-    with_clusters, score = kmeans_on_embedding_column(
+    labels_with_clusters, score = kmeans_on_embedding_column(
         labelled_texts_with_embeddings,
         "label_embedding",
         min_k=10,
         max_k=20,
     )
-    with_named_clusters = name_clusters(with_clusters, "label_embedding_cluster")
+    labels_with_named_clusters = name_clusters(
+        labels_with_clusters, "label_embedding_cluster"
+    )
 
-    for cluster_id, subset in with_named_clusters.groupby(
-        "label_embedding_cluster", sort=True
+    sub_cluster_data_frames = []
+    for cluster_id, subset in labels_with_named_clusters.groupby(
+        "label_embedding_cluster"
     ):
-        unique_labels = sorted(set(subset["label"].dropna()))
-        print(
-            f"Cluster {cluster_id} {subset.iloc[0]['cluster_name']} ({len(subset)} rows):"
+        subset["label_embedding_specific"] = subset["label_embedding"]
+        print(cluster_id, len(subset))
+        labels_with_sub_clusters, score = kmeans_on_embedding_column(
+            subset,
+            "label_embedding_specific",
+            min_k=min(2, len(subset)),
+            max_k=min(10, len(subset) - 1),
         )
-        for lbl in unique_labels:
-            print(f"  - {lbl}")
-        print()
+        labels_with_named_sub_clusters = name_clusters(
+            labels_with_sub_clusters, "label_embedding_specific_cluster"
+        )
+        sub_cluster_data_frames.append(labels_with_named_sub_clusters)
+
+    labels_with_named_clusters_and_sub_clusters = pd.concat(
+        sub_cluster_data_frames, ignore_index=True
+    )
+    final_classifications = labels_with_named_clusters_and_sub_clusters[
+        [
+            "name",
+            "note",
+            "label",
+            "label_embedding_cluster_name",
+            "label_embedding_specific_cluster_name",
+        ]
+    ].rename(
+        columns={
+            "label_embedding_cluster_name": "core_use_type",
+            "label_embedding_specific_cluster_name": "use_type",
+        }
+    )
+    final_classifications.to_csv(NOTES_LABELS_CLUSTERED_FILE, index=False)
+
+    core_use_types = (
+        final_classifications[["core_use_type"]]
+        .drop_duplicates()
+        .rename(columns={"core_use_type": "type_name"})
+    )
+    core_use_types["sub_type_of"] = ""
+    core_use_types["is_core_category"] = True
+
+    specific_use_types = (
+        final_classifications[["core_use_type", "use_type"]]
+        .drop_duplicates()
+        .query("use_type != core_use_type")
+        .rename(columns={"use_type": "type_name", "core_use_type": "sub_type_of"})
+    )
+    specific_use_types["is_core_category"] = False
+
+    use_hierarchy = pd.concat([core_use_types, specific_use_types], ignore_index=True)
+    use_hierarchy.to_csv(BUILDING_USE_HIERARCHY_FILE, index=False)
+
+    print(len(set(final_classifications["label"].dropna())))
