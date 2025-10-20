@@ -2,6 +2,8 @@ import re
 
 import numpy as np
 import pandas as pd
+import requests
+from requests.adapters import HTTPAdapter
 from sentence_transformers import SentenceTransformer
 from sklearn.cluster import KMeans, MiniBatchKMeans
 from sklearn.metrics import silhouette_score
@@ -14,9 +16,13 @@ from transformers import (
     pipeline,
     set_seed,
 )
+from urllib3.util.retry import Retry
+
 
 NOTES_WITH_LABELS_FILE = "classifications/llama3-mixed-longer-5shots-t0.5.csv"
-NOTES_LABELS_EMBEDDINGS_FILE = "classifications/labels-notes-and-embeddings.parquet"
+NOTES_LABELS_EMBEDDINGS_FILE = (
+    "classifications/labels-notes-and-embeddings-wiki.parquet"
+)
 NOTES_LABELS_CLUSTERED_FILE = "classifications/labels-notes-clustered.csv"
 BUILDING_USE_HIERARCHY_FILE = "classifications/building-use-types.csv"
 
@@ -36,6 +42,19 @@ CLUSTER_LABEL_MODEL = pipeline(
     tokenizer=AutoTokenizer.from_pretrained(CLUSTER_LABEL_MODEL_NAME),
     max_new_tokens=8,
 )
+
+WIKIPEDIA_SESSION = requests.Session()
+WIKIPEDIA_SESSION.headers.update(
+    {"User-Agent": "BuildingUseTaxonomy/0.1 (george.wright@bbk.ac.uk)"}
+)
+WIKIPEDIA_RETRIES = Retry(
+    total=5,
+    backoff_factor=0.5,  # 0.5s, 1s, 2s, ...
+    status_forcelist=[429, 500, 502, 503, 504],
+    allowed_methods=["GET"],
+    raise_on_status=False,
+)
+WIKIPEDIA_SESSION.mount("https://", HTTPAdapter(max_retries=WIKIPEDIA_RETRIES))
 
 
 def get_labels_and_texts_with_embeddings():
@@ -124,10 +143,75 @@ def _normalize_label(s: str) -> str:
     return s
 
 
-def _contextualize_label(s: str) -> str:
+def _contextualize_label(s: str, add_wikipedia_text: bool = True) -> str:
     if not isinstance(s, str):
         return ""
-    return f"The new use of the building is {s}."
+    contextualized_label = f"The new use of the building is {s}."
+    if add_wikipedia_text:
+        wiki_context = get_wiki_context_for_label(s)
+        contextualized_label += f" {wiki_context}"
+        print(s.upper(), wiki_context)
+    return contextualized_label
+
+
+def wiki_search(label, n=5, lang="en"):
+    params = {
+        "action": "query",
+        "list": "search",
+        "srsearch": label,
+        "srlimit": n,
+        "format": "json",
+        "utf8": 1,
+    }
+    r = WIKIPEDIA_SESSION.get(
+        f"https://{lang}.wikipedia.org/w/api.php", params=params, timeout=10
+    )
+    r.raise_for_status()  # will retry on 429/5xx due to adapter
+    data = r.json()
+    return [hit["title"] for hit in data.get("query", {}).get("search", [])]
+
+
+def wiki_intro(title, lang="en"):
+    # REST summary endpoint (also needs UA)
+    r = WIKIPEDIA_SESSION.get(
+        f"https://{lang}.wikipedia.org/api/rest_v1/page/summary/{requests.utils.quote(title)}",
+        headers={"accept": "application/json"},
+        timeout=10,
+    )
+    if r.status_code != 200:
+        return ""
+    data = r.json()
+    if data.get("type") == "disambiguation":
+        return ""
+    txt = (data.get("extract") or "").strip()
+    return re.sub(r"\s+", " ", txt)
+
+
+def get_wiki_context_for_label(label, top_k=5, minimum_relevance=0.7, lang="en"):
+    titles = wiki_search(label, n=top_k, lang=lang)
+    # remove titles which are proper nouns with same name as label
+    titles = [t for t in titles if len(label.split()) == 1 or t != label.title()]
+    if not titles:
+        return ""
+    label_embedding = SENTENCE_MODEL.encode([label], normalize_embeddings=True)
+    candidate_texts = [wiki_intro(t, lang=lang) for t in titles]
+    pairs = [(t, c) for t, c in zip(titles, candidate_texts)]
+    if not pairs:
+        return ""
+    candidate_embeddings = SENTENCE_MODEL.encode(
+        [c for _, c in pairs], normalize_embeddings=True
+    )
+    similarity_scores = (candidate_embeddings @ label_embedding.T).ravel()
+    order = np.argsort(-similarity_scores)
+    total_relevance = 0
+    context_texts = []
+    for i in order[:top_k]:
+        context_texts.append(pairs[i][1])
+        total_relevance += similarity_scores[i]
+        if total_relevance >= minimum_relevance:
+            break
+    snippet = " ".join(context_texts)
+    return snippet
 
 
 def _l2_normalize(v):
@@ -242,14 +326,19 @@ if __name__ == "__main__":
             "name",
             "note",
             "label",
+            "label_embedding_cluster",
             "label_embedding_cluster_name",
+            "label_embedding_specific_cluster",
             "label_embedding_specific_cluster_name",
         ]
-    ].rename(
-        columns={
-            "label_embedding_cluster_name": "core_use_type",
-            "label_embedding_specific_cluster_name": "use_type",
-        }
+    ]
+    final_classifications["core_use_type"] = final_classifications.apply(
+        lambda row: f"{row['label_embedding_cluster_name']} ({row['label_embedding_cluster']})",
+        axis=1,
+    )
+    final_classifications["use_type"] = final_classifications.apply(
+        lambda row: f"{row['label_embedding_specific_cluster_name']} ({row['label_embedding_specific_cluster']})",
+        axis=1,
     )
     final_classifications.to_csv(NOTES_LABELS_CLUSTERED_FILE, index=False)
 
@@ -264,7 +353,14 @@ if __name__ == "__main__":
     specific_use_types = (
         final_classifications[["core_use_type", "use_type"]]
         .drop_duplicates()
-        .query("use_type != core_use_type")
+        .assign(use_type=lambda d: d["use_type"].astype("string").str.strip())
+        .loc[
+            lambda d: d["use_type"].notna()
+            & d["use_type"].ne("")
+            & d["use_type"].ne(d["core_use_type"])
+        ]
+        .query("use_type != ''")
+        .query("use_type != 'nan (None)'")
         .rename(columns={"use_type": "type_name", "core_use_type": "sub_type_of"})
     )
     specific_use_types["is_core_category"] = False
