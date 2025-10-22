@@ -27,7 +27,8 @@ NOTES_LABELS_CLUSTERED_FILE = "classifications/labels-notes-clustered.csv"
 BUILDING_USE_HIERARCHY_FILE = "classifications/building-use-types.csv"
 
 # SENTENCE_MODEL = SentenceTransformer("all-mpnet-base-v2")
-SENTENCE_MODEL = SentenceTransformer("BAAI/bge-large-en-v1.5")
+# SENTENCE_MODEL = SentenceTransformer("BAAI/bge-large-en-v1.5")
+SENTENCE_MODEL = SentenceTransformer("BAAI/bge-small-en-v1.5")
 
 CLUSTER_LABEL_MODEL_NAME = "google/flan-t5-base"
 CLUSTER_LABEL_MODEL = pipeline(
@@ -35,9 +36,7 @@ CLUSTER_LABEL_MODEL = pipeline(
     model=AutoModelForSeq2SeqLM.from_pretrained(
         CLUSTER_LABEL_MODEL_NAME,
         device_map="auto",
-        torch_dtype=(
-            torch.float16 if torch.backends.mps.is_available() else torch.float32
-        ),
+        dtype=(torch.float16 if torch.backends.mps.is_available() else torch.float32),
     ),
     tokenizer=AutoTokenizer.from_pretrained(CLUSTER_LABEL_MODEL_NAME),
     max_new_tokens=8,
@@ -92,15 +91,18 @@ def get_labels_and_texts_with_embeddings():
     labelled_texts = labelled_texts[labelled_texts["label"] != ""].reset_index(
         drop=True
     )
+    labelled_texts["contextualized_label"] = labelled_texts["label"].map(
+        _contextualize_label
+    )
     labelled_texts["label_and_note"] = labelled_texts.apply(
         lambda row: f"{row['label']} {row['note']}", axis=1
     )
-    unique_labels = list_unique(labelled_texts, "label")
-    label_embeddings = SENTENCE_MODEL.encode(
-        [_contextualize_label(l) for l in unique_labels], normalize_embeddings=True
-    )
+    unique_labels = list_unique(labelled_texts, "contextualized_label")
+    label_embeddings = SENTENCE_MODEL.encode(unique_labels, normalize_embeddings=True)
     label_to_embedding = dict(zip(unique_labels, [e for e in label_embeddings]))
-    labelled_texts["label_embedding"] = labelled_texts["label"].map(label_to_embedding)
+    labelled_texts["label_embedding"] = labelled_texts["contextualized_label"].map(
+        label_to_embedding
+    )
     labelled_texts["note_embedding"] = list(
         SENTENCE_MODEL.encode(
             labelled_texts["note"].tolist(),
@@ -150,7 +152,6 @@ def _contextualize_label(s: str, add_wikipedia_text: bool = True) -> str:
     if add_wikipedia_text:
         wiki_context = get_wiki_context_for_label(s)
         contextualized_label += f" {wiki_context}"
-        print(s.upper(), wiki_context)
     return contextualized_label
 
 
@@ -222,7 +223,7 @@ def _l2_normalize(v):
 
 
 def list_unique(df, column):
-    vals = df[column].dropna().astype(str).map(_normalize_label)
+    vals = df[column].dropna().astype(str)
     return sorted(set(v for v in vals if v))
 
 
@@ -326,6 +327,7 @@ if __name__ == "__main__":
             "name",
             "note",
             "label",
+            "contextualized_label",
             "label_embedding_cluster",
             "label_embedding_cluster_name",
             "label_embedding_specific_cluster",
@@ -340,7 +342,13 @@ if __name__ == "__main__":
         lambda row: f"{row['label_embedding_specific_cluster_name']} ({row['label_embedding_specific_cluster']})",
         axis=1,
     )
-    final_classifications.to_csv(NOTES_LABELS_CLUSTERED_FILE, index=False)
+    final_classifications.sort_values(
+        by=["label_embedding_cluster", "label_embedding_specific_cluster"]
+    )[
+        ["name", "note", "core_use_type", "use_type", "label", "contextualized_label"]
+    ].to_csv(
+        NOTES_LABELS_CLUSTERED_FILE, index=False
+    )
 
     core_use_types = (
         final_classifications[["core_use_type"]]
