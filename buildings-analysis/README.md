@@ -26,4 +26,4 @@ The rest of the documents are labelled automatically with the LLM+prompt+hyperpa
 
 Label embedding and k-means are used to find a small number of clusters of similar labels. A generative LLM is used to produce a label which describes each cluster.
 
-This process is repeated on each cluster to produce a hierarchy with two layers.
+This process is repeated on each cluster to produce a hierarchy with two layers: core building use types and specific building use types.
