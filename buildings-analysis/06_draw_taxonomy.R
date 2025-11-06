@@ -9,7 +9,7 @@ taxonomy_theme <- theme(
   panel.background = element_rect(fill="white"),
   plot.margin = unit(c(1, 1, 1, 1), "cm"),
   plot.title = element_text(size="18"),
-  legend.position = "right",
+  legend.position = "bottom",
   legend.title = element_text(size="14"),
   legend.text = element_text(size="12"),
   legend.background = element_rect(fill="white"),
