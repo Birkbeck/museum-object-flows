@@ -18,29 +18,52 @@ from transformers import (
 )
 from urllib3.util.retry import Retry
 
+GET_CONTEXT_FROM_WIKIPEDIA = False
+GET_CONTEXT_FROM_GENERATIVE_LLM = True
 
-NOTES_WITH_LABELS_FILE = "classifications/llama3-mixed-longer-5shots-t0.5.csv"
+CLASSIFICATIONS_DIR = "scratch/classifications"
+
+NOTES_WITH_LABELS_FILE = f"{CLASSIFICATIONS_DIR}/llama3-mixed-longer-5shots-t0.5.csv"
 NOTES_LABELS_EMBEDDINGS_FILE = (
-    "classifications/labels-notes-and-embeddings-wiki.parquet"
+    # "classifications/labels-notes-and-embeddings-wiki.parquet"
+    # "classifications/labels-notes-and-embeddings-flan-t5-base.parquet"
+    f"{CLASSIFICATIONS_DIR}/labels-notes-and-embeddings-llama.parquet"
 )
-NOTES_LABELS_CLUSTERED_FILE = "classifications/labels-notes-clustered.csv"
-BUILDING_USE_HIERARCHY_FILE = "classifications/building-use-types.csv"
+NOTES_LABELS_CLUSTERED_FILE = (
+    f"{CLASSIFICATIONS_DIR}/labels-notes-clustered-with-llama.csv"
+)
+BUILDING_USE_HIERARCHY_FILE = f"{CLASSIFICATIONS_DIR}/building-use-types-with-llama.csv"
 
 # SENTENCE_MODEL = SentenceTransformer("all-mpnet-base-v2")
 # SENTENCE_MODEL = SentenceTransformer("BAAI/bge-large-en-v1.5")
 SENTENCE_MODEL = SentenceTransformer("BAAI/bge-small-en-v1.5")
 
-CLUSTER_LABEL_MODEL_NAME = "google/flan-t5-base"
-CLUSTER_LABEL_MODEL = pipeline(
-    "text2text-generation",
-    model=AutoModelForSeq2SeqLM.from_pretrained(
-        CLUSTER_LABEL_MODEL_NAME,
-        device_map="auto",
-        dtype=(torch.float16 if torch.backends.mps.is_available() else torch.float32),
+# CLUSTER_LABEL_MODEL_NAME = "google/flan-t5-base"
+# CLUSTER_LABEL_MODEL = pipeline(
+#    "text2text-generation",
+#    model=AutoModelForSeq2SeqLM.from_pretrained(
+#        CLUSTER_LABEL_MODEL_NAME,
+#        device_map="auto",
+#        dtype=(torch.float16 if torch.backends.mps.is_available() else torch.float32),
+#    ),
+#    tokenizer=AutoTokenizer.from_pretrained(CLUSTER_LABEL_MODEL_NAME),
+#    max_new_tokens=8,
+# )
+TEXT_GENERATION_MODEL_NAME = "/scratch/users/k2480370/llama3.1-8B"
+TEXT_GENERATION_MODEL = pipeline(
+    "text-generation",
+    model=AutoModelForCausalLM.from_pretrained(
+        TEXT_GENERATION_MODEL_NAME,
+        trust_remote_code=True,
     ),
-    tokenizer=AutoTokenizer.from_pretrained(CLUSTER_LABEL_MODEL_NAME),
-    max_new_tokens=8,
+    tokenizer=AutoTokenizer.from_pretrained(
+        TEXT_GENERATION_MODEL_NAME,
+        trust_remote_code=True,
+    ),
+    device=0,
+    pad_token_id=0,
 )
+CLUSTER_LABEL_MODEL = TEXT_GENERATION_MODEL
 
 WIKIPEDIA_SESSION = requests.Session()
 WIKIPEDIA_SESSION.headers.update(
@@ -91,8 +114,14 @@ def get_labels_and_texts_with_embeddings():
     labelled_texts = labelled_texts[labelled_texts["label"] != ""].reset_index(
         drop=True
     )
-    labelled_texts["contextualized_label"] = labelled_texts["label"].map(
-        _contextualize_label
+    labelled_texts["contextualized_label"] = labelled_texts.apply(
+        lambda row: _contextualize_label(
+            row["label"],
+            row["note"],
+            GET_CONTEXT_FROM_WIKIPEDIA,
+            GET_CONTEXT_FROM_GENERATIVE_LLM,
+        ),
+        axis=1,
     )
     labelled_texts["label_and_note"] = labelled_texts.apply(
         lambda row: f"{row['label']} {row['note']}", axis=1
@@ -145,13 +174,23 @@ def _normalize_label(s: str) -> str:
     return s
 
 
-def _contextualize_label(s: str, add_wikipedia_text: bool = True) -> str:
+def _contextualize_label(
+    s: str,
+    note: str,
+    add_wikipedia_text: bool = True,
+    add_generative_llm_text: bool = False,
+) -> str:
     if not isinstance(s, str):
         return ""
     contextualized_label = f"The new use of the building is {s}."
     if add_wikipedia_text:
+        print(f"Getting Wikipedia context for label: {s}")
         wiki_context = get_wiki_context_for_label(s)
         contextualized_label += f" {wiki_context}"
+    if add_generative_llm_text:
+        print(f"Getting LLM context for label: {s}")
+        llm_context = get_llm_context_for_label(s, note)
+        contextualized_label += f" {llm_context}"
     return contextualized_label
 
 
@@ -215,6 +254,23 @@ def get_wiki_context_for_label(label, top_k=5, minimum_relevance=0.7, lang="en")
     return snippet
 
 
+def get_llm_context_for_label(label, note):
+    prompt = (
+        "The following text has been summarised with a building use type label."
+        "Provide a concise definition of the building use type label in this context.\n\n"
+        f"Text: {note}\n\n"
+        f"Building use type: {label}\n\n"
+        "Definition:"
+    )
+    response = TEXT_GENERATION_MODEL(
+        prompt,
+        num_return_sequences=1,
+        max_new_tokens=100,
+        temperature=0.7,
+    )[0]["generated_text"][len(prompt) :].strip()
+    return response
+
+
 def _l2_normalize(v):
     v = np.asarray(v, dtype=np.float32)
     v = np.nan_to_num(v, nan=0.0, posinf=0.0, neginf=0.0)
@@ -267,10 +323,12 @@ def kmeans_on_embedding_column(
     return df, highest_score
 
 
-def name_clusters(df: pd.DataFrame, cluster_id_column: str):
+def name_clusters(
+    df: pd.DataFrame, cluster_id_column: str, label_column: str
+) -> pd.DataFrame:
     cluster_to_name = {}
     for cluster_id, subset in df.groupby(cluster_id_column, dropna=False, sort=True):
-        unique_labels = sorted(set(subset["label"].dropna()))
+        unique_labels = sorted(set(subset[label_column].dropna()))
         cluster_to_name[cluster_id] = _label_labels(unique_labels)
     out = df.copy()
     out[f"{cluster_id_column}_name"] = out[cluster_id_column].map(cluster_to_name)
@@ -283,10 +341,21 @@ def _label_labels(labels: list) -> str:
         "Return ONLY a concise and general 2–4 word category (no punctuation) that all of these sub-categories belong to.\n\n"
         "Sub-categories: " + ", ".join(labels) + "\nCategory:"
     )
-    response = CLUSTER_LABEL_MODEL(prompt, do_sample=False, num_beams=1)[0][
-        "generated_text"
-    ]
-    return response.strip().lower()
+    # response = CLUSTER_LABEL_MODEL(prompt, do_sample=False, num_beams=1)[0][
+    #    "generated_text"
+    # ]
+    # return response.strip().lower()
+    response = (
+        TEXT_GENERATION_MODEL(
+            prompt,
+            num_return_sequences=1,
+            max_new_tokens=10,
+            temperature=0.7,
+        )[0]["generated_text"][len(prompt) :]
+        .strip()
+        .lower()
+    )
+    return response
 
 
 if __name__ == "__main__":
@@ -298,14 +367,9 @@ if __name__ == "__main__":
         min_k=10,
         max_k=20,
     )
-    labels_with_named_clusters = name_clusters(
-        labels_with_clusters, "label_embedding_cluster"
-    )
 
     sub_cluster_data_frames = []
-    for cluster_id, subset in labels_with_named_clusters.groupby(
-        "label_embedding_cluster"
-    ):
+    for cluster_id, subset in labels_with_clusters.groupby("label_embedding_cluster"):
         subset["label_embedding_specific"] = subset["label_embedding"]
         print(cluster_id, len(subset))
         labels_with_sub_clusters, score = kmeans_on_embedding_column(
@@ -315,13 +379,19 @@ if __name__ == "__main__":
             max_k=min(10, len(subset) - 1),
         )
         labels_with_named_sub_clusters = name_clusters(
-            labels_with_sub_clusters, "label_embedding_specific_cluster"
+            labels_with_sub_clusters, "label_embedding_specific_cluster", "label"
         )
         sub_cluster_data_frames.append(labels_with_named_sub_clusters)
 
-    labels_with_named_clusters_and_sub_clusters = pd.concat(
+    labels_with_clusters_and_named_sub_clusters = pd.concat(
         sub_cluster_data_frames, ignore_index=True
     )
+    labels_with_named_clusters_and_sub_clusters = name_clusters(
+        labels_with_clusters_and_named_sub_clusters,
+        "label_embedding_cluster",
+        "label_embedding_specific_cluster_name",
+    )
+
     final_classifications = labels_with_named_clusters_and_sub_clusters[
         [
             "name",
