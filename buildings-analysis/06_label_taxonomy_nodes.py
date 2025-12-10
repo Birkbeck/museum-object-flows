@@ -35,6 +35,7 @@ ROLES = {
 }
 
 TASKS = {
+    "noInstruction": "",
     "instruction": "Return ONLY a concise and general 2-4 word category (no punctuation) that is a hypernym of the given categories",
     "no repeats": "Return ONLY a concise and general 2-4 word category (no punctuation) that is a hypernym of the given categories. Do not repeat from the list of labels.",
 }
