@@ -98,7 +98,13 @@ clusters = pd.read_csv(CLUSTERS_FILE)
 role = ROLES["short"]
 task = TASKS["no repeats"]
 clusters = name_clusters(clusters, "core_cluster", "label", role, task)
-clusters = name_clusters(clusters, "sub_cluster", "label", role, task)
+
+clusters = pd.concat(
+    [
+        name_clusters(subset, "sub_cluster", "label", role, task)
+        for _, subset in clusters.groupby("core_cluster")
+    ]
+)
 
 clusters["core_label_similarity"] = clusters.apply(
     lambda row: calculate_label_similarity(row["core_cluster_name"], row["label"]),
@@ -108,6 +114,12 @@ clusters["sub_label_similarity"] = clusters.apply(
     lambda row: calculate_label_similarity(row["sub_cluster_name"], row["label"]),
     axis=1,
 )
+
+for cluster_id in clusters["core_cluster"].unique():
+    clusters["sub_label_similarity"] = clusters.apply(
+        lambda row: calculate_label_similarity(row["sub_cluster_name"], row["label"]),
+        axis=1,
+    )
 
 core_evals = clusters.groupby("core_cluster")["core_label_similarity"].agg(
     coherence=lambda x: x.mean(),
