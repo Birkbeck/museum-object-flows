@@ -257,7 +257,8 @@ def get_wiki_context_for_label(label, top_k=5, minimum_relevance=0.7, lang="en")
 def get_llm_context_for_label(label, note):
     prompt = (
         "The following text has been summarised with a building use type label."
-        "Provide a concise definition of the building use type label in this context.\n\n"
+        "Provide a concise and general definition of the building use type label in this context."
+        "Do not include details from the original text.\n\n"
         f"Text: {note}\n\n"
         f"Building use type: {label}\n\n"
         "Definition:"
@@ -346,12 +347,9 @@ def _label_labels(labels: list) -> str:
     # ]
     # return response.strip().lower()
     response = (
-        TEXT_GENERATION_MODEL(
-            prompt,
-            num_return_sequences=1,
-            max_new_tokens=10,
-            temperature=0.7,
-        )[0]["generated_text"][len(prompt) :]
+        TEXT_GENERATION_MODEL(prompt, do_sample=False, num_beams=1)[0][
+            "generated_text"
+        ][len(prompt) :]
         .strip()
         .lower()
     )
