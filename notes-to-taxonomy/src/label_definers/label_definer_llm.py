@@ -1,6 +1,6 @@
 from typing import List
 
-from .src import LabelDefiner, LLM
+from src import LabelDefiner, LLM
 
 
 class LabelDefinerLLM(LabelDefiner):
@@ -20,7 +20,7 @@ class LabelDefinerLLM(LabelDefiner):
         self.temperature = temperature
         self.seed = seed
 
-    def get_class_definition(self, concept: str, note: str):
+    def get_label_definition(self, label: str, note: str):
         prompt = (
             "The following text has been summarised with a building use type label."
             "Provide a concise and general definition of the building use type label in this context."
@@ -34,5 +34,6 @@ class LabelDefinerLLM(LabelDefiner):
             num_return_sequences=1,
             max_new_tokens=100,
             temperature=0.7,
+            seed=self.seed,
         )
         return response

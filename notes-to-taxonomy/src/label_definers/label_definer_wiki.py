@@ -5,7 +5,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from .src import LabelDefiner
+from src import LabelDefiner
 
 
 class LabelDefinerWiki(LabelDefiner):
@@ -26,19 +26,13 @@ class LabelDefinerWiki(LabelDefiner):
         self.session.mount("https://", HTTPAdapter(max_retries=self.retries))
         self.sentence_model = sentence_model
 
-    def get_concept_definition(
-        self, concept, top_k=5, minimum_relevance=0.7, lang="en"
-    ):
-        titles = self.search(concept, n=top_k, lang=lang)
+    def get_label_definition(self, label, top_k=5, minimum_relevance=0.7, lang="en"):
+        titles = self.search(label, n=top_k, lang=lang)
         # remove titles which are proper nouns with same name as label
-        titles = [
-            t for t in titles if len(concept.split()) == 1 or t != concept.title()
-        ]
+        titles = [t for t in titles if len(label.split()) == 1 or t != label.title()]
         if not titles:
             return ""
-        label_embedding = self.sentence_model.encode(
-            [concept], normalize_embeddings=True
-        )
+        label_embedding = self.sentence_model.encode([label], normalize_embeddings=True)
         candidate_texts = [self.get_page_intro(t, lang=lang) for t in titles]
         pairs = [(t, c) for t, c in zip(titles, candidate_texts)]
         if not pairs:
