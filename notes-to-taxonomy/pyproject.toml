@@ -1,0 +1,16 @@
+[project]
+name = "notes-to-taxonomy"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "ipython>=9.8.0",
+    "sentence-transformers>=5.2.0",
+]
+
+[dependency-groups]
+dev = [
+    "ipython>=9.8.0",
+    "pytest>=9.0.2",
+]
