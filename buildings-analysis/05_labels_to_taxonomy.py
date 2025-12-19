@@ -21,7 +21,7 @@ from urllib3.util.retry import Retry
 GET_CONTEXT_FROM_WIKIPEDIA = False
 GET_CONTEXT_FROM_GENERATIVE_LLM = True
 
-CLASSIFICATIONS_DIR = "scratch/classifications"
+CLASSIFICATIONS_DIR = "classifications"
 
 NOTES_WITH_LABELS_FILE = f"{CLASSIFICATIONS_DIR}/llama3-mixed-longer-5shots-t0.5.csv"
 NOTES_LABELS_EMBEDDINGS_FILE = (
@@ -38,32 +38,21 @@ BUILDING_USE_HIERARCHY_FILE = f"{CLASSIFICATIONS_DIR}/building-use-types-with-ll
 # SENTENCE_MODEL = SentenceTransformer("BAAI/bge-large-en-v1.5")
 SENTENCE_MODEL = SentenceTransformer("BAAI/bge-small-en-v1.5")
 
-# CLUSTER_LABEL_MODEL_NAME = "google/flan-t5-base"
-# CLUSTER_LABEL_MODEL = pipeline(
-#    "text2text-generation",
-#    model=AutoModelForSeq2SeqLM.from_pretrained(
-#        CLUSTER_LABEL_MODEL_NAME,
-#        device_map="auto",
-#        dtype=(torch.float16 if torch.backends.mps.is_available() else torch.float32),
+# TEXT_GENERATION_MODEL_NAME = "/scratch/users/k2480370/llama3.1-8B"
+# TEXT_GENERATION_MODEL = pipeline(
+#    "text-generation",
+#    model=AutoModelForCausalLM.from_pretrained(
+#        TEXT_GENERATION_MODEL_NAME,
+#        trust_remote_code=True,
 #    ),
-#    tokenizer=AutoTokenizer.from_pretrained(CLUSTER_LABEL_MODEL_NAME),
-#    max_new_tokens=8,
+#    tokenizer=AutoTokenizer.from_pretrained(
+#        TEXT_GENERATION_MODEL_NAME,
+#        trust_remote_code=True,
+#    ),
+#    device=0,
+#    pad_token_id=0,
 # )
-TEXT_GENERATION_MODEL_NAME = "/scratch/users/k2480370/llama3.1-8B"
-TEXT_GENERATION_MODEL = pipeline(
-    "text-generation",
-    model=AutoModelForCausalLM.from_pretrained(
-        TEXT_GENERATION_MODEL_NAME,
-        trust_remote_code=True,
-    ),
-    tokenizer=AutoTokenizer.from_pretrained(
-        TEXT_GENERATION_MODEL_NAME,
-        trust_remote_code=True,
-    ),
-    device=0,
-    pad_token_id=0,
-)
-CLUSTER_LABEL_MODEL = TEXT_GENERATION_MODEL
+# CLUSTER_LABEL_MODEL = TEXT_GENERATION_MODEL
 
 WIKIPEDIA_SESSION = requests.Session()
 WIKIPEDIA_SESSION.headers.update(
@@ -347,12 +336,15 @@ def _label_labels(labels: list) -> str:
     # ]
     # return response.strip().lower()
     response = (
-        TEXT_GENERATION_MODEL(prompt, do_sample=False, num_beams=1)[0][
-            "generated_text"
-        ][len(prompt) :]
+        TEXT_GENERATION_MODEL(prompt, do_sample=False, num_beams=1, max_new_tokens=10)[
+            0
+        ]["generated_text"][len(prompt) :]
         .strip()
         .lower()
     )
+    print(prompt)
+    print("->", response)
+    print()
     return response
 
 
@@ -366,6 +358,7 @@ if __name__ == "__main__":
         max_k=20,
     )
 
+    print("BUILDING SUB-CLUSTERS")
     sub_cluster_data_frames = []
     for cluster_id, subset in labels_with_clusters.groupby("label_embedding_cluster"):
         subset["label_embedding_specific"] = subset["label_embedding"]
@@ -376,72 +369,34 @@ if __name__ == "__main__":
             min_k=min(2, len(subset)),
             max_k=min(10, len(subset) - 1),
         )
-        labels_with_named_sub_clusters = name_clusters(
-            labels_with_sub_clusters, "label_embedding_specific_cluster", "label"
-        )
-        sub_cluster_data_frames.append(labels_with_named_sub_clusters)
-
-    labels_with_clusters_and_named_sub_clusters = pd.concat(
+        # labels_with_named_sub_clusters = name_clusters(
+        #    labels_with_sub_clusters, "label_embedding_specific_cluster", "label"
+        # )
+        sub_cluster_data_frames.append(labels_with_sub_clusters)
+    labels_with_clusters_and_sub_clusters = pd.concat(
         sub_cluster_data_frames, ignore_index=True
     )
-    labels_with_named_clusters_and_sub_clusters = name_clusters(
-        labels_with_clusters_and_named_sub_clusters,
-        "label_embedding_cluster",
-        "label_embedding_specific_cluster_name",
-    )
 
-    final_classifications = labels_with_named_clusters_and_sub_clusters[
+    # labels_with_named_clusters_and_sub_clusters = name_clusters(
+    #    labels_with_clusters_and_named_sub_clusters,
+    #    "label_embedding_cluster",
+    #    "label_embedding_specific_cluster_name",
+    # )
+
+    final_clusters = labels_with_clusters_and_sub_clusters[
         [
             "name",
             "note",
             "label",
             "contextualized_label",
             "label_embedding_cluster",
-            "label_embedding_cluster_name",
             "label_embedding_specific_cluster",
-            "label_embedding_specific_cluster_name",
         ]
     ]
-    final_classifications["core_use_type"] = final_classifications.apply(
-        lambda row: f"{row['label_embedding_cluster_name']} ({row['label_embedding_cluster']})",
-        axis=1,
-    )
-    final_classifications["use_type"] = final_classifications.apply(
-        lambda row: f"{row['label_embedding_specific_cluster_name']} ({row['label_embedding_specific_cluster']})",
-        axis=1,
-    )
-    final_classifications.sort_values(
-        by=["label_embedding_cluster", "label_embedding_specific_cluster"]
-    )[
-        ["name", "note", "core_use_type", "use_type", "label", "contextualized_label"]
-    ].to_csv(
-        NOTES_LABELS_CLUSTERED_FILE, index=False
-    )
+    final_clusters["core_cluster"] = final_clusters["label_embedding_cluster"]
+    final_clusters["sub_cluster"] = final_clusters["label_embedding_specific_cluster"]
+    final_clusters.sort_values(by=["core_cluster", "sub_cluster"])[
+        ["name", "note", "core_cluster", "sub_cluster", "label", "contextualized_label"]
+    ].to_csv(NOTES_LABELS_CLUSTERED_FILE, index=False)
 
-    core_use_types = (
-        final_classifications[["core_use_type"]]
-        .drop_duplicates()
-        .rename(columns={"core_use_type": "type_name"})
-    )
-    core_use_types["sub_type_of"] = ""
-    core_use_types["is_core_category"] = True
-
-    specific_use_types = (
-        final_classifications[["core_use_type", "use_type"]]
-        .drop_duplicates()
-        .assign(use_type=lambda d: d["use_type"].astype("string").str.strip())
-        .loc[
-            lambda d: d["use_type"].notna()
-            & d["use_type"].ne("")
-            & d["use_type"].ne(d["core_use_type"])
-        ]
-        .query("use_type != ''")
-        .query("use_type != 'nan (None)'")
-        .rename(columns={"use_type": "type_name", "core_use_type": "sub_type_of"})
-    )
-    specific_use_types["is_core_category"] = False
-
-    use_hierarchy = pd.concat([core_use_types, specific_use_types], ignore_index=True)
-    use_hierarchy.to_csv(BUILDING_USE_HIERARCHY_FILE, index=False)
-
-    print(len(set(final_classifications["label"].dropna())))
+    print(len(set(final_clusters["label"].dropna())))
