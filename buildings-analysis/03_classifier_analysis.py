@@ -2,10 +2,11 @@ import os
 import statistics
 
 import pandas as pd
+import matplotlib.pyplot as plt
 import statsmodels.formula.api as smf
 
 
-results_directory = "results5"
+results_directory = "results6"
 
 
 def evaluate_experiment(file_name):
@@ -33,7 +34,7 @@ def evaluate_experiment(file_name):
                 # "model_name": model_name,
                 "role_name": role_name,
                 "task_name": task_name,
-                # "number_of_shots": number_of_shots,
+                "number_of_shots": number_of_shots,
                 "temperature": temperature,
                 "mean_status_similarity": mean_status_similarity,
                 "std_status_similarity": std_status_similarity,
@@ -56,7 +57,7 @@ if __name__ == "__main__":
             # "model_name",
             "role_name",
             "task_name",
-            # "number_of_shots",
+            "number_of_shots",
             "temperature",
             "mean_status_similarity",
             "std_status_similarity",
@@ -79,7 +80,6 @@ if __name__ == "__main__":
                 evaluate_experiment(f"{results_directory}/{results_file}"),
             ]
         )
-    results_data_frame.to_csv("classifier_results_summary5.csv", index=False)
 
     results_data_frame["temperature"] = results_data_frame["temperature"].map(
         {
@@ -90,9 +90,96 @@ if __name__ == "__main__":
             "t1.0.csv": 1.0,
         }
     )
+    results_data_frame["number_of_shots"] = results_data_frame["number_of_shots"].map(
+        {
+            "0shots": 0,
+            "1shots": 1,
+            "2shots": 2,
+            "3shots": 3,
+            "5shots": 5,
+        }
+    )
+    results_data_frame["task_name"] = results_data_frame["task_name"].map(
+        {
+            "all": "short",
+            "longer": "medium",
+            "extended": "long",
+        }
+    )
+
+    results_data_frame.to_csv("classifier_results_summary5.csv", index=False)
+
+    # row with largest overall mean similarity
+    best_row = results_data_frame.loc[
+        results_data_frame["overall_mean_similarity"].idxmax()
+    ]
+    print("Best overall mean similarity:")
+    print(best_row)
+
     model = smf.ols(
-        "overall_mean_similarity ~ C(role_name) + C(task_name) + temperature",
+        "overall_mean_similarity ~ C(role_name) + C(task_name) + temperature + number_of_shots",
         data=results_data_frame,
     ).fit()
 
     print(model.summary())
+
+    AXIS_MARGINS = dict(left=0.22, right=0.98, top=0.88, bottom=0.22)
+
+    # plot box and whisker diagram of overall mean similarity by number of shots
+    fig, ax = plt.subplots(figsize=(10, 4))
+    fig.subplots_adjust(**AXIS_MARGINS)
+    results_data_frame.boxplot(
+        column="overall_mean_similarity",
+        by="number_of_shots",
+        vert=False,
+        ax=ax,
+    )
+    ax.set_title(
+        "Similarity of LLM and human labels by number of shots in prompt", fontsize=16
+    )
+    fig.suptitle("")
+    ax.set_xlabel("Mean cosine similarity", fontsize=14)
+    ax.set_ylabel("Number of shots", fontsize=14)
+    ax.tick_params(axis="both", labelsize=12)
+    ax.grid(False)
+    ax.set_xlim(left=0, right=0.6)
+    fig.savefig("plots/overall_mean_similarity_by_number_of_shots.png")
+    plt.close(fig)
+
+    # plot box and whisker diagram of overall mean similarity by temperature
+    fig, ax = plt.subplots(figsize=(10, 4))
+    fig.subplots_adjust(**AXIS_MARGINS)
+    results_data_frame[results_data_frame["number_of_shots"] == 5].boxplot(
+        column="overall_mean_similarity", by="temperature", vert=False, ax=ax
+    )
+    ax.set_title(
+        "Similarity of LLM and human labels by decoding temperature (5-shot prompts)",
+        fontsize=16,
+    )
+    fig.suptitle("")
+    ax.set_xlabel("Mean cosine similarity", fontsize=14)
+    ax.set_ylabel("Decoding temperature", fontsize=14)
+    ax.tick_params(axis="both", labelsize=12)
+    ax.grid(False)
+    ax.set_xlim(left=0, right=0.6)
+    fig.savefig("plots/overall_mean_similarity_by_temperature_5_shots.png")
+    plt.close(fig)
+
+    # plot box and whisker diagram of overall mean similarity by task name
+    fig, ax = plt.subplots(figsize=(10, 4))
+    fig.subplots_adjust(**AXIS_MARGINS)
+    results_data_frame[results_data_frame["number_of_shots"] == 5].boxplot(
+        column="overall_mean_similarity", by="task_name", vert=False, ax=ax
+    )
+    ax.set_title(
+        "Similarity of LLM and human labels by task description (5-shot prompts)",
+        fontsize=16,
+    )
+    fig.suptitle("")
+    ax.set_xlabel("Mean cosine similarity", fontsize=14)
+    ax.set_ylabel("Task description", fontsize=14)
+    ax.tick_params(axis="both", labelsize=12)
+    ax.grid(False)
+    ax.set_xlim(left=0, right=0.6)
+    plt.savefig("plots/overall_mean_similarity_by_task_description_5_shots.png")
+    plt.close()
