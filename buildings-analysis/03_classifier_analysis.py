@@ -4,6 +4,7 @@ import statistics
 import pandas as pd
 import matplotlib.pyplot as plt
 import statsmodels.formula.api as smf
+from statsmodels.stats.anova import anova_lm
 
 
 results_directory = "results6"
@@ -117,11 +118,13 @@ if __name__ == "__main__":
     print(best_row)
 
     model = smf.ols(
-        "overall_mean_similarity ~ C(role_name) + C(task_name) + temperature + number_of_shots",
-        data=results_data_frame,
+        "overall_mean_similarity ~ C(role_name) + C(task_name) + C(temperature)",
+        data=results_data_frame[results_data_frame["number_of_shots"] == 5],
     ).fit()
 
     print(model.summary())
+
+    print(anova_lm(model, typ=2))
 
     AXIS_MARGINS = dict(left=0.22, right=0.98, top=0.88, bottom=0.22)
 
