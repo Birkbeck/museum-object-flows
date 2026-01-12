@@ -94,16 +94,14 @@ def test_get_embeddings_does_not_recompute_if_present(tmp_path, df_labels):
     # Pre-populate augmented_label + embedding
     df = df_labels.copy()
     df["augmented_label"] = ["x"] * len(df)
-    df["embedding"] = [np.ones(5, dtype=np.float32)] * len(df)
 
     parquet_path = tmp_path / "labels.parquet"
     df.to_parquet(parquet_path, index=False)
 
     out = tb._get_embeddings(str(parquet_path))
 
-    # Should not call encoder/definer since columns already exist
+    # Should not call definer since augmented labels already exist
     assert definer.calls == []
-    assert encoder.calls == []
 
     assert (out["augmented_label"] == "x").all()
 

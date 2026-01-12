@@ -52,14 +52,12 @@ class TaxonomyBuilder:
                 + self.label_definer.define(row),
                 axis=1,
             )
-        if "embedding" not in labelled_texts.columns:
-            labelled_texts["embedding"] = self.encoder.encode(
-                labelled_texts["augmented_label"].tolist(), normalize_embedding=True
+            # augmented labels are stored to avoid repeated use of LLMs/APIs
+            labelled_texts.to_parquet(
+                labelled_texts_file.split(".")[0] + ".parquet", index=False
             )
-        labelled_texts.to_parquet(
-            labelled_texts_file.split(".")[0] + ".parquet",
-            index=False,
-            engine="pyarrow",  # necessary for storing numpy arrays
+        labelled_texts["embedding"] = self.encoder.encode(
+            labelled_texts["augmented_label"].tolist(), normalize_embedding=True
         )
         return labelled_texts
 
