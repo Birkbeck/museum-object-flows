@@ -22,7 +22,7 @@ class ClusterLabeller:
         self.max_new_tokens = max_new_tokens
         self.seed = seed
 
-    def label_cluster(self, members):
+    def label_cluster(self, members: List[str]):
         prompt = self._generate_prompt(members)
         response = self.llm.get_response(
             prompt,
