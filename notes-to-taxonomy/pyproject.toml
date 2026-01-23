@@ -9,6 +9,7 @@ dependencies = [
     "pandas>=2.3.3",
     "pyarrow>=22.0.0",
     "sentence-transformers>=5.2.0",
+    "statsmodels>=0.14.6",
 ]
 
 [dependency-groups]

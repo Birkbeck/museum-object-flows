@@ -20,90 +20,47 @@ class FakeSentenceModel:
         return out
 
 
-class FakeLabelDefiner:
-    def __init__(self):
-        self.calls = []
-
-    def define(self, row):
-        self.calls.append(("define", row.get("label")))
-        return f"definition of {row['label']}"
-
-
 @pytest.fixture
 def df_labels():
     return pd.DataFrame(
-        {"label": ["roof", "door", "window", "gallery", "cafe", "shop"]}
+        {
+            "label": ["roof", "door", "window", "gallery", "cafe", "shop"],
+            "definition_deftype": ["def", "def", "def", "def", "def", "def"],
+        }
     )
 
 
 def test_init_validation_raises():
     encoder = FakeSentenceModel()
-    definer = FakeLabelDefiner()
 
     with pytest.raises(Exception):
-        TaxonomyBuilder(encoder, "X", definer, number_of_layers=0)
+        TaxonomyBuilder(encoder, "X", "deftype", number_of_layers=0)
 
     with pytest.raises(Exception):
-        TaxonomyBuilder(encoder, "X", definer, min_k=1)
+        TaxonomyBuilder(encoder, "X", "deftype", min_k=1)
 
     with pytest.raises(Exception):
-        TaxonomyBuilder(encoder, "X", definer, max_k=1)
+        TaxonomyBuilder(encoder, "X", "deftype", max_k=1)
 
 
 def test_get_embeddings_creates_augmented_label_and_embedding(tmp_path, df_labels):
     encoder = FakeSentenceModel()
-    definer = FakeLabelDefiner()
     tb = TaxonomyBuilder(
         encoder=encoder,
         sentence_structure="This label refers to",
-        label_definer=definer,
+        definition_type="deftype",
         number_of_layers=1,
         min_k=2,
         max_k=3,
     )
 
-    csv_path = tmp_path / "labels.csv"
-    df_labels.to_csv(csv_path, index=False)
-
-    out = tb._get_embeddings(str(csv_path))
+    out = tb._get_embeddings(df_labels)
 
     assert "augmented_label" in out.columns
     assert "embedding" in out.columns
 
-    # Confirm definer and encoder were used
-    assert len(definer.calls) == len(df_labels)
+    # Confirm encoder was used
     assert encoder.calls and encoder.calls[0][0] == "encode"
-
-    # Confirm parquet cache was written
-    cached = tmp_path / "labels.parquet"
-    assert cached.exists()
-
-
-def test_get_embeddings_does_not_recompute_if_present(tmp_path, df_labels):
-    encoder = FakeSentenceModel()
-    definer = FakeLabelDefiner()
-    tb = TaxonomyBuilder(
-        encoder=encoder,
-        sentence_structure="S",
-        label_definer=definer,
-        number_of_layers=1,
-        min_k=2,
-        max_k=3,
-    )
-
-    # Pre-populate augmented_label + embedding
-    df = df_labels.copy()
-    df["augmented_label"] = ["x"] * len(df)
-
-    parquet_path = tmp_path / "labels.parquet"
-    df.to_parquet(parquet_path, index=False)
-
-    out = tb._get_embeddings(str(parquet_path))
-
-    # Should not call definer since augmented labels already exist
-    assert definer.calls == []
-
-    assert (out["augmented_label"] == "x").all()
 
 
 def test_kmeans_adds_cluster_column(df_labels):
@@ -116,7 +73,7 @@ def test_kmeans_adds_cluster_column(df_labels):
     tb = TaxonomyBuilder(
         encoder=FakeSentenceModel(),
         sentence_structure="S",
-        label_definer=FakeLabelDefiner(),
+        definition_type="deftype",
         number_of_layers=1,
         min_k=2,
         max_k=3,
@@ -139,7 +96,7 @@ def test_cluster_first_layer_clusters_all(df_labels):
     tb = TaxonomyBuilder(
         encoder=FakeSentenceModel(),
         sentence_structure="S",
-        label_definer=FakeLabelDefiner(),
+        definition_type="deftype",
         number_of_layers=2,
         min_k=2,
         max_k=3,
@@ -151,20 +108,16 @@ def test_cluster_first_layer_clusters_all(df_labels):
 
 def test_generate_taxonomy_creates_cluster_columns(tmp_path, df_labels):
     encoder = FakeSentenceModel()
-    definer = FakeLabelDefiner()
 
     tb = TaxonomyBuilder(
         encoder=encoder,
         sentence_structure="S",
-        label_definer=definer,
+        definition_type="deftype",
         number_of_layers=2,
         min_k=2,
         max_k=3,
     )
 
-    csv_path = tmp_path / "labels.csv"
-    df_labels.to_csv(csv_path, index=False)
-
-    out = tb.generate_taxonomy(str(csv_path))
+    out = tb.generate_taxonomy(df_labels)
     assert "layer_1_cluster" in out.columns
     assert "layer_2_cluster" in out.columns

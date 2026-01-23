@@ -88,11 +88,10 @@ class DocLabellingExperiment(Experiment):
         dataset["mean_similarity"] = dataset[
             ["status_similarity", "use_similarity", "responsibility_similarity"]
         ].mean(axis=1)
-
-    def evaluation_summary(self):
+        # TODO: save this dataset as results
         raise NotImplementedError
 
-    def best_configuration(self, peformance_metric: str) -> dict:
+    def evaluation_summary(self):
         raise NotImplementedError
 
     def _generate_prompt(self, configuration: dict, note: str):

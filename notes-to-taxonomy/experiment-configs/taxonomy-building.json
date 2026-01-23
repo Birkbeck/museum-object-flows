@@ -1,0 +1,40 @@
+{
+    "dataset": "data/labelled_documents.csv",
+    "email": "george.wright@bbk.ac.uk",
+    "evaluation_llm": "/users/k2480370/scratch/llama3.1-8B",
+    "label_definer_sentence_model": "all-MiniLM-L6-v2",
+    "label_definer_wiki_top_k": 5,
+    "label_definer_wiki_min_relevance": 0.7,
+    "label_defining_llm": "/users/k2480370/scratch/llama3.1-8B",
+    "label_definer_prompt": "The following text has been summarised with a building use type label.\nProvide a concise and general definition of no more than 3 sentences describing the building use type label in this context.\nDo not include details from the original text.\n\n"
+,
+    "label_definer_max_new_tokens": 150,
+    "label_definer_temperature": 0.7,
+    "label_definer_top_p": 0.9,
+    "label_definer_seed": 123,
+    "evaluation_prompt": "",
+    "evaluation_temperature": 0.7,
+    "evaluation_top_p": 0.9,
+    "evaluation_seed": 123,
+    "output_directory": "data",
+    "encoders": [
+	"BAAI/bge-small-en-v1.5",
+	"BAAI/bge-large-en-v1.5"
+    ],
+    "sentence_templates": [
+	"The new use of the building is"
+    ],
+    "definition_types": [
+	"null", "note", "wiki", "llm"
+    ],
+    "layer_counts": [
+	2
+    ],
+    "min_ks": [
+	10
+    ],
+    "max_ks": [
+	20
+    ]
+}
+

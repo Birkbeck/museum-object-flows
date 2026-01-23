@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from sentence_transformers import SentenceTransformer
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import normalize
@@ -10,16 +11,16 @@ class TaxonomyBuilder:
 
     def __init__(
         self,
-        encoder: "SentenceModel",
+        encoder: SentenceTransformer,
         sentence_structure: str,
-        label_definer: "LabelDefiner",
+        definition_type: str,
         number_of_layers: int = 2,
         min_k: int = 10,
         max_k: int = 20,
     ):
         self.encoder = encoder
         self.sentence_structure = sentence_structure
-        self.label_definer = label_definer
+        self.definition_type = definition_type
         if number_of_layers < 1:
             raise Exception(
                 "number_of_layers < 1: The taxonomy must have at least one layer."
@@ -32,34 +33,34 @@ class TaxonomyBuilder:
             raise Exception("max_k < 2: The taxonomy must have at least two clusters.")
         self.max_k = max_k
 
-    def generate_taxonomy(self, labelled_texts_file: str):
-        labelled_texts = self._get_embeddings(labelled_texts_file)
+    def generate_taxonomy(self, labelled_texts: pd.DataFrame):
+        labelled_texts = self._get_embeddings(labelled_texts)
         for i in range(self.number_of_layers):
             labelled_texts = self._cluster(labelled_texts, layer=i + 1)
         return labelled_texts
 
-    def _get_embeddings(self, labelled_texts_file: str):
-        if labelled_texts_file.split(".")[-1] == "parquet":
-            labelled_texts = pd.read_parquet(labelled_texts_file)
-        elif labelled_texts_file.split(".")[-1] == "csv":
-            labelled_texts = pd.read_csv(labelled_texts_file)
-        if "augmented_label" not in labelled_texts.columns:
-            labelled_texts["augmented_label"] = labelled_texts.apply(
-                lambda row: self.sentence_structure
+    def _get_embeddings(self, labelled_texts: pd.DataFrame):
+        labelled_texts["augmented_label"] = labelled_texts.apply(
+            lambda row: (
+                self.sentence_structure
                 + " "
                 + row["label"]
                 + ". "
-                + self.label_definer.define(row),
-                axis=1,
-            )
-            # augmented labels are stored to avoid repeated use of LLMs/APIs
-            labelled_texts.to_parquet(
-                labelled_texts_file.split(".")[0] + ".parquet", index=False
-            )
-        labelled_texts["embedding"] = self.encoder.encode(
-            labelled_texts["augmented_label"].tolist(), normalize_embedding=True
+                + row[f"definition_{self.definition_type}"]
+            ).strip(),
+            axis=1,
+        )
+        unique_labels = self._get_unique_labels(labelled_texts, "augmented_label")
+        label_embeddings = self.encoder.encode(unique_labels)
+        label_to_embedding = dict(zip(unique_labels, [e for e in label_embeddings]))
+        labelled_texts["embedding"] = labelled_texts["augmented_label"].map(
+            label_to_embedding
         )
         return labelled_texts
+
+    def _get_unique_labels(self, data_frame: pd.DataFrame, column: str):
+        vals = data_frame[column].dropna().astype(str)
+        return sorted(set(v for v in vals if v))
 
     def _cluster(self, labelled_texts: pd.DataFrame, layer: int):
         if layer == 1:

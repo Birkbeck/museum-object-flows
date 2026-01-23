@@ -7,34 +7,32 @@ class LabelDefinerLLM(LabelDefiner):
     def __init__(
         self,
         llm: LLM,
-        role_description: str,
-        task_description: str,
-        examples: List[str],
+        prompt: str,
+        max_new_tokens: int,
         temperature: float,
+        top_p: float,
         seed: int,
     ):
         self.llm = llm
-        self.role_description = role_description
-        self.task_description = task_description
-        self.examples = examples
+        self.prompt = prompt
+        self.max_new_tokens = max_new_tokens
         self.temperature = temperature
+        self.top_p = top_p
         self.seed = seed
 
     def get_label_definition(self, label: str, note: str):
         prompt = (
-            "The following text has been summarised with a building use type label."
-            # TODO: prompt for shorter outputs, e.g. 2-3 sentences
-            "Provide a concise and general definition of the building use type label in this context."
-            "Do not include details from the original text.\n\n"
-            f"Text: {note}\n\n"
-            f"Building use type: {label}\n\n"
+            f"{self.prompt}\n\n"
+            f"Text: {note}\n"
+            f"Building use type: {label}\n"
             "Definition:"
         )
         response = self.llm.get_response(
             prompt,
             num_return_sequences=1,
-            max_new_tokens=100,  # TODO: and then avoid hard cut-offs
-            temperature=0.7,
+            max_new_tokens=self.max_new_tokens,
+            temperature=self.temperature,
+            top_p=self.top_p,
             seed=self.seed,
         )
         return response

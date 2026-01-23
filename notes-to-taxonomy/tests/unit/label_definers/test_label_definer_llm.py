@@ -14,7 +14,7 @@ class FakeLLM:
         self.calls = []
 
     def get_response(
-        self, prompt, num_return_sequences, max_new_tokens, temperature, seed
+        self, prompt, num_return_sequences, max_new_tokens, temperature, top_p, seed
     ):
         self.calls.append(
             {
@@ -22,6 +22,7 @@ class FakeLLM:
                 "num_return_sequences": num_return_sequences,
                 "max_new_tokens": max_new_tokens,
                 "temperature": temperature,
+                "top_p": top_p,
                 "seed": seed,
             }
         )
@@ -34,10 +35,10 @@ def test_get_label_definition():
     fake_llm = FakeLLM(fake_output)
     definer = LabelDefinerLLM(
         llm=fake_llm,
-        role_description="Role text",
-        task_description="Task text",
-        examples=[],
+        prompt="task description",
+        max_new_tokens=100,
         temperature=0.7,
+        top_p=0.9,
         seed=99,
     )
     definition = definer.get_label_definition("label", "Some note.")

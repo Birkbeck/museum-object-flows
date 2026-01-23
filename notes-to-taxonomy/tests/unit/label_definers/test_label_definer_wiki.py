@@ -68,22 +68,22 @@ class FakeSentenceModel:
 
 
 @pytest.fixture
-def cfg():
-    return {"task_name": "notes-to-taxonomy", "email": "george@example.com"}
+def email():
+    return "george.wright@bbk.ac.uk"
 
 
-def test__search_parses_titles(monkeypatch, cfg):
+def test__search_parses_titles(monkeypatch, email):
     # Wikipedia search API response
     search_json = {"query": {"search": [{"title": "house"}, {"title": "home"}]}}
     fake_session = FakeSession([FakeResponse(200, search_json)])
 
     # sentence model not used in _search
-    sm = FakeSentenceModel(mapping={})
+    sentence_model = FakeSentenceModel(mapping={})
 
-    wiki = LabelDefinerWiki(cfg, sm)
+    wiki = LabelDefinerWiki(sentence_model, email, top_k=2)
     wiki.session = fake_session  # override real session
 
-    titles = wiki._search("house", n=2, lang="en")
+    titles = wiki._search("house")
 
     assert titles == ["house", "home"]
     assert fake_session.calls[0]["url"].endswith("en.wikipedia.org/w/api.php")
@@ -91,29 +91,29 @@ def test__search_parses_titles(monkeypatch, cfg):
     assert fake_session.calls[0]["params"]["srlimit"] == 2
 
 
-def test__get_page_intro_non_200_returns_empty(monkeypatch, cfg):
+def test__get_page_intro_non_200_returns_empty(monkeypatch, email):
     fake_session = FakeSession([FakeResponse(status_code=404, json_data={})])
-    sm = FakeSentenceModel(mapping={})
-    wiki = LabelDefinerWiki(cfg, sm)
+    sentence_model = FakeSentenceModel(mapping={})
+    wiki = LabelDefinerWiki(sentence_model, email)
     wiki.session = fake_session
 
-    txt = wiki._get_page_intro("house", lang="en")
+    txt = wiki._get_page_intro("house")
     assert txt == ""
 
 
-def test__get_page_intro_disambiguation_returns_empty(cfg):
+def test__get_page_intro_disambiguation_returns_empty(email):
     fake_session = FakeSession(
         [FakeResponse(status_code=200, json_data={"type": "disambiguation"})]
     )
-    sm = FakeSentenceModel(mapping={})
-    wiki = LabelDefinerWiki(cfg, sm)
+    sentence_model = FakeSentenceModel(mapping={})
+    wiki = LabelDefinerWiki(sentence_model, email)
     wiki.session = fake_session
 
-    txt = wiki._get_page_intro("house", lang="en")
+    txt = wiki._get_page_intro("house")
     assert txt == ""
 
 
-def test__get_page_intro_strips_and_normalizes_whitespace(cfg):
+def test__get_page_intro_strips_and_normalizes_whitespace(email):
     fake_session = FakeSession(
         [
             FakeResponse(
@@ -122,45 +122,44 @@ def test__get_page_intro_strips_and_normalizes_whitespace(cfg):
             )
         ]
     )
-    sm = FakeSentenceModel(mapping={})
-    wiki = LabelDefinerWiki(cfg, sm)
+    sentence_model = FakeSentenceModel(mapping={})
+    wiki = LabelDefinerWiki(sentence_model, email)
     wiki.session = fake_session
 
-    txt = wiki._get_page_intro("A house is a place where people live", lang="en")
+    txt = wiki._get_page_intro("A house is a place where people live")
     assert txt == "A house is a place where people live"
     assert not re.search(r"\s{2,}", txt)  # no repeated whitespace
 
 
-def test_get_label_definition_empty_when_no_titles(cfg, monkeypatch):
-    sm = FakeSentenceModel(mapping={"house": [1, 0, 0]})
-    wiki = LabelDefinerWiki(cfg, sm)
+def test_get_label_definition_empty_when_no_titles(email, monkeypatch):
+    sentence_model = FakeSentenceModel(mapping={"house": [1, 0, 0]})
+    wiki = LabelDefinerWiki(sentence_model, email)
+    monkeypatch.setattr(wiki, "_search", lambda label: [])
+    monkeypatch.setattr(wiki, "_get_page_intro", lambda title: "ignored")
 
-    # If your base class exposes search/get_page_intro, remove these monkeypatches.
-    monkeypatch.setattr(wiki, "_search", lambda label, n=5, lang="en": [])
-    monkeypatch.setattr(wiki, "_get_page_intro", lambda title, lang="en": "ignored")
-
-    assert wiki.get_label_definition("house") == ""
+    result = wiki.get_label_definition("house", "the museum was converted into a house")
+    assert "" == result
 
 
-def test_get_label_definition_filters_title_case_multi_word_label(cfg, monkeypatch):
-    sm = FakeSentenceModel(
+def test_get_label_definition_filters_title_case_multi_word_label(email, monkeypatch):
+    sentence_model = FakeSentenceModel(
         mapping={
             "Chocolate Factory is an album": [1, 0, 0],
             "chocolate factory is a factory": [1, 0, 0],
         }
     )
-    wiki = LabelDefinerWiki(cfg, sm)
+    wiki = LabelDefinerWiki(sentence_model, email, top_k=5, minimum_relevance=0.1)
 
     # Titles include exact Title() match; for single-word labels it should be filtered out
     monkeypatch.setattr(
         wiki,
         "_search",
-        lambda label, n=5, lang="en": ["Chocolate Factory", "chocolate factory"],
+        lambda label: ["Chocolate Factory", "chocolate factory"],
     )
     monkeypatch.setattr(
         wiki,
         "_get_page_intro",
-        lambda title, lang="en": (
+        lambda title: (
             "Chocolate Factory is an album"
             if title == "Chocolate Factory"
             else "chocolate factory is a factory"
@@ -168,7 +167,7 @@ def test_get_label_definition_filters_title_case_multi_word_label(cfg, monkeypat
     )
 
     snippet = wiki.get_label_definition(
-        "chocolate factory", top_k=5, minimum_relevance=0.1
+        "chocolate factory", "the museum was converted into a chocolate factory"
     )
 
     # Because "Chocolate Factory" should be filtered, we expect only "chocolate factory" intro
@@ -176,10 +175,10 @@ def test_get_label_definition_filters_title_case_multi_word_label(cfg, monkeypat
 
 
 def test_get_label_definition_selects_most_similar_and_stops_at_minimum_relevance(
-    cfg, monkeypatch
+    email, monkeypatch
 ):
     # label embedding aligns best with "A", then "B", then "C"
-    sm = FakeSentenceModel(
+    sentence_model = FakeSentenceModel(
         mapping={
             "house": [1, 0, 0],
             "A": [1, 0, 0],  # similarity 1.0
@@ -187,36 +186,42 @@ def test_get_label_definition_selects_most_similar_and_stops_at_minimum_relevanc
             "C": [0, 1, 0],  # similarity 0.0
         }
     )
-    wiki = LabelDefinerWiki(cfg, sm)
-
-    monkeypatch.setattr(
-        wiki, "_search", lambda label, n=5, lang="en": ["T1", "T2", "T3"]
-    )
+    wiki = LabelDefinerWiki(sentence_model, email, top_k=5)
+    monkeypatch.setattr(wiki, "_search", lambda label: ["T1", "T2", "T3"])
     monkeypatch.setattr(
         wiki,
         "_get_page_intro",
-        lambda title, lang="en": {"T1": "A", "T2": "B", "T3": "C"}[title],
+        lambda title: {"T1": "A", "T2": "B", "T3": "C"}[title],
     )
 
     # minimum_relevance=1.0 means it should stop after including "A" only
-    snippet = wiki.get_label_definition("house", top_k=3, minimum_relevance=1.0)
+    wiki.minimum_relevance = 1.0
+    snippet = wiki.get_label_definition(
+        "house", "the museum was converted into a house"
+    )
     assert snippet == "A"
 
     # minimum_relevance=1.4 means it needs A (1.0) + B (~0.6) -> reaches >= 1.4, so returns "A B"
-    snippet2 = wiki.get_label_definition("house", top_k=3, minimum_relevance=1.4)
+    wiki.minimum_relevance = 1.4
+    snippet2 = wiki.get_label_definition(
+        "house", "the museum was converted into a house"
+    )
     assert snippet2 == "A B"
 
 
-def test_get_label_definition_ignores_empty_intros(cfg, monkeypatch):
-    sm = FakeSentenceModel(mapping={"house": [1, 0, 0], "Good intro": [1, 0, 0]})
-    wiki = LabelDefinerWiki(cfg, sm)
-
-    monkeypatch.setattr(wiki, "_search", lambda label, n=5, lang="en": ["T1", "T2"])
+def test_get_label_definition_ignores_empty_intros(email, monkeypatch):
+    sentence_model = FakeSentenceModel(
+        mapping={"house": [1, 0, 0], "Good intro": [1, 0, 0]}
+    )
+    wiki = LabelDefinerWiki(sentence_model, email, top_k=2, minimum_relevance=0.1)
+    monkeypatch.setattr(wiki, "_search", lambda label: ["T1", "T2"])
     monkeypatch.setattr(
         wiki,
         "_get_page_intro",
-        lambda title, lang="en": "" if title == "T1" else "Good intro",
+        lambda title: "" if title == "T1" else "Good intro",
     )
 
-    snippet = wiki.get_label_definition("house", top_k=2, minimum_relevance=0.1)
+    snippet = wiki.get_label_definition(
+        "house", "the museum was converted into a house"
+    )
     assert snippet == "Good intro"
