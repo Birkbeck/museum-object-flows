@@ -84,9 +84,6 @@ class TaxonomyBuildingExperiment(Experiment):
         dataset["label"] = dataset["label"].map(lambda x: cls._normalize_label(x))
         dataset = dataset[dataset["label"] != ""]
         new_label_definitions_added = False
-        if "definition_null" not in dataset.columns:
-            dataset["definition_null"] = ""
-            new_label_definitions_added
         if "definition_note" not in dataset.columns:
             dataset["definition_note"] = dataset.apply(
                 lambda row: label_definer_note.get_label_definition(
@@ -112,7 +109,8 @@ class TaxonomyBuildingExperiment(Experiment):
             )
             new_label_definitions_added = True
         if save_label_definitions and new_label_definitions_added:
-            dataset.to_csv(config["dataset"])
+            dataset.to_csv(config["dataset"], index=False)
+        dataset["definition_null"] = ""
         return cls(config, dataset, encoders, evaluation_llm)
 
     @classmethod
@@ -162,6 +160,7 @@ class TaxonomyBuildingExperiment(Experiment):
             f"{self.output_directory}/taxonomy"
             f"-{encoder_name}"
             f"-{configuration['sentence_template']}"
+            f"-{configuration['definition_type']}"
             f"-{configuration['layer_count']}"
             f"-{configuration['min_k']}"
             f"-{configuration['max_k']}"
