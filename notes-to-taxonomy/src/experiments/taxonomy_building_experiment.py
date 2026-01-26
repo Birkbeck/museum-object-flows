@@ -41,9 +41,19 @@ class TaxonomyBuildingExperiment(Experiment):
 
     @classmethod
     def from_config(cls, config: dict, save_label_definitions: bool = True):
-        evaluation_llm = CompletionLLM.from_model_name(
-            config["evaluation_llm"], trust_remote=True
-        )
+        if config["evaluation_llm"] == config["label_defining_llm"]:
+            shared_llm = CompletionLLM.from_model_name(
+                config["evaluation_llm"], trust_remote=True
+            )
+            evaluation_llm = shared_llm
+            definer_llm = shared_llm
+        else:
+            evaluation_llm = CompletionLLM.from_model_name(
+                config["evaluation_llm"], trust_remote=True
+            )
+            definer_llm = CompletionLLM.from_model_name(
+                config["label_defining_llm"], trust_remote=True
+            )
         encoders = {
             encoder: SentenceTransformer(encoder) for encoder in config["encoders"]
         }
@@ -60,9 +70,7 @@ class TaxonomyBuildingExperiment(Experiment):
             config["label_definer_wiki_min_relevance"],
         )
         label_definer_llm = LabelDefinerLLM(
-            CompletionLLM.from_model_name(
-                config["label_defining_llm"], trust_remote=True
-            ),
+            definer_llm,
             config["label_definer_prompt"],
             config["label_definer_max_new_tokens"],
             config["label_definer_temperature"],
