@@ -79,7 +79,7 @@ class TaxonomyBuilder:
             clusters, score = self._kmeans(
                 subset,
                 layer_number=layer,
-                min_k=max(2, len(subset)),
+                min_k=min(2, len(subset)),
                 max_k=min(10, len(subset) - 1),
             )
             cluster_frames.append(clusters)
@@ -113,7 +113,7 @@ class TaxonomyBuilder:
                 if k > 1 and len(np.unique(clusters)) > 1
                 else np.nan
             )
-            if score > highest_score:
+            if score > highest_score or best_clusters is None:
                 highest_score = score
                 best_clusters = clusters
         labelled_texts[f"layer_{layer_number}_cluster"] = best_clusters
