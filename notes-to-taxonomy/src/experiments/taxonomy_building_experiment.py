@@ -23,7 +23,8 @@ class TaxonomyBuildingExperiment(Experiment):
         encoders: dict,
         evaluation_llm,
     ):
-        super().__init__()
+        output_file_name = f"{config['output_directory']}/{config['output_file_name']}"
+        super().__init__(output_file_name)
         self.dataset = dataset
         self.encoder_names = config["encoders"]
         self.sentence_templates = config["sentence_templates"]

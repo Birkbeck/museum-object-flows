@@ -17,6 +17,7 @@
     "evaluation_top_p": 0.9,
     "evaluation_seed": 123,
     "output_directory": "data",
+    "output_file_name": "taxonomy-building-results.csv",
     "encoders": [
 	"BAAI/bge-small-en-v1.5",
 	"BAAI/bge-large-en-v1.5"
