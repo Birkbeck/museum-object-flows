@@ -1,7 +1,7 @@
 import torch
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, pipeline, set_seed
 
-from src.llm import LLM
+from .base import LLM
 
 
 class Seq2SeqLLM(LLM):

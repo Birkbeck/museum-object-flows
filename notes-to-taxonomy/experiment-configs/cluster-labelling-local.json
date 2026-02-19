@@ -1,0 +1,29 @@
+{
+    "taxonomies_directory": "data/unlabelled-taxonomies",
+    "output_directory": "data",
+    "output_file_name": "cluster-labelling-results.csv",
+    "evaluation_sentence_model": "all-MiniLM-L6-v2",
+    "llms": [
+	"gpt2"
+    ],
+    "roles": {
+	"null": "",
+	"taxonomist": "You create succinct but descriptive labels for nodes in a taxonomy."
+    },
+    "tasks": {
+	"short": "Return one category (no punctuation) that is a hypernym of the given categories",
+	"long": "Return one category (1-4 words, no punctuation) that is a hypernym of the given categories. Avoid repeating from the list of categories and do not return a category that is more abstract than necessary."
+    },
+    "examples": [
+	"Sub-categories: college, school, scientific organisation, university\nCategory: education/research",
+	"Sub-categories: arts centre, leisure centre, restaurant, sport stadium, sports club, theatre, tourism business\nCategory: leisure",
+	"Sub-categories: archive, library\nCategory: library/archive",
+	"Sub-categories: care home, fire station, hospital, police, police college\nCategory: service",
+	"Sub-categories: antiques dealer, art dealer, auction house, film prop business, furniture dealer, liquidator, scrapyard\nCategory: trader"
+    ],
+    "seeds": [123],
+    "example_lengths": [0, 3, 5],
+    "temperatures": [0.01, 0.1, 0.3, 0.5, 0.7, 0.9],
+    "top_p": 0.9,
+    "layer_count": 2
+}

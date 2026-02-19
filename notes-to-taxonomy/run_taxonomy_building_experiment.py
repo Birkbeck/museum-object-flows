@@ -4,7 +4,7 @@ from src.experiments import TaxonomyBuildingExperiment
 
 
 def main():
-    with open("experiment-configs/taxonomy-building.json", "r") as f:
+    with open("experiment-configs/taxonomy-building-local.json", "r") as f:
         config = json.load(f)
     experiment = TaxonomyBuildingExperiment.from_config(
         config, save_label_definitions=True

@@ -1,6 +1,7 @@
 from typing import List
 
-from src import LabelDefiner, LLM
+from src import LabelDefiner
+from src.llms import LLM
 
 
 class LabelDefinerLLM(LabelDefiner):

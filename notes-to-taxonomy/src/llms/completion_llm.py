@@ -1,6 +1,6 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline, set_seed
 
-from src.llm import LLM
+from .base import LLM
 
 
 class CompletionLLM(LLM):

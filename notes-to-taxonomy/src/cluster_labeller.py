@@ -9,6 +9,7 @@ class ClusterLabeller:
         task_description: str,
         examples: List[str],
         temperature: float,
+        top_p: float,
         num_return_sequences: int = 1,
         max_new_tokens: int = 20,
         seed: int = 123,
@@ -18,6 +19,7 @@ class ClusterLabeller:
         self.task_description = task_description
         self.examples = examples
         self.temperature = temperature
+        self.top_p = top_p
         self.num_return_sequences = num_return_sequences
         self.max_new_tokens = max_new_tokens
         self.seed = seed
@@ -29,17 +31,19 @@ class ClusterLabeller:
             self.num_return_sequences,
             self.max_new_tokens,
             self.temperature,
+            self.top_p,
             self.seed,
         )
-        return response
+        return response.strip()
 
     def _generate_prompt(self, members):
         return (
             self.role_description
             + "\n"
             + self.task_description
-            + "\n\n"
+            + "\n"
             + "\n\n".join(self.examples)
+            + "\n\n"
             + "Sub-categories: "
             + ", ".join(members)
             + "\nCategory:"

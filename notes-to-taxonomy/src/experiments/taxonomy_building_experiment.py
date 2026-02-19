@@ -156,16 +156,19 @@ class TaxonomyBuildingExperiment(Experiment):
         )
         taxonomy = taxonomy_builder.generate_taxonomy(self.dataset.copy())
         encoder_name = configuration["encoder"].replace("/", "-")
-        taxonomy.to_csv(
-            f"{self.output_directory}/taxonomy"
+        taxonomy_file_name = (
+            f"{self.output_directory}/unlabelled-taxonomies/taxonomy"
             f"-{encoder_name}"
             f"-{configuration['sentence_template']}"
             f"-{configuration['definition_type']}"
             f"-{configuration['layer_count']}"
             f"-{configuration['min_k']}"
             f"-{configuration['max_k']}"
-            f".csv"
         )
+        taxonomy.to_csv(f"{taxonomy_file_name}.csv")
+        taxonomy_json = self._taxonomy_to_json(taxonomy, configuration["layer_count"])
+        with open(f"{taxonomy_file_name}.json", "w") as f:
+            f.write(taxonomy_json)
         coherence_score, comments = self._evaluate_taxonomy(
             taxonomy, configuration["layer_count"]
         )

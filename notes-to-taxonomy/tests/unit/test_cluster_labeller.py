@@ -9,7 +9,7 @@ class FakeLLM:
         self.calls = []
 
     def get_response(
-        self, prompt, num_return_sequences, max_new_tokens, temperature, seed
+        self, prompt, num_return_sequences, max_new_tokens, temperature, top_p, seed
     ):
         self.calls.append(
             {
@@ -17,6 +17,7 @@ class FakeLLM:
                 "num_return_sequences": num_return_sequences,
                 "max_new_tokens": max_new_tokens,
                 "temperature": temperature,
+                "top_p": top_p,
                 "seed": seed,
             }
         )
@@ -30,6 +31,7 @@ def test_generate_prompt_contains_role_task_examples_and_members():
         role_description="ROLE",
         task_description="TASK",
         examples=["EX1", "EX2"],
+        top_p=0.9,
         temperature=0.3,
     )
 
@@ -50,6 +52,7 @@ def test_label_cluster_calls_llm_with_expected_parameters_and_returns_response()
         role_description="ROLE",
         task_description="TASK",
         examples=[],
+        top_p=0.9,
         temperature=0.7,
         num_return_sequences=3,
         max_new_tokens=50,
@@ -76,6 +79,7 @@ def test_generate_prompt_with_no_examples_still_formats_correctly():
         role_description="ROLE",
         task_description="TASK",
         examples=[],
+        top_p=0.9,
         temperature=0.3,
     )
 
@@ -92,6 +96,7 @@ def test_label_cluster_works_with_single_member():
         role_description="ROLE",
         task_description="TASK",
         examples=["EX"],
+        top_p=0.9,
         temperature=0.3,
     )
 
