@@ -4,7 +4,7 @@ from src.experiments import ClusterLabellingExperiment
 
 
 def main():
-    with open("experiment-configs/cluster-labelling-local.json", "r") as f:
+    with open("experiment-configs/cluster-labelling.json", "r") as f:
         config = json.load(f)
     experiment = ClusterLabellingExperiment.from_config(config)
     results = experiment.run()
