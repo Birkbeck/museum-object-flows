@@ -34,7 +34,7 @@ class ClusterLabeller:
             self.top_p,
             self.seed,
         )
-        return response.strip()
+        return response.split("\n")[0].strip()
 
     def _generate_prompt(self, members):
         return (

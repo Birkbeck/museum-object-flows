@@ -140,17 +140,23 @@ class ClusterLabellingExperiment(Experiment):
     ) -> pd.DataFrame:
         out = taxonomy.copy()
         for layer in range(1, self.layer_count + 1):
-            cluster_id_column = f"layer_{layer}_cluster"
+            key_cols = [f"layer_{i}_cluster" for i in range(1, layer + 1)]
             cluster_label_column = f"layer_{layer}_label"
-            cluster_to_label = {}
-            for cluster_id, subset in taxonomy.groupby(
-                cluster_id_column, dropna=False, sort=True
-            ):
+            cluster_to_label: dict[tuple, str] = {}
+            # Group by the whole ancestry path (layer_1 ... layer_n)
+            for key, subset in out.groupby(key_cols, dropna=False, sort=True):
+                # key is a scalar if layer==1; normalize to tuple for consistent indexing
+                if layer == 1:
+                    key = (key,)
                 unique_labels = sorted(set(subset["label"].dropna()))
-                cluster_to_label[cluster_id] = cluster_labeller.label_cluster(
-                    unique_labels
-                )
-            out[cluster_label_column] = out[cluster_id_column].map(cluster_to_label)
+                cluster_to_label[key] = cluster_labeller.label_cluster(unique_labels)
+            # Build a MultiIndex mapping for fast vectorized assignment
+            map_index = pd.MultiIndex.from_tuples(
+                cluster_to_label.keys(), names=key_cols
+            )
+            map_series = pd.Series(list(cluster_to_label.values()), index=map_index)
+            out_index = pd.MultiIndex.from_frame(out[key_cols], names=key_cols)
+            out[cluster_label_column] = map_series.reindex(out_index).to_numpy()
         return out
 
     def _evaluate_labelled_taxonomy(self, taxonomy: pd.DataFrame) -> pd.DataFrame:
@@ -269,17 +275,19 @@ class ClusterLabellingExperiment(Experiment):
         )
 
     def _taxonomy_to_dict(self, taxonomy_frame: pd.DataFrame, number_of_layers: int):
-        taxonomy = {}
-        layer_columns = [f"layer_{i}_cluster" for i in range(1, number_of_layers + 1)]
-        for _, row in taxonomy_frame.iterrows():
+        taxonomy: dict = {}
+        layer_columns = [f"layer_{i}_label" for i in range(1, number_of_layers + 1)]
+        grouped = taxonomy_frame.groupby(layer_columns, dropna=False, sort=True)
+        for path, subset in grouped:
+            if number_of_layers == 1:
+                path = (path,)
+            leaf_labels = (
+                subset["label"].dropna().astype(str).drop_duplicates().tolist()
+            )
             current_level = taxonomy
-            for i, col in enumerate(layer_columns):
-                cluster_id = row[col]
-                # Last layer → assign label
+            for i, node_label in enumerate(path):
                 if i == number_of_layers - 1:
-                    current_level[cluster_id] = row["label"]
+                    current_level[node_label] = leaf_labels
                 else:
-                    if cluster_id not in current_level:
-                        current_level[cluster_id] = {}
-                    current_level = current_level[cluster_id]
+                    current_level = current_level.setdefault(node_label, {})
         return taxonomy
