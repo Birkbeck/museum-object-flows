@@ -4,8 +4,7 @@
     "output_file_name": "cluster-labelling-results.csv",
     "evaluation_sentence_model": "all-MiniLM-L6-v2",
     "llms": [
-	"/users/k2480370/scratch/llama3.1-8B",
-	"google/flan-t5-base"
+	"/users/k2480370/scratch/llama3.1-8B"
     ],
     "roles": {
 	"null": "",

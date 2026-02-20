@@ -63,7 +63,7 @@ class ClusterLabellingExperiment(Experiment):
 
     def run_test(self, configuration: dict) -> dict:
         cluster_labeller = ClusterLabeller(
-            llm=self.llms[configuration["llm"]],
+            llm=self.language_models[configuration["llm"]],
             role_description=self.roles[configuration["role"]],
             task_description=self.tasks[configuration["task"]],
             examples=self.examples[: configuration["example_length"]],
