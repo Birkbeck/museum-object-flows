@@ -30,6 +30,7 @@ class ClusterLabellingExperiment(Experiment):
         self.layer_count = config["layer_count"]
         self.output_directory = config["output_directory"]
         self.evaluation_sentence_model = evaluation_sentence_model
+        self.language_models = {}
 
     @classmethod
     def from_config(cls, config: dict):
@@ -40,6 +41,7 @@ class ClusterLabellingExperiment(Experiment):
 
     def parameter_combinations(self) -> Iterable:
         taxonomies = [f for f in os.listdir(self.taxonomies_directory)]
+        self.language_models = {llm: make_llm_from_name(llm) for llm in self.llms}
         return (
             {
                 "llm": llm,
@@ -61,7 +63,7 @@ class ClusterLabellingExperiment(Experiment):
 
     def run_test(self, configuration: dict) -> dict:
         cluster_labeller = ClusterLabeller(
-            llm=make_llm_from_name(configuration["llm"]),
+            llm=self.llms[configuration["llm"]],
             role_description=self.roles[configuration["role"]],
             task_description=self.tasks[configuration["task"]],
             examples=self.examples[: configuration["example_length"]],
@@ -76,7 +78,7 @@ class ClusterLabellingExperiment(Experiment):
             f"{self.taxonomies_directory}/{configuration['taxonomy']}"
         )[taxonomy_columns].drop_duplicates()
         labelled_taxonomy = self._label_clusters(cluster_labeller, taxonomy)
-        taxonomy_name = configuration["taxonomy"].replace(".csv", "")
+        taxonomy_name = configuration["taxonomy"].replace(".csv", "")]
         llm_name = configuration["llm"].replace("/", "-")
         taxonomy_file_name = (
             f"{self.output_directory}/labelled-taxonomies/"
