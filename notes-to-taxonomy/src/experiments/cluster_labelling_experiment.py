@@ -76,7 +76,7 @@ class ClusterLabellingExperiment(Experiment):
             f"{self.taxonomies_directory}/{configuration['taxonomy']}"
         )[taxonomy_columns].drop_duplicates()
         labelled_taxonomy = self._label_clusters(cluster_labeller, taxonomy)
-        taxonomy_name = configuration["taxonomy"].split(".")[0]
+        taxonomy_name = configuration["taxonomy"].replace(".csv", "")
         llm_name = configuration["llm"].replace("/", "-")
         taxonomy_file_name = (
             f"{self.output_directory}/labelled-taxonomies/"
