@@ -11,7 +11,7 @@ function onOpen(e) {
   return globalThis.__mm_onOpen(e);
 }
 
-function publishDatabase() {
+function translateDatabase() {
   if (!globalThis.__mm_translateDatabase) {
     throw new Error("__mm_translateDatabase implementation not found on globalThis");
   }

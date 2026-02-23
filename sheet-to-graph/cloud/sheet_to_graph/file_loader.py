@@ -11,15 +11,8 @@ class FileLoader:
     The sheet_name must match with a sheet pointed to in the config file.
     """
 
-    def __init__(self, values, google_service_factory=None):
-        self.values = values
+    def __init__(self, google_service_factory=None):
         self.google_service_factory = google_service_factory
-
-    @classmethod
-    def from_config_file(cls, filename: str, google_service_factory=None):
-        with open(filename, "r", encoding="utf-8") as f:
-            values = json.load(f)
-        return cls(values, google_service_factory=google_service_factory)
 
     def get_csv_as_list_of_lists(self, csv_location: str):
         source = make_sheet_source({"backend": "csv", "file": csv_location})

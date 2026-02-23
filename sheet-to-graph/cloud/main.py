@@ -9,6 +9,7 @@ The script does the following:
 """
 import hmac
 import json
+import logging
 import os
 import re
 import time
@@ -57,20 +58,17 @@ def upload_sqlite_back(local_path: str, gcs_uri: str) -> None:
     blob.upload_from_filename(local_path, content_type="application/x-sqlite3")
 
 
-def run_translate(*, config_path: str) -> Tuple[int, Dict[str, Any]]:
+def run_translate() -> Tuple[int, Dict[str, Any]]:
     start = time.time()
 
-    file_loader = FileLoader.from_config_file(
-        config_path,
-        GoogleUtils.get_sheets_service,
-    )
+    file_loader = FileLoader(GoogleUtils.get_sheets_service)
 
     sqlite_path = resolve_postcode_sqlite_path()
     gcs_uri = os.environ.get("POSTCODE_GEO_DB_GCS_URI", "")
 
     with PostcodeToLatLong(
         sqlite_path,
-        WikidataConnection(file_loader.values["email"]),
+        WikidataConnection(os.environ["EMAIL"]),
     ) as p:
         urls, timestamp = validate_and_translate_data(file_loader, p)
 
@@ -86,7 +84,6 @@ def run_translate(*, config_path: str) -> Tuple[int, Dict[str, Any]]:
         "status": "success",
         "seconds": elapsed,
         "timestamp": timestamp,
-        "config_path": config_path,
         "bucket": os.environ.get("SNAPSHOT_BUCKET", ""),
         "urls": urls,
         "postcode_geo_db_gcs_uri": gcs_uri,
@@ -115,20 +112,17 @@ def translate(request):
 
     try:
         body = request.get_json(silent=True) or {}
-        config_path = body.get("config_path") or os.environ.get(
-            "CONFIG_PATH", "config.json"
-        )
-
-        _, meta = run_translate(config_path=config_path)
+        _, meta = run_translate()
         meta["total_seconds"] = time.time() - start
         return (meta, 200)
 
     except Exception as e:
+        logging.exception("Validate and translate crashed")
         return (
             {
                 "status": "error",
-                "error": str(e),
                 "seconds": time.time() - start,
+                "error": str(e),
             },
             500,
         )
@@ -139,6 +133,5 @@ if __name__ == "__main__":
     from dotenv import load_dotenv
 
     load_dotenv()
-    config_path = os.environ.get("CONFIG_PATH", "config.json")
-    _, meta = run_translate(config_path=config_path)
+    _, meta = run_translate()
     print(meta)

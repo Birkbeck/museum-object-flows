@@ -72,7 +72,7 @@ export function translateDatabase(): void {
     }
 
     ui.alert(
-      `Translation complete ✅\n\nRows: ${data.rows ?? "?"}\nSeconds: ${(
+      `Translation complete ✅\n\nSeconds: ${(
         data.seconds ?? 0
       ).toFixed(2)}`
     );

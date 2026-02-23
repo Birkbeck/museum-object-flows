@@ -71,7 +71,7 @@ variable "ingress_settings" {
 
 variable "allow_unauthenticated" {
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "function_service_account_email" {

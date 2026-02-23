@@ -56,7 +56,7 @@ class ActorsPreprocessor(FilePreprocessor):
                 "actor_address3": museum["address_3"],
                 "actor_town_city": museum["village_town_city"],
                 "actor_postcode": museum["postcode"],
-                "actor_county": museum["english_county"],
+                "actor_county": museum["lad"],
                 "actor_country": museum["country"],
                 "size": museum["size"],
                 "governance": museum["governance"],
