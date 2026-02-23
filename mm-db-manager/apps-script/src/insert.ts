@@ -226,7 +226,9 @@ export function insertDatabaseToForm(args: {
     outRow[formMapping.ACCREDITATION] = dbRowValues[DB_SHEET.ACCREDITATION];
     outRow[formMapping.ACCREDITATION_NUMBER] = dbRowValues[DB_SHEET.ACCREDITATION_NUMBER];
     outRow[formMapping.ACCREDITATION_CHANGE_DATE] = dbRowValues[DB_SHEET.ACCREDITATION_CHANGE_DATE];
-    outRow[formMapping.GOVERNANCE] = dbRowValues[DB_SHEET.GOVERNANCE];
+    outRow[formMapping.GOVERNANCE] = dbToFormGovernanceMap(
+	dbRowValues[DB_SHEET.GOVERNANCE_BROAD], dbRowValues[DB_SHEET.GOVERNANCE]
+    );
     outRow[formMapping.GOVERNANCE_SOURCE] = dbRowValues[DB_SHEET.GOVERNANCE_SOURCE];
     outRow[formMapping.PREVIOUS_GOVERNANCE] = dbRowValues[DB_SHEET.PREVIOUS_GOVERNANCE];
     outRow[formMapping.PREVIOUS_GOVERNANCE_START] = dbRowValues[DB_SHEET.PREVIOUS_GOVERNANCE_START];
@@ -247,4 +249,22 @@ export function insertDatabaseToForm(args: {
     outRow[formMapping.PRIMARY_PROVENANCE_OF_DATA] = dbRowValues[DB_SHEET.PRIMARY_PROVENANCE_OF_DATA];
     outRow[formMapping.NOTES] = dbRowValues[DB_SHEET.NOTES];
     formSheet.getRange(formRowNumber, 1, 1, lastCol).setValues([outRow]);
+}
+
+function dbToFormGovernanceMap(
+    broad: unknown,      // DB_SHEET.GOVERNANCE_BROAD
+    specific: unknown,   // DB_SHEET.GOVERNANCE
+): string {
+    const allowed = new Set([
+	"national",
+	"local authority",
+	"other government",
+	"university",
+	"private",
+	"unknown governance",
+    ]);
+    if (allowed.has(specific)) {
+	return specific;
+    }
+    return `${broad}: ${specific}`;
 }

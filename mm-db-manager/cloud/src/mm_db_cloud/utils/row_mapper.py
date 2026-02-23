@@ -59,9 +59,11 @@ def map_form_row_to_db_row(
         form_row, form_sheet_cls.ACCREDITATION_CHANGE_DATE
     )
 
-    # Broad fields: left blank unless/until you define mapping rules
-    out[Database.GOVERNANCE_BROAD] = ""
-    out[Database.GOVERNANCE] = _get(form_row, form_sheet_cls.GOVERNANCE)
+    governance = _get(form_row, form_sheet_cls.GOVERNANCE)
+    out[Database.GOVERNANCE_BROAD] = governance.split(": ")[0]
+    out[Database.GOVERNANCE] = (
+        governance.split(": ")[1] if ": " in governance else governance
+    )
     out[Database.GOVERNANCE_SOURCE] = _get(form_row, form_sheet_cls.GOVERNANCE_SOURCE)
 
     out[Database.PREVIOUS_GOVERNANCE] = _get(
@@ -77,17 +79,18 @@ def map_form_row_to_db_row(
     out[Database.SIZE] = _get(form_row, form_sheet_cls.SIZE)
     out[Database.SIZE_SOURCE] = _get(form_row, form_sheet_cls.SIZE_SOURCE)
 
-    out[Database.SUBJECT_BROAD] = ""
-    out[Database.SUBJECT] = _get(form_row, form_sheet_cls.SUBJECT)
+    subject = _get(form_row, form_sheet_cls.SUBJECT)
+    out[Database.SUBJECT_BROAD] = subject.split(":")[0]
+    out[Database.SUBJECT] = subject
 
     y1, y2 = split_year_range(_get(form_row, form_sheet_cls.YEAR_OPENED))
-    out[Database.YEAR_OPENED_1] = y1
-    out[Database.YEAR_OPENED_2] = y2
+    out[Database.YEAR_OPENED_1] = int(y1)
+    out[Database.YEAR_OPENED_2] = int(y2)
     out[Database.YEAR_OPENED_SOURCE] = _get(form_row, form_sheet_cls.YEAR_OPENED_SOURCE)
 
     c1, c2 = split_year_range(_get(form_row, form_sheet_cls.YEAR_CLOSED))
-    out[Database.YEAR_CLOSED_1] = c1
-    out[Database.YEAR_CLOSED_2] = c2
+    out[Database.YEAR_CLOSED_1] = int(c1)
+    out[Database.YEAR_CLOSED_2] = int(c2)
     out[Database.YEAR_CLOSED_SOURCE] = _get(form_row, form_sheet_cls.YEAR_CLOSED_SOURCE)
 
     out[Database.PRIMARY_PROVENANCE_OF_DATA] = _get(
