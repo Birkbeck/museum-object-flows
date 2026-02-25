@@ -242,9 +242,9 @@ reasonsServer <- function(id) {
           year_opened,
           year_closed,
           reasons_for_closure=super_reasons,
-          size,
-          governance,
           accreditation,
+          governance,
+          size,
           subject,
           region
         ) |>

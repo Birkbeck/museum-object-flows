@@ -321,9 +321,9 @@ get_closures_in_time_period <- function(museums, start_year, end_year) {
     select(
       museum_id,
       museum_name,
-      size,
-      governance,
       accreditation,
+      governance,
+      size,
       subject,
       village_town_city,
       postcode,
@@ -342,9 +342,9 @@ get_openings_in_time_period <- function(museums, start_year, end_year) {
     select(
       museum_id,
       museum_name,
-      size,
-      governance,
       accreditation,
+      governance,
+      size,
       subject,
       village_town_city,
       postcode,

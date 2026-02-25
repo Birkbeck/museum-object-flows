@@ -360,9 +360,9 @@ snapshotServer <- function(id) {
         select(
           museum_id,
           museum_name,
-          size,
-          governance,
           accreditation,
+          governance,
+          size,
           subject,
           village_town_city,
           postcode,

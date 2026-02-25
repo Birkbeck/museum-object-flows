@@ -253,9 +253,9 @@ outcomesServer <- function(id) {
           outcome_recipient_count,
           outcome_largest_share,
           outcome_destination_type,
-          size,
-          governance,
           accreditation,
+          governance,
+          size,
           subject,
           region
         )
