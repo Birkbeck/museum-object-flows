@@ -3,11 +3,16 @@ source("src/modules/database/elements.R")
 databaseServer <- function(id) {
   moduleServer(id, function(input, output, session) {
 
-    museum_ids <- read_csv("data/drive-files/museum_ids.csv", show_col_types = FALSE)$museum_id
-    X <- readMM("data/drive-files/tfidf.mtx")
+    museum_ids_file <- paste0(data_url, "museum_ids.csv")
+    tfidf_file <- paste0(data_url, "tfidf.mtx")
+    idf_file <- paste0(data_url, "idf.csv")
+    vocab_file <- paste0(data_url, "vocab.csv")
+
+    museum_ids <- read_csv(museum_ids_file, show_col_types = FALSE)$museum_id
+    X <- readMM(tfidf_file)
     X <- as(X, "dgCMatrix")  # efficient column-compressed
-    vocab <- read_csv("data/drive-files/vocab.csv", show_col_types = FALSE)$term
-    idf <- read_csv("data/drive-files/idf.csv", show_col_types = FALSE)$idf
+    vocab <- read_csv(vocab_file, show_col_types = FALSE)$vocab
+    idf <- read_csv(idf_file, show_col_types = FALSE)$idf
     term_to_col <- setNames(seq_along(vocab), vocab)
 
     free_text_search <- reactive({input$freeText})
