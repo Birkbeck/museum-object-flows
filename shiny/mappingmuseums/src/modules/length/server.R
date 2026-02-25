@@ -194,11 +194,11 @@ lengthServer <- function(id) {
           latest_event_date=latest,
           length_of_disposal=length_of_closure,
           disposal_length_category=closure_length_category,
-          size,
+          accreditation,
           governance,
+          size,
           subject,
           region,
-          accreditation
         )
     })
 
