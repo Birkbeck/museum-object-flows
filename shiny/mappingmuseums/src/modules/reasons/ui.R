@@ -76,6 +76,23 @@ reasonsUI <- function(id) {
           tags$summary("Museum attributes"),
 
           form_item(
+            "Museum accreditation",
+            tooltip_museum_accreditation,
+            pickerInput(
+              NS(id, "accreditationFilter"), 
+              "",
+              choices=accreditation_labels()$label,
+              selected=accreditation_labels()$label,
+              options=pickerOptions(
+                actionsBox=TRUE, 
+                size=10,
+                selectedTextFormat="count > 3"
+              ), 
+              multiple=TRUE
+            )   
+          ),
+
+          form_item(
             "Museum governance",
             tooltip_museum_governance,
             pickerInput(
@@ -157,25 +174,9 @@ reasonsUI <- function(id) {
                 selectedTextFormat="count > 3"
               ), 
               multiple=TRUE
-            )   
-          ),
-          
-          form_item(
-            "Museum accreditation",
-            tooltip_museum_accreditation,
-            pickerInput(
-              NS(id, "accreditationFilter"), 
-              "",
-              choices=accreditation_labels()$label,
-              selected=accreditation_labels()$label,
-              options=pickerOptions(
-                actionsBox=TRUE, 
-                size=10,
-                selectedTextFormat="count > 3"
-              ), 
-              multiple=TRUE
-            )   
+            )
           )
+
         )
       ),
 

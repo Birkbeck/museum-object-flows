@@ -65,6 +65,23 @@ changesUI <- function(id) {
         form_subtitle("Filter", tooltip_filter),
 
         form_item(
+          "Museum accreditation",
+          tooltip_museum_accreditation,
+          pickerInput(
+            NS(id, "accreditationFilter"), 
+            "",
+            choices=accreditation_labels()$label,
+            selected=accreditation_labels()$label,
+            options=pickerOptions(
+              actionsBox=TRUE, 
+              size=10,
+              selectedTextFormat="count > 3"
+            ), 
+            multiple=TRUE
+          )   
+        ),
+
+        form_item(
           "Museum governance",
           tooltip_museum_governance,
           pickerInput(
@@ -140,23 +157,6 @@ changesUI <- function(id) {
             "",
             choices=region_labels()$label,
             selected=region_labels()$label,
-            options=pickerOptions(
-              actionsBox=TRUE, 
-              size=10,
-              selectedTextFormat="count > 3"
-            ), 
-            multiple=TRUE
-          )   
-        ),
-        
-        form_item(
-          "Museum accreditation",
-          tooltip_museum_accreditation,
-          pickerInput(
-            NS(id, "accreditationFilter"), 
-            "",
-            choices=accreditation_labels()$label,
-            selected=accreditation_labels()$label,
             options=pickerOptions(
               actionsBox=TRUE, 
               size=10,
