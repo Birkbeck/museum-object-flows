@@ -10,22 +10,22 @@ snapshotServer <- function(id) {
       updateSelectInput(session=session, inputId="secondAxis", selected="Country/Region")
       updateRadioButtons(session=session, inputId="countOrPercentage", selected="")
       updatePickerInput(
-        session=session, inputId="governanceFilter", selected=governance_broad_labels$label
+        session=session, inputId="governanceFilter", selected=governance_broad_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="sizeFilter", selected=size_labels$label
+        session=session, inputId="sizeFilter", selected=size_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="subjectFilter", selected=subject_broad_labels$label
+        session=session, inputId="subjectFilter", selected=subject_broad_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="subjectSpecificFilter", selected=subject_labels$label
+        session=session, inputId="subjectSpecificFilter", selected=subject_labels_map()$label
       )
       updatePickerInput(
-        session=session, inputId="regionFilter", selected=region_labels$label
+        session=session, inputId="regionFilter", selected=region_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="accreditationFilter", selected=accreditation_labels$label
+        session=session, inputId="accreditationFilter", selected=accreditation_labels()$label
       )
     })
 

@@ -17,31 +17,31 @@ eventsServer <- function(id) {
       updateRadioButtons(session=session, inputId="actorGrouping", selected="Core categories")
       updateRadioButtons(session=session, inputId="museumGrouping", selected="Governance")
       updatePickerInput(
-        session=session, inputId="eventTypeFilter", selected=event_core_types$label
+        session=session, inputId="eventTypeFilter", selected=event_core_types()$label
       )
       updateVirtualSelect(
-        session=session, inputId="collectionTypeFilter", selected=collection_types$collection_type
+        session=session, inputId="collectionTypeFilter", selected=collection_types()$collection_type
       )
       updatePickerInput(
-        session=session, inputId="collectionStatusFilter", selected=collection_status_labels$label,
+        session=session, inputId="collectionStatusFilter", selected=collection_status_labels()$label,
       )
       updatePickerInput(
-        session=session, inputId="governanceFilter", selected=governance_broad_labels$label
+        session=session, inputId="governanceFilter", selected=governance_broad_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="sizeFilter", selected=size_labels$label
+        session=session, inputId="sizeFilter", selected=size_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="subjectFilter", selected=subject_broad_labels$label
+        session=session, inputId="subjectFilter", selected=subject_broad_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="subjectSpecificFilter", selected=subject_labels$label
+        session=session, inputId="subjectSpecificFilter", selected=subject_labels_map()$subject
       )
       updatePickerInput(
-        session=session, inputId="regionFilter", selected=region_labels$label
+        session=session, inputId="regionFilter", selected=region_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="accreditationFilter", selected=accreditation_labels$label
+        session=session, inputId="accreditationFilter", selected=accreditation_labels()$label
       )
     })
 
