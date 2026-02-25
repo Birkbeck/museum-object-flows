@@ -1309,63 +1309,7 @@ def validate_and_translate_data(
     super_events_df["reason"] = super_events_df["super_cause_types"]
     super_events_df = super_events_df[super_event_columns]
 
-    # museums
-    museum_columns = [
-        "museum_id",
-        "museum_name",
-        "all",
-        "governance",
-        "governance_broad",
-        "size",
-        "subject",
-        "subject_broad",
-        "accreditation",
-        "region",
-        "country",
-        "year_opened",
-        "year_opened_1",
-        "year_opened_2",
-        "year_closed",
-        "year_closed_1",
-        "year_closed_2",
-        "address_1",
-        "address_2",
-        "address_3",
-        "village_town_city",
-        "postcode",
-        "lad",
-        "bng_x",
-        "bng_y",
-        "notes",
-    ]
-    museums_df["museum_id"] = museums_df["mm_id"]
-    museums_df["museum_name"] = museums_df["actor_name"]
-    museums_df["all"] = "all"
-    museums_df["region"] = museums_df["region_x"]
-    museums_df["country"] = museums_df["country_x"]
-    museums_df["lad"] = museums_df["local_authority_name"]
-    museums_df["notes"] = museums_df["actor_note"]
-
-    museums_df["year_opened"] = museums_df["year_opened_1"].astype(str)
-    certain_opened_mask = museums_df["year_opened_1"] == museums_df["year_opened_2"]
-    museums_df.loc[~certain_opened_mask, "year_opened"] = (
-        museums_df.loc[~certain_opened_mask, "year_opened_1"].astype(str)
-        + ":"
-        + museums_df.loc[~certain_opened_mask, "year_opened_2"].astype(str)
-    )
-
-    museums_df["year_closed"] = museums_df["year_closed_1"].astype(str)
-    certain_closed_mask = museums_df["year_closed_1"] == museums_df["year_closed_2"]
-    museums_df.loc[~certain_closed_mask, "year_closed"] = (
-        museums_df.loc[~certain_closed_mask, "year_closed_1"].astype(str)
-        + ":"
-        + museums_df.loc[~certain_closed_mask, "year_closed_2"].astype(str)
-    )
-    not_closed_mark = museums_df["year_closed_1"] == "9999"
-    museums_df.loc[not_closed_mark, "year_closed"] = "N/A"
-
-    museums_df = museums_df[museum_columns]
-
+    # dispersal events
     dispersal_events_columns = [
         "initial_museum_id",
         "initial_museum_name",
@@ -1608,19 +1552,6 @@ def validate_and_translate_data(
         bucket,
         f"{versioned_base}/super_events_{timestamp}.csv",
         super_events_df,
-        cache_control=cache_control,
-    )
-
-    urls["museums_latest"] = _upload_df_csv(
-        bucket,
-        f"{latest_base}/museums.csv",
-        museums_df,
-        cache_control=cache_control,
-    )
-    urls["museums_snapshot"] = _upload_df_csv(
-        bucket,
-        f"{versioned_base}/museums_{timestamp}.csv",
-        museums_df,
         cache_control=cache_control,
     )
 

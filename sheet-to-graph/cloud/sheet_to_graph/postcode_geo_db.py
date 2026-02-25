@@ -8,17 +8,6 @@ from bng_latlon import WGS84toOSGB36
 from .wikidata_connection import WikidataConnection
 
 
-def _normalize_postcode(postcode: str) -> str:
-    """
-    Normalize UK postcodes to a consistent key.
-    - Uppercase
-    - Remove spaces
-    """
-    if not postcode:
-        return ""
-    return re.sub(r"\s+", "", str(postcode).strip().upper())
-
-
 def _blank_geo() -> Dict[str, Any]:
     return {
         "latitude": None,
@@ -139,10 +128,9 @@ class PostcodeGeoDB:
             )
             return self._get_or_create_city_country(key)
 
-        pc = _normalize_postcode(postcode)
-        if pc:
+        if postcode:
             # UK postcode lookup table should already contain full details
-            row = self._fetch_postcode(pc)
+            row = self._fetch_postcode(postcode)
             if row is not None:
                 return self._row_to_geo(row)
             # If postcode missing from DB, return blank (we are explicitly not scanning CSVs anymore)
@@ -438,11 +426,10 @@ class PostcodeToLatLong:
 
     def get_region(self, postcode: str, town_city: str, county: str, country: str):
         # Keep your special-cases
-        pc = _normalize_postcode(postcode)
-        if len(pc) >= 2:
-            if pc[:2] == "IM":
+        if len(postcode) >= 2:
+            if postcode[:2] == "IM":
                 return "Isle of Man"
-            if pc[:2] in ("GY", "JE"):
+            if postcode[:2] in ("GY", "JE"):
                 return "Channel Islands"
         return self._info(postcode, town_city, county, country)["region"]
 
