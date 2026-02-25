@@ -6,11 +6,11 @@ from typing import Dict
 import pandas as pd
 from bng_latlon import WGS84toOSGB36
 
-ONS_PCD_DIR = "../museum-object-flows/data/ONSPD_FEB_2024_UK/Data/multi_csv"
+ONS_PCD_DIR = "../data/ONSPD_FEB_2024_UK/Data/multi_csv"
 LADS_MAP_FILE = (
-    "../museum-object-flows/data/ONSPD_FEB_2024_UK/"
-    "Documents/LAD23_LAU121_ITL321_ITL221_ITL121_UK_LU.csv"
+    "../data/ONSPD_FEB_2024_UK/Documents/LAD23_LAU121_ITL321_ITL221_ITL121_UK_LU.csv"
 )
+CROWN_DEPS_FILE = "crown_dependency_postcode_lookup.csv"
 SQLITE_OUT = "postcode_lookup.sqlite"
 
 REGIONS_MAP: Dict[str, str] = {
@@ -153,6 +153,15 @@ def insert_batch(conn: sqlite3.Connection, batch: pd.DataFrame) -> None:
 
 if __name__ == "__main__":
     lads_map = load_lads_map(LADS_MAP_FILE)
+    crown_dependencies = pd.read_csv(CROWN_DEPS_FILE)
+    crown_dependencies_lat_map = {
+        row["postcode"]: row["latitude"]
+        for row in crown_dependencies.to_dict(orient="records")
+    }
+    crown_dependencies_lon_map = {
+        row["postcode"]: row["longitude"]
+        for row in crown_dependencies.to_dict(orient="records")
+    }
 
     conn = sqlite3.connect(SQLITE_OUT)
     try:
@@ -178,6 +187,21 @@ if __name__ == "__main__":
             )
             keep = ["pcd", "pcd2", "pcds", "latitude", "longitude", "rgn", "lad_code"]
             df = df[keep]
+            df["latitude"] = df.apply(
+                lambda row: row["latitude"]
+                if row["pcd"] not in crown_dependencies_lat_map
+                else crown_dependencies_lat_map[row["pcd"]],
+                axis=1,
+            )
+            df["longitude"] = df.apply(
+                lambda row: row["longitude"]
+                if row["pcd"] not in crown_dependencies_lon_map
+                else crown_dependencies_lon_map[row["pcd"]],
+                axis=1,
+            )
+            df["lad"] = df["lad_code"].map(lads_map)
+            df["region"] = df["rgn"].map(REGIONS_MAP)
+            df["country"] = df["rgn"].map(COUNTRIES_MAP)
             bng = df.apply(
                 lambda r: WGS84toOSGB36(r["latitude"], r["longitude"]), axis=1
             )
@@ -187,9 +211,6 @@ if __name__ == "__main__":
             df["bng_y"] = [
                 xy[1] if isinstance(xy, (list, tuple)) else None for xy in bng
             ]
-            df["lad"] = df["lad_code"].map(lads_map)
-            df["region"] = df["rgn"].map(REGIONS_MAP)
-            df["country"] = df["rgn"].map(COUNTRIES_MAP)
             batch = normalize_postcodes(df)
             with conn:
                 insert_batch(conn, batch)
