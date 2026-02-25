@@ -307,24 +307,7 @@ dispersalUI <- function(id) {
               multiple=TRUE
             )
           )
-        ),
-
-        #form_item(
-        #  "Passes through",
-        #  tooltip_passes_through,
-        #  pickerInput(
-        #    NS(id, "sequencePassesThrough"), 
-        #    "",
-        #    choices=NULL,
-        #    selected=NULL,
-        #    options=pickerOptions(
-        #      actionsBox=TRUE, 
-        #      size=10,
-        #      selectedTextFormat="count > 3"
-        #    ), 
-        #    multiple=TRUE
-        #  )
-        #)
+        )
 
       ),
 

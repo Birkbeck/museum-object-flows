@@ -87,13 +87,6 @@ dispersalServer <- function(id) {
         choices=actor_choices_table()$label,
         selected=actor_choices_table()$label
       )
-      #updatePickerInput(
-      #  session=session,
-      #  inputId="sequencePassesThrough",
-      #  label=paste0("(", actor_grouping(), ")"),
-      #  choices=actor_choices_table()$label,
-      #  selected=actor_choices_table()$label
-      #)
     })
 
     grouping_field <- reactive({input$grouping})
@@ -175,12 +168,6 @@ dispersalServer <- function(id) {
         label %in% input$sequenceEnd
       )$to
     })
-    #sequence_passes_through <- reactive({
-    #  filter(
-    #    actor_choices_table(),
-    #    label %in% input$sequencePassesThrough
-    #  )$to
-    #})
 
     observeEvent(transaction_type_filter(), {
       event_type_choices <- data.frame(type_name=c())
@@ -278,13 +265,6 @@ dispersalServer <- function(id) {
         choices=actor_choices_table()$label,
         selected=actor_choices_table()$label
       )
-      #updatePickerInput(
-      #  session=session,
-      #  inputId="sequencePassesThrough",
-      #  label=paste0("(", actor_grouping(), ")"),
-      #  choices=actor_choices_table()$label,
-      #  selected=actor_choices_table()$label
-      #)
     })
 
     filtered_sequences <- debounce(
@@ -300,7 +280,6 @@ dispersalServer <- function(id) {
           collection_status_filter(),
           initial_museum_ids(),
           sequence_end(),
-          #sequence_passes_through(),
           steps_or_first_last()
         )
       }),
