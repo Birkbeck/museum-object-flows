@@ -8,25 +8,25 @@ reasonsServer <- function(id) {
       updateRadioButtons(session=session, inputId="museumGrouping", selected="Governance")
       updateRadioButtons(session=session, inputId="countOrPercentage", selected="frequency")
       updatePickerInput(
-        session=session, inputId="reasonFilter", selected=reason_core_labels$label
+        session=session, inputId="reasonFilter", selected=reason_core_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="governanceFilter", selected=governance_broad_labels$label
+        session=session, inputId="governanceFilter", selected=governance_broad_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="sizeFilter", selected=size_labels$label
+        session=session, inputId="sizeFilter", selected=size_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="subjectFilter", selected=subject_broad_labels$label
+        session=session, inputId="subjectFilter", selected=subject_broad_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="subjectSpecificFilter", selected=subject_labels$label
+        session=session, inputId="subjectSpecificFilter", selected=subject_labels_map()$subject
       )
       updatePickerInput(
-        session=session, inputId="regionFilter", selected=region_labels$label
+        session=session, inputId="regionFilter", selected=region_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="accreditationFilter", selected=accreditation_labels$label
+        session=session, inputId="accreditationFilter", selected=accreditation_labels()$label
       )
     })
 
@@ -242,9 +242,9 @@ reasonsServer <- function(id) {
           year_opened,
           year_closed,
           reasons_for_closure=super_reasons,
-          size,
-          governance,
           accreditation,
+          governance,
+          size,
           subject,
           region
         ) |>

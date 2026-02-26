@@ -1,20 +1,21 @@
-db_tooltip_search <- "Enter free text to search all fields of the Mapping Museums database"
-
-tooltip_museum_country <- "The country or territory where the museum is located."
-tooltip_address <- "Search for museums by their address. Enter any part of the address - e.g. road, village, town, county, postcode."
-tooltip_local_authority_district <- "The local authority district (2023 boundaries) where the museum is located."
-tooltip_existence_or_open_close <- "Filter museums according to when they were open (they had opened before the start of the time period and closed during or after the time period) or according to their opening and closure dates (specify the time period during which their opening occurred and the time period during which their closure occurred)."
-tooltip_show_columns <- "Select which columns should appear in the results table."
-
 mm_db_choices <- c(
   "museum_id",
   "museum_name",
+  "alternative_name",
+  "wikidata_id",
+  "accreditation",
+  "accreditation_number",
+  "accreditation_change_date",
   "governance_broad",
   "governance",
+  "governance_source",
+  "previous_governance",
+  "previous_governance_start",
+  "previous_governance_end",
   "size",
+  "size_source",
   "subject_broad",
   "subject",
-  "accreditation",
   "address_1",
   "address_2",
   "address_3",
@@ -23,19 +24,26 @@ mm_db_choices <- c(
   "lad",
   "region",
   "country",
+  "latitude",
+  "longitude",
   "year_opened",
+  "year_opened_source",
   "year_closed",
+  "year_closed_source",
+  "primary_provenance_of_data",
   "notes"
 )
 
 mm_db_selected <- c(
   "museum_id",
   "museum_name",
+  "wikidata_id",
+  "accreditation",
+  "accreditation_number",
   "governance_broad",
   "governance",
   "size",
   "subject",
-  "accreditation",
   "address_1",
   "address_2",
   "address_3",
@@ -44,6 +52,8 @@ mm_db_selected <- c(
   "lad",
   "region",
   "country",
+  "latitude",
+  "longitude",
   "year_opened",
   "year_closed",
   "notes"

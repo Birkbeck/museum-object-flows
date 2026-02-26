@@ -186,6 +186,23 @@ dispersalUI <- function(id) {
           ),
 
           form_item(
+            "Initial museum accreditation",
+            tooltip_museum_accreditation,
+            pickerInput(
+              NS(id, "startAccreditationFilter"), 
+              "",
+              choices=accreditation_labels()$label,
+              selected=accreditation_labels()$label,
+              options=pickerOptions(
+                actionsBox=TRUE, 
+                size=10,
+                selectedTextFormat="count > 3"
+              ), 
+              multiple=TRUE
+            )   
+          ),
+
+          form_item(
              "Initial museum governance",
              tooltip_museum_governance,
              pickerInput(
@@ -268,24 +285,8 @@ dispersalUI <- function(id) {
              ), 
              multiple=TRUE
            )   
-          ),
-
-          form_item(
-            "Initial museum accreditation",
-            tooltip_museum_accreditation,
-            pickerInput(
-              NS(id, "startAccreditationFilter"), 
-              "",
-              choices=accreditation_labels()$label,
-              selected=accreditation_labels()$label,
-              options=pickerOptions(
-                actionsBox=TRUE, 
-                size=10,
-                selectedTextFormat="count > 3"
-              ), 
-              multiple=TRUE
-            )   
           )
+
         ),
 
         tags$details(
@@ -306,24 +307,7 @@ dispersalUI <- function(id) {
               multiple=TRUE
             )
           )
-        ),
-
-        #form_item(
-        #  "Passes through",
-        #  tooltip_passes_through,
-        #  pickerInput(
-        #    NS(id, "sequencePassesThrough"), 
-        #    "",
-        #    choices=NULL,
-        #    selected=NULL,
-        #    options=pickerOptions(
-        #      actionsBox=TRUE, 
-        #      size=10,
-        #      selectedTextFormat="count > 3"
-        #    ), 
-        #    multiple=TRUE
-        #  )
-        #)
+        )
 
       ),
 

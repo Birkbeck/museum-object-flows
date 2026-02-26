@@ -42,28 +42,28 @@ dispersalServer <- function(id) {
         selected=c("certain", "?+", "?", "?-")
       )
       updateVirtualSelect(
-        session=session, inputId="collectionTypeFilter", selected=collection_types$collection_type
+        session=session, inputId="collectionTypeFilter", selected=collection_types()$collection_type
       )
       updatePickerInput(
-        session=session, inputId="collectionStatusFilter", selected=collection_status_labels$label
+        session=session, inputId="collectionStatusFilter", selected=collection_status_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="startGovernanceFilter", selected=governance_broad_labels$label
+        session=session, inputId="startGovernanceFilter", selected=governance_broad_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="startSizeFilter", selected=size_labels$label
+        session=session, inputId="startSizeFilter", selected=size_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="startSubjectFilter", selected=subject_broad_labels$label
+        session=session, inputId="startSubjectFilter", selected=subject_broad_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="startSubjectSpecificFilter", selected=subject_full_labels$label
+        session=session, inputId="startSubjectSpecificFilter", selected=subject_labels_map()$subject
       )
       updatePickerInput(
-        session=session, inputId="startRegionFilter", selected=region_labels$label
+        session=session, inputId="startRegionFilter", selected=region_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="startAccreditationFilter", selected=accreditation_labels$label
+        session=session, inputId="startAccreditationFilter", selected=accreditation_labels()$label
       )
       filtered_museums <- get_dispersal_initial_museums(
         dispersal_events(),
@@ -87,13 +87,6 @@ dispersalServer <- function(id) {
         choices=actor_choices_table()$label,
         selected=actor_choices_table()$label
       )
-      #updatePickerInput(
-      #  session=session,
-      #  inputId="sequencePassesThrough",
-      #  label=paste0("(", actor_grouping(), ")"),
-      #  choices=actor_choices_table()$label,
-      #  selected=actor_choices_table()$label
-      #)
     })
 
     grouping_field <- reactive({input$grouping})
@@ -175,12 +168,6 @@ dispersalServer <- function(id) {
         label %in% input$sequenceEnd
       )$to
     })
-    #sequence_passes_through <- reactive({
-    #  filter(
-    #    actor_choices_table(),
-    #    label %in% input$sequencePassesThrough
-    #  )$to
-    #})
 
     observeEvent(transaction_type_filter(), {
       event_type_choices <- data.frame(type_name=c())
@@ -278,13 +265,6 @@ dispersalServer <- function(id) {
         choices=actor_choices_table()$label,
         selected=actor_choices_table()$label
       )
-      #updatePickerInput(
-      #  session=session,
-      #  inputId="sequencePassesThrough",
-      #  label=paste0("(", actor_grouping(), ")"),
-      #  choices=actor_choices_table()$label,
-      #  selected=actor_choices_table()$label
-      #)
     })
 
     filtered_sequences <- debounce(
@@ -300,7 +280,6 @@ dispersalServer <- function(id) {
           collection_status_filter(),
           initial_museum_ids(),
           sequence_end(),
-          #sequence_passes_through(),
           steps_or_first_last()
         )
       }),

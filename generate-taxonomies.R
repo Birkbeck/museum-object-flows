@@ -19,14 +19,25 @@ taxonomy_theme <- theme(
   legend.key = element_rect(fill="white")
 )
 
-dispersal_events_csv <- "shiny/mappingmuseums/data/query_results/dispersal_events.csv"
-dispersal_events <- read_csv(dispersal_events_csv) |>
+data_url <- "https://storage.googleapis.com/mapping-museums-database/latest/"
+super_events_file <- "super_events.csv"
+actor_types_file <- "actor_types.csv"
+event_types_file <- "event_types.csv"
+dispersal_events_file <- "dispersal_events.csv"
+museums_file <- "museums.csv"
+
+super_events_url <- paste0(data_url, super_events_file)
+actor_types_url <- paste0(data_url, actor_types_file)
+event_types_url <- paste0(data_url, event_types_file)
+dispersal_events_url <- paste0(data_url, dispersal_events_file)
+museums_url <- paste0(data_url, museums_file)
+
+dispersal_events <- read_csv(dispersal_events_url) |>
   mutate(
     initial_museum_all = "All",
     recipient_type = ifelse(is.na(recipient_type), "N/A", recipient_type),
-    recipient_general_type = ifelse(is.na(recipient_general_type), "N/A", recipient_general_type),
-    recipient_core_type = ifelse(!is.na(recipient_core_type), recipient_core_type, recipient_general_type),
-    sender_core_type = ifelse(!is.na(sender_core_type), sender_core_type, sender_general_type),
+    recipient_core_type = ifelse(!is.na(recipient_core_type), recipient_core_type, "N/A"),
+    sender_core_type = ifelse(!is.na(sender_core_type), sender_core_type, "N/A"),
     event_stage_in_path = event_stage_in_path + 1
   )
 
@@ -107,8 +118,7 @@ ggsave(
   height=14
 )
 
-actor_types_csv <- "shiny/mappingmuseums/data/query_results/actor_types.csv"
-actor_types <- read_csv(actor_types_csv)
+actor_types <- read_csv(actor_types_url)
 actor_type_hierarchy <- actors_taxonomy()
 ggsave(
   file="shiny/mappingmuseums/www/actor_types.png",
@@ -117,8 +127,7 @@ ggsave(
   height=10
 )
 
-event_types_csv <- "shiny/mappingmuseums/data/query_results/event_types.csv"
-event_types <- read_csv(event_types_csv)
+event_types <- read_csv(event_types_url)
 event_type_hierarchy <- events_taxonomy()
 ggsave(
   file="shiny/mappingmuseums/www/event_types.png",
@@ -127,8 +136,7 @@ ggsave(
   height=6
 )
 
-super_events_csv <- "shiny/mappingmuseums/data/query_results/super_events.csv"
-super_events <- read_csv(super_events_csv)
+super_events <- read_csv(super_events_url)
 reason_type_hierarchy <- reasons_taxonomy()
 ggsave(
   file="shiny/mappingmuseums/www/reason_types.png",

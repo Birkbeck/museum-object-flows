@@ -50,7 +50,6 @@ get_outcomes_by_museum <- function(super_events, events_table) {
         TRUE ~ "abroad"
       )
     )
-  write_csv(events_with_numeric_collection_size |> select(initial_museum_id, initial_museum_name, collection_size, destination_type), "outcome-calc.csv")
   event_outcomes <- get_outcomes_by_museum_for_type(
     events_with_numeric_collection_size, "event_core_type", "unknown"
   ) |>

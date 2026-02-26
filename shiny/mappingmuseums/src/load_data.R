@@ -1,24 +1,17 @@
 set.seed(1)
 
-#drive_url <- "https://drive.google.com/uc?export=download&id="
-#super_events_file_id <- "13YFfwAtXzYbFCJaDhokDRVNk0EYyb7hn"
-#actor_types_file_id <- "1Q7aqbhHdv_FZO23okdbF4fesGe6i0B8A"
-#event_types_file_id <- "1Muwm6O8sBxcdUoY3wo4ohjSRKN8r5oft"
-#dispersal_events_file_id <- "1EbmJT1OgGRsV_PQ8l9xLSORHPodKAUum"
-#museums_file_id <- "1VipAgQDuYNQAhG5uXYEiZfKMf5oCJ5cJ"
+data_url <- "https://storage.googleapis.com/mapping-museums-database/latest/"
+super_events_file <- "super_events.csv"
+actor_types_file <- "actor_types.csv"
+event_types_file <- "event_types.csv"
+dispersal_events_file <- "dispersal_events.csv"
+museums_file <- "museums.csv"
 
-drive_url <- "data/drive-files/"
-super_events_file_id <- "super_events.csv"
-actor_types_file_id <- "actor_types.csv"
-event_types_file_id <- "event_types.csv"
-dispersal_events_file_id <- "dispersal_events.csv"
-museums_file_id <- "museums.csv"
-
-super_events_url <- paste0(drive_url, super_events_file_id)
-actor_types_url <- paste0(drive_url, actor_types_file_id)
-event_types_url <- paste0(drive_url, event_types_file_id)
-dispersal_events_url <- paste0(drive_url, dispersal_events_file_id)
-museums_url <- paste0(drive_url, museums_file_id)
+super_events_url <- paste0(data_url, super_events_file)
+actor_types_url <- paste0(data_url, actor_types_file)
+event_types_url <- paste0(data_url, event_types_file)
+dispersal_events_url <- paste0(data_url, dispersal_events_file)
+museums_url <- paste0(data_url, museums_file)
 
 DEBOUNCE_TIME <- 1000
 
@@ -139,6 +132,16 @@ museums_without_closure_info <- reactive({
   read_csv(museums_url) |>
     filter(!museum_id %in% not_really_museums$museum_id) |>
     mutate(
+      year_opened=case_when(
+        year_opened_1==year_opened_2 ~ as.character(year_opened_1),
+        TRUE ~ paste(year_opened_1, year_opened_2, sep="/")
+      ),
+      year_closed=case_when(
+        year_closed_1==9999 ~ "N/A",
+        year_closed_1==year_closed_2 ~ as.character(year_closed_1),
+        TRUE ~ paste(year_closed_1, year_closed_2, sep="/")
+      ),
+      all="all",
       all=factor(all, museum_attribute_ordering),
       size=factor(size, museum_attribute_ordering),
       governance=factor(governance, museum_attribute_ordering),

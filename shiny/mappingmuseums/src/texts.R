@@ -6,7 +6,7 @@ top_home <- "<p>This database brings together information about all museums in t
   <li>Object disposal: where objects from closed museums went</li>
 </ul>"
 
-top_database <- "<p>Use this tab to search the Mapping Museums database.</p>"
+top_database <- "<p>Which museums have been open in the UK in the period since 1960? This search allows you to filter museums by size, governance, accreditation, subject matter, and location and view the results as a list.</p>"
 
 top_glossary <- "<p>Information about museums, their closure, and collections dispersal is organised into taxonomies. These taxonomies underpin all the visualisations and analyses available on this web app. In all cases the main categories of our analyses are marked by a bold circle, the sub-categories by a grey circle.</p>
 <p>The taxonomies we have designed and used are as follows:</p>
@@ -59,8 +59,15 @@ top_length <- "<p>How long does it take to dispose of the collection after a mus
 <p>Click the thumbnail image to select your preferred visualisation. You can refine your search by using View and Filters. Click the <i class='fa-solid fa-circle-info' style='color: #007bff'></i> buttons for guidance.</p>
 <p>Details of museums returned by the search are listed below the charts.</p>"
 
-tooltip_view <- "Controls the overall parameters of the visualisations."
-tooltip_filter <- "Allows you to refine your searches. E.g. you might choose to view museums according to size, and then further select according to governance."
+db_tooltip_search <- "<p>Enter free text to search all fields of the Mapping Museums database.</p>"
+tooltip_museum_country <- "<p>The country or territory where the museum is located.</p>"
+tooltip_address <- "<p>Search for museums by their address. Enter any part of the address - e.g. road, village, town, county, postcode.</p>"
+tooltip_local_authority_district <- "<p>The local authority district (2023 boundaries) where the museum is located.</p>"
+tooltip_existence_or_open_close <- "<p>Filter museums according to when they were open (they opened before or during the time period and closed during or after the time period) or according to their opening and closure dates (specify the time period during which their opening occurred and the time period during which their closure occurred).</p>"
+tooltip_show_columns <- "<p>Select which columns should appear in the results table.</p>"
+
+tooltip_view <- "<p>Controls the overall parameters of the visualisations.</p>"
+tooltip_filter <- "<p>Allows you to refine your searches. E.g. you might choose to view museums according to size, and then further select according to governance.</p>"
 
 tooltip_single_or_range <- "<p><strong>Single year: </strong>Shows museums open in a specified year.</p>
 <p><strong>Range of years: </strong>Shows museums open in a range of years.</p>

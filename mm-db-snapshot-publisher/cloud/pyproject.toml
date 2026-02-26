@@ -1,0 +1,26 @@
+[project]
+name = "mm-db-snapshot-publisher"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "python-dotenv>=1.0.0",
+    "pandas>=3.0.0",
+    "requests",
+    "google-api-python-client",
+    "google-auth-oauthlib",
+    "geopy",
+    "bng-latlon",
+    "snowballstemmer>=3.0.1",
+    "scipy>=1.17.0",
+    "scikit-learn>=1.8.0",
+    "google-cloud-storage>=3.9.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+

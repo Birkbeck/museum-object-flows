@@ -75,7 +75,7 @@ source("src/modules/interpreting_data/server.R")
 source("src/modules/help/ui.R")
 source("src/modules/help/server.R")
 
-PRODUCTION <- FALSE
+PRODUCTION <- TRUE
 USE_PASSWORD <- FALSE 
 
 user_base <- readRDS("users.rds")
@@ -281,20 +281,29 @@ make_app_content_ui <- function() {
 
 log_interaction <- function(session_id, tab_id) {
   timestamp <- Sys.time()
-  message(paste0("[", timestamp, "] Session ", session_id, ": ", tab_id))
-  if (PRODUCTION) {
-    interaction_data <- data.frame(
-      session_id=session_id,
-      tab_id=tab_id,
-      timestamp=format(timestamp, tz = "UTC", usetz = TRUE),
-      stringsAsFactors=FALSE
-    )
-    googlesheets4::sheet_append(
-      ss=ANALYTICS_SHEET_ID,
-      data=interaction_data,
-      sheet=1
-    )
+  if (!PRODUCTION) {
+    message(sprintf("[%s] Session %s: %s", timestamp, session_id, tab_id))
+    return(invisible(NULL))
   }
+  interaction_data <- data.frame(
+    session_id=session_id,
+    tab_id=tab_id,
+    timestamp=format(timestamp, tz = "UTC", usetz = TRUE),
+    stringsAsFactors=FALSE
+  )
+  tryCatch(
+    {
+      googlesheets4::sheet_append(
+        ss = ANALYTICS_SHEET_ID,
+        data = interaction_data,
+        sheet = 1
+      )
+    },
+    error = function(e) {
+      message(sprintf("Logging failed: %s", conditionMessage(e)))
+      invisible(NULL)
+    }
+  )
 }
 
 function(input, output, session) {

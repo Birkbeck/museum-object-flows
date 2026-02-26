@@ -1,0 +1,55 @@
+name: Tests (uv + npm)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # ---------- TypeScript tests ----------
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: |
+            mm-db-manager/apps-script/package-lock.json
+
+      - name: Install Node dependencies
+        working-directory: mm-db-manager/apps-script
+        run: npm ci
+
+      - name: Run TypeScript tests
+        working-directory: mm-db-manager/apps-script
+        run: npm run test
+
+      # ---------- Python tests (uv) ----------
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install uv
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install uv
+
+      - name: Run Python unit tests (mm-db-manager/cloud)
+        working-directory: mm-db-manager/cloud
+        env:
+          PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/mm-db-manager/cloud
+        run: uv run python -m pytest tests/unit
+
+      - name: Run Python unit tests (sheet-to-graph/cloud)
+        working-directory: sheet-to-graph/cloud
+        env:
+          PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/sheet-to-graph/cloud
+        run: uv run python -m pytest tests/unit

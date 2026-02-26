@@ -1,0 +1,18 @@
+{
+  "scripts": {
+    "build": "node esbuild.mjs && cp appsscript.json dist/appsscript.json",
+    "push": "cp .clasp.prod.json .clasp.json && npm run build && clasp push --user prod",
+    "push:test": "cp .clasp.test.json .clasp.json && npm run build && clasp push --user test",
+    "watch": "clasp push --watch",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "devDependencies": {
+    "@types/google-apps-script": "^1.0.0",
+    "@types/jest": "^30.0.0",
+    "esbuild": "^0.20.2",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.6",
+    "typescript": "^5.0.0"
+  }
+}

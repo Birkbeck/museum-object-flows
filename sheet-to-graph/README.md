@@ -45,3 +45,17 @@ You may then need to flush your DNS cache as your computer may remember that the
 ```
 sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder
 ```
+
+## cloud deployment
+
+create secret
+
+```
+python generate-secret.py
+```
+
+add it to gcloud
+```
+gcloud secrets create sheet-to-graph-translate-translate-token --replication-policy=automatic 2>/dev/null || true
+printf '%s' "YOUR_GENERATED_SECRET" | gcloud secrets versions add sheet-to-graph-translate-translate-token --data-file=-
+```

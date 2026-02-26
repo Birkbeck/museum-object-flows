@@ -1,12 +1,33 @@
 *.DS_Store
+.RData
 .Rhistory
 *~*
 *__pycache__*
 *.Rproj*
 *.nb.html
+*.env*
+*node_modules/
+*.egg-info/
+*.zip
+.secret.txt
+.terraform/
+terraform.tfstate
+terraform.tfstate.*
+terraform.tfvars
+terraform.tfvars.*
+
+*.clasp.json
+*.clasp.prod.json
+*.clasp.test.json
+**/dist/Code.gs
+**/dist/appsscript.json
+
+*.sqlite
 
 data/ONSPD*
 data/dispersal-sheet-2*
+data/dispersal_sheets/
+data/wip-sheet*
 
 sheet-to-graph/credentials.json
 sheet-to-graph/output.xlsx

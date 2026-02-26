@@ -8,22 +8,22 @@ outcomesServer <- function(id) {
       updateRadioButtons(session=session, inputId="museumGrouping", selected="Governance")
       updateRadioButtons(session=session, inputId="countOrPercentage", selected="frequency")
       updatePickerInput(
-        session=session, inputId="governanceFilter", selected=governance_broad_labels$label
+        session=session, inputId="governanceFilter", selected=governance_broad_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="sizeFilter", selected=size_labels$label
+        session=session, inputId="sizeFilter", selected=size_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="subjectFilter", selected=subject_broad_labels$label
+        session=session, inputId="subjectFilter", selected=subject_broad_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="subjectSpecificFilter", selected=subject_labels$label
+        session=session, inputId="subjectSpecificFilter", selected=subject_labels_map()$subject
       )
       updatePickerInput(
-        session=session, inputId="regionFilter", selected=region_labels$label
+        session=session, inputId="regionFilter", selected=region_labels()$label
       )
       updatePickerInput(
-        session=session, inputId="accreditationFilter", selected=accreditation_labels$label
+        session=session, inputId="accreditationFilter", selected=accreditation_labels()$label
       )
     })
 
@@ -253,9 +253,9 @@ outcomesServer <- function(id) {
           outcome_recipient_count,
           outcome_largest_share,
           outcome_destination_type,
-          size,
-          governance,
           accreditation,
+          governance,
+          size,
           subject,
           region
         )

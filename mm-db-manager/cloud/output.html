@@ -1,0 +1,96 @@
+<h1 id="mm-db-cloud">MM DB Cloud</h1>
+<p>This directory contains the Google Cloud–backed operations service
+for the Museum Database manager.</p>
+<p>It provides HTTP endpoints (/add, /edit, /trash, /restore,
+/delete_permanent) that perform writes to Google Sheets using Google
+APIs, while keeping the sheets read-only for humans.</p>
+<p>It also contains unit tests and integration tests that can be run
+locally against a real Google Sheet before deployment.</p>
+<h2 id="google-cloud-setup">Google Cloud setup</h2>
+<ol type="1">
+<li>Create / select a Google Cloud project</li>
+</ol>
+<pre><code>gcloud projects list
+gcloud config set project YOUR_PROJECT_ID</code></pre>
+<p>Enable required APIs:</p>
+<pre><code>gcloud services enable sheets.googleapis.com
+gcloud services enable drive.googleapis.com</code></pre>
+<ol start="2" type="1">
+<li>Create a service account for Sheets access</li>
+</ol>
+<p>This account is used only by the cloud service, not by humans.</p>
+<pre><code>gcloud iam service-accounts create sheets-bot \
+  --display-name=&quot;Sheets DB Bot&quot;</code></pre>
+<p>The email will look like:</p>
+<pre><code>sheets-bot@YOUR_PROJECT_ID.iam.gserviceaccount.com</code></pre>
+<ol start="3" type="1">
+<li>Share the Google Sheet with the service account</li>
+</ol>
+<p>Open your test spreadsheet in Google Sheets:</p>
+<p>Click Share</p>
+<p>Add the service account email</p>
+<p>Give it Editor access</p>
+<p>If the sheet or ranges are protected (recommended):</p>
+<p>Go to Data → Protect sheets and ranges</p>
+<p>Explicitly allow the service account to edit the protected range</p>
+<p>Humans should remain read-only.</p>
+<h2 id="local-development-setup">Local development setup</h2>
+<ol type="1">
+<li>Install dependencies</li>
+</ol>
+<p>From <code>cloud/</code>:</p>
+<pre><code>uv sync</code></pre>
+<ol start="2" type="1">
+<li>Authenticate locally (Application Default Credentials)</li>
+</ol>
+<p>For local development and tests, use your own Google account:</p>
+<pre><code>gcloud auth application-default revoke
+gcloud auth application-default login \
+  --scopes=https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/spreadsheets,https://www.googleapis.com/auth/drive</code></pre>
+<p>This creates:</p>
+<pre><code>~/.config/gcloud/application_default_credentials.json</code></pre>
+<p>Your Google account must also have access to the test
+spreadsheet.</p>
+<ol start="3" type="1">
+<li>Create a local file following the example in
+<code>.env.example</code></li>
+</ol>
+<h2 id="running-the-service-locally">Running the service locally</h2>
+<p>The same Flask app used in Cloud Run can be run locally.</p>
+<p>Start the local server</p>
+<pre><code>cd cloud
+export HMAC_SECRET=&quot;dev-secret&quot;
+uv run python devserver.py</code></pre>
+<p>The service will be available at:</p>
+<pre><code>http://127.0.0.1:8080</code></pre>
+<h2 id="running-tests">Running tests</h2>
+<h3 id="unit-tests-only">Unit tests only</h3>
+<pre><code>uv run pytest tests/unit</code></pre>
+<p>These do not hit Google APIs.</p>
+<h3 id="integration-tests-real-google-sheet">Integration tests (real
+Google Sheet)</h3>
+<p>Integration tests:</p>
+<ul>
+<li>call the local HTTP service</li>
+<li>perform real writes to the test spreadsheet</li>
+<li>verify results by reading the sheet</li>
+</ul>
+<p>Make sure:</p>
+<ul>
+<li>the local server is running</li>
+<li>ADC is authenticated</li>
+<li>the sheet is shared correctly</li>
+</ul>
+<p>Then run:</p>
+<pre><code>uv run pytest tests/integration</code></pre>
+<h2 id="deployment-cloud-run">Deployment (Cloud Run)</h2>
+<p>The production entrypoint is <code>main.py</code>.</p>
+<p>Deploy:</p>
+<pre><code>gcloud run deploy mm-db-cloud \
+  --source . \
+  --region europe-west1 \
+  --allow-unauthenticated \
+  --set-env-vars HMAC_SECRET=your-prod-secret \
+  --service-account sheets-bot@YOUR_PROJECT_ID.iam.gserviceaccount.com</code></pre>
+<p>After deployment, update:</p>
+<pre><code>MM_DB_CLOUD_BASE_URL=https://your-cloud-run-url</code></pre>
