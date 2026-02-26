@@ -72,8 +72,9 @@ dispute - access refused by host organisation,dispute,FALSE
 other - never fully established as a museum,other,FALSE
 other - associated business sold,other,FALSE
 financial - managing trust disposing of liabilities,financial,FALSE
-life events - owners in dispute,life events,FALSE
+life events - owners fell out,life events,FALSE
 restructure of host organisation - merger of fire services,restructure of host organisation,FALSE
+building - building ownership changed,building,FALSE
 low visitor numbers - other - other,low visitor numbers - other,FALSE
 financial - funding cut - external funding cut,financial - funding cut,FALSE
 loss of premises - change of use - space repurposed,loss of premises - change of use,FALSE
@@ -169,6 +170,7 @@ dispute - access refused by host organisation - other,dispute - access refused b
 other - never fully established as a museum - other,other - never fully established as a museum,FALSE
 other - associated business sold - other,other - associated business sold,FALSE
 financial - managing trust disposing of liabilities - other,financial - managing trust disposing of liabilities,FALSE
-life events - owners in dispute - other,life events - owners in dispute,FALSE
+life events - owners fell out - other,life events - owners fell out,FALSE
 building - condition of building - other,building - condition of building,FALSE
 restructure of host organisation - merger of fire services - other,restructure of host organisation - merger of fire services,FALSE
+building - building ownership changed - other,building - building ownership changed,FALSE

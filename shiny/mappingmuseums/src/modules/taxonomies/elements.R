@@ -535,7 +535,7 @@ reasons_taxonomy <- function() {
       rbind(sub_core_reasons) |>
       rbind(specific_reasons) |>
       filter(!is.na(type_name)) |>
-      filter(!type_name %in% c("disagreement", "theft")) |>
+      #filter(!type_name %in% c("disagreement", "theft")) |>
       add_dummies()
     
     reasons_layout <- get_taxonomy_layout(closure_reasons, "reason")
