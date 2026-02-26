@@ -169,8 +169,8 @@ describe("onEdit populate (SpreadsheetApp mocked; real insertDatabaseToForm)", (
 	dbRow[DB_SHEET.YEAR_OPENED_2] = "2003";
 	dbRow[DB_SHEET.YEAR_CLOSED_1] = "2010";
 	dbRow[DB_SHEET.YEAR_CLOSED_2] = "2010";
-	dbRow[DB_SHEET.GOVERNANCE] = "Local authority";
-	dbRow[DB_SHEET.SUBJECT] = "Art: Painting";
+	dbRow[DB_SHEET.GOVERNANCE] = "local authority";
+	dbRow[DB_SHEET.SUBJECT] = "art: painting";
 	dbRow[DB_SHEET.NOTES] = "hello";
 	const museumCellRange: MockRange = { getValue: jest.fn(() => "mm.new.7 - Museum A") };
 	const fullRowRange: MockRange = {
@@ -219,8 +219,8 @@ describe("onEdit populate (SpreadsheetApp mocked; real insertDatabaseToForm)", (
 	expect(writtenRow[EDIT_SHEET.MUSEUM]).toBe("mm.new.7 - Museum A");
 	expect(writtenRow[EDIT_SHEET.MUSEUM_NAME]).toBe("Museum A");
 	expect(writtenRow[EDIT_SHEET.POSTCODE]).toBe("SW1A 1AA");
-	expect(writtenRow[EDIT_SHEET.GOVERNANCE]).toBe("Local authority");
-	expect(writtenRow[EDIT_SHEET.SUBJECT]).toBe("Art: Painting");
+	expect(writtenRow[EDIT_SHEET.GOVERNANCE]).toBe("local authority");
+	expect(writtenRow[EDIT_SHEET.SUBJECT]).toBe("art: painting");
 	expect(writtenRow[EDIT_SHEET.NOTES]).toBe("hello");
 	expect(writtenRow[EDIT_SHEET.YEAR_OPENED]).toBe("1999/2003");
 	expect(writtenRow[EDIT_SHEET.YEAR_CLOSED]).toBe("2010");

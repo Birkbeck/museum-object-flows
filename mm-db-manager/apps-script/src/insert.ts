@@ -263,8 +263,8 @@ function dbToFormGovernanceMap(
 	"private",
 	"unknown governance",
     ]);
-    if (allowed.has(specific)) {
-	return specific;
+    if (allowed.has(String(specific))) {
+	return String(specific);
     }
     return `${broad}: ${specific}`;
 }
