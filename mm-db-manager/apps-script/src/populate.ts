@@ -77,13 +77,24 @@ function maybePopulateFromMuseumCell(args: {
     }
     const dbLastCol = dbSheet.getLastColumn();
     const dbRowValues = dbSheet.getRange(dbRowNumber, 1, 1, dbLastCol).getValues()[0];
-    insertDatabaseToForm({
-	formSheet,
-	formRowNumber,
-	formMapping,
-	dbRowValues,
-	preserveReadyColumn: true,
-    });
+    try {
+	insertDatabaseToForm({
+	    formSheet,
+	    formRowNumber,
+	    formMapping,
+	    dbRowValues,
+	    preserveReadyColumn: true,
+	});
+    } catch (err) {
+	const msg =
+	    `Couldn't populate this row because some database values don't match the ` +
+	    `${formSheet.getName()} sheet's validation.\n\n` +
+	    `Museum ID: ${museumId}\n` +
+	    `Database row: ${dbRowNumber}\n\n`;
+	SpreadsheetApp.getUi().alert(msg);
+	console.error("Populate failed", { museumId, dbRowNumber, err });
+	return;
+    }
 }
 
 function clearFormRowExceptReady(
