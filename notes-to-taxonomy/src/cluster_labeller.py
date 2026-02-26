@@ -1,4 +1,5 @@
-from typing import List
+from typing import List, Callable, Any, Dict
+from datasets import Dataset
 
 
 class ClusterLabeller:
@@ -24,7 +25,7 @@ class ClusterLabeller:
         self.max_new_tokens = max_new_tokens
         self.seed = seed
 
-    def label_cluster(self, members: List[str]):
+    def label_cluster(self, members: List[str]) -> str:
         prompt = self._generate_prompt(members)
         response = self.llm.get_response(
             prompt,
@@ -34,9 +35,50 @@ class ClusterLabeller:
             self.top_p,
             self.seed,
         )
-        return response.split("\n")[0].strip()
+        return self._first_nonempty_line(response)
 
-    def _generate_prompt(self, members):
+    def label_clusters(
+        self,
+        lists_of_members: List[List[str]],
+        *,
+        batch_size: int = 16,
+        num_proc: int | None = None,
+        desc: str = "Labelling clusters",
+    ) -> List[str]:
+        prompts = [self._generate_prompt(members) for members in lists_of_members]
+        dataset = Dataset.from_dict({"prompt": prompts})
+
+        def _infer_batch(batch: Dict[str, List[Any]]) -> Dict[str, List[str]]:
+            batch_prompts: List[str] = batch["prompt"]
+            raw = self.llm.get_responses(
+                batch_prompts,
+                max_new_tokens=self.max_new_tokens,
+                temperature=self.temperature,
+                top_p=self.top_p,
+                seed=self.seed,
+                batch_size=batch_size,
+            )
+            labels = [self._first_nonempty_line(r) for r in raw]
+            return {"label": labels}
+
+        dataset = dataset.map(
+            _infer_batch,
+            batched=True,
+            batch_size=batch_size,
+            num_proc=num_proc,
+            desc=desc,
+        )
+        return list(dataset["label"])
+
+    @staticmethod
+    def _first_nonempty_line(response: str) -> str:
+        for line in response.split("\n"):
+            line = line.strip()
+            if line:
+                return line
+        return ""
+
+    def _generate_prompt(self, members: List[str]) -> str:
         return (
             self.role_description
             + "\n"

@@ -6,6 +6,7 @@
     "llms": [
 	"/users/k2480370/scratch/llama3.1-8B"
     ],
+    "llm_batch_size": 4,
     "roles": {
 	"null": "",
 	"taxonomist": "You create succinct but descriptive labels for nodes in a taxonomy."

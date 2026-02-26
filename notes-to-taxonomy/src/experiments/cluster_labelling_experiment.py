@@ -11,6 +11,7 @@ import torch
 
 from src import ClusterLabeller, Experiment
 from src.llms import make_llm_from_name
+from src.taxonomy_to_json import taxonomy_to_json
 
 
 class ClusterLabellingExperiment(Experiment):
@@ -19,6 +20,7 @@ class ClusterLabellingExperiment(Experiment):
         super().__init__(output_file_name)
         self.taxonomies_directory = config["taxonomies_directory"]
         self.llms = config["llms"]
+        self.llm_batch_size = config["llm_batch_size"]
         self.roles = config["roles"]
         self.tasks = config["tasks"]
         self.examples = config["examples"]
@@ -81,7 +83,7 @@ class ClusterLabellingExperiment(Experiment):
         taxonomy_name = configuration["taxonomy"].replace(".csv", "")
         llm_name = configuration["llm"].replace("/", "-")
         taxonomy_file_name = (
-            f"{self.output_directory}/labelled-taxonomies/"
+            f"{self.output_directory}/labelled-taxonomies-sample/"
             f"-{taxonomy_name}"
             f"-{llm_name}"
             f"-{configuration['role']}"
@@ -142,15 +144,35 @@ class ClusterLabellingExperiment(Experiment):
         for layer in range(1, self.layer_count + 1):
             key_cols = [f"layer_{i}_cluster" for i in range(1, layer + 1)]
             cluster_label_column = f"layer_{layer}_label"
-            cluster_to_label: dict[tuple, str] = {}
-            # Group by the whole ancestry path (layer_1 ... layer_n)
+            jobs: list[tuple[tuple, list[str]]] = []
             for key, subset in out.groupby(key_cols, dropna=False, sort=True):
-                # key is a scalar if layer==1; normalize to tuple for consistent indexing
-                if layer == 1:
+                if not isinstance(key, tuple):
                     key = (key,)
-                unique_labels = sorted(set(subset["label"].dropna()))
-                cluster_to_label[key] = cluster_labeller.label_cluster(unique_labels)
-            # Build a MultiIndex mapping for fast vectorized assignment
+                members = sorted(set(subset["label"].dropna()))
+                jobs.append((key, members))
+            keys: list[tuple] = [k for k, _ in jobs]
+            members_lists: list[list[str]] = [m for _, m in jobs]
+            labels_out: list[str | None] = [None] * len(members_lists)
+            to_llm_members: list[list[str]] = []
+            to_llm_idx: list[int] = []
+            for i, members in enumerate(members_lists):
+                if len(members) == 0:
+                    labels_out[i] = ""
+                elif len(members) == 1:
+                    labels_out[i] = members[0]
+                else:
+                    to_llm_idx.append(i)
+                    to_llm_members.append(members)
+            if to_llm_members:
+                llm_labels = cluster_labeller.label_clusters(
+                    to_llm_members,
+                    batch_size=self.llm_batch_size,
+                )
+                for i, lab in zip(to_llm_idx, llm_labels):
+                    labels_out[i] = lab
+            cluster_to_label: dict[tuple, str] = {
+                k: (labels_out[i] or "") for i, k in enumerate(keys)
+            }
             map_index = pd.MultiIndex.from_tuples(
                 cluster_to_label.keys(), names=key_cols
             )
@@ -267,27 +289,13 @@ class ClusterLabellingExperiment(Experiment):
         return coherence_score, coverage_score
 
     def _taxonomy_to_json(self, taxonomy_frame: pd.DataFrame, number_of_layers: int):
-        return json.dumps(
-            self._taxonomy_to_dict(taxonomy_frame, number_of_layers),
-            indent=2,
-            ensure_ascii=False,
-            sort_keys=True,
-        )
-
-    def _taxonomy_to_dict(self, taxonomy_frame: pd.DataFrame, number_of_layers: int):
-        taxonomy: dict = {}
-        layer_columns = [f"layer_{i}_label" for i in range(1, number_of_layers + 1)]
-        grouped = taxonomy_frame.groupby(layer_columns, dropna=False, sort=True)
-        for path, subset in grouped:
-            if number_of_layers == 1:
-                path = (path,)
-            leaf_labels = (
-                subset["label"].dropna().astype(str).drop_duplicates().tolist()
+        df = taxonomy_frame.copy()
+        column_name_suffix = "cluster_with_label"
+        for i in range(1, number_of_layers + 1):
+            df[f"layer_{i}_{column_name_suffix}"] = df.apply(
+                lambda row: str(row[f"layer_{i}_cluster"])
+                + " "
+                + str(row[f"layer_{i}_label"]),
+                axis=1,
             )
-            current_level = taxonomy
-            for i, node_label in enumerate(path):
-                if i == number_of_layers - 1:
-                    current_level[node_label] = leaf_labels
-                else:
-                    current_level = current_level.setdefault(node_label, {})
-        return taxonomy
+        return taxonomy_to_json(df, number_of_layers, column_name_suffix)

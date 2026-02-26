@@ -1,11 +1,12 @@
 {
-    "taxonomies_directory": "data/unlabelled-taxonomies",
+    "taxonomies_directory": "data/unlabelled-taxonomies-sample",
     "output_directory": "data",
     "output_file_name": "cluster-labelling-results.csv",
     "evaluation_sentence_model": "all-MiniLM-L6-v2",
     "llms": [
 	"gpt2"
     ],
+    "llm_batch_size": 4,
     "roles": {
 	"null": "",
 	"taxonomist": "You create succinct but descriptive labels for nodes in a taxonomy."
