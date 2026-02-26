@@ -1,4 +1,3 @@
-# sheet_to_graph/anonymize_rows.py
 from __future__ import annotations
 
 import os
@@ -21,12 +20,12 @@ ACTOR_ID_COL = _env_int("ACTOR_ID_COL", 0)
 ACTOR_NAME_COL = _env_int("ACTOR_NAME_COL", 1)
 ACTOR_TYPE_COL = _env_int("ACTOR_TYPE_COL", 2)
 ACTOR_ADDR1_COL = _env_int("ACTOR_ADDR1_COL", 5)
-ACTOR_POSTCODE_COL = _env_int("ACTOR_POSTCODE_COL", 8)
+ACTOR_POSTCODE_COL = _env_int("ACTOR_POSTCODE_COL", 9)
 ACTOR_NOTES_COL = _env_int("ACTOR_NOTES_COL", 12)
 
-RECIPIENT_ID_COL = _env_int("RECIPIENT_ID_COL", 27)
-RECIPIENT_NAME_COL = _env_int("RECIPIENT_NAME_COL", 28)
-EVENT_NOTES_COL = _env_int("EVENT_NOTES_COL", 34)
+RECIPIENT_ID_COL = _env_int("RECIPIENT_ID_COL", 22)
+RECIPIENT_NAME_COL = _env_int("RECIPIENT_NAME_COL", 23)
+EVENT_NOTES_COL = _env_int("EVENT_NOTES_COL", 29)
 
 ANONYMIZE_ACTOR_TYPE_VALUE = os.environ.get("ANONYMIZE_ACTOR_TYPE_VALUE", "individual")
 
