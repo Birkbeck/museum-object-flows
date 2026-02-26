@@ -23,7 +23,9 @@ reset-db:
 	@cd sheet-to-graph && pipenv run python reset.py
 
 tests:
-	@cd sheet-to-graph && pipenv run python -m pytest tests/
+	@cd mm-db-manager/apps-script && npm run test
+	@cd mm-db-manager/cloud && uv run python -m pytest tests/unit
+	@cd sheet-to-graph/cloud && uv run python -m pytest tests/unit
 
 upload-db:
 	@cd sheet-to-graph \
