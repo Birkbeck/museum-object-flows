@@ -75,7 +75,7 @@ source("src/modules/interpreting_data/server.R")
 source("src/modules/help/ui.R")
 source("src/modules/help/server.R")
 
-PRODUCTION <- FALSE
+PRODUCTION <- TRUE
 USE_PASSWORD <- FALSE 
 
 user_base <- readRDS("users.rds")
