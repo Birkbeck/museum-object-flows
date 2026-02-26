@@ -1,5 +1,4 @@
 from typing import List, Callable, Any, Dict
-from datasets import Dataset
 
 
 class ClusterLabeller:
@@ -46,29 +45,19 @@ class ClusterLabeller:
         desc: str = "Labelling clusters",
     ) -> List[str]:
         prompts = [self._generate_prompt(members) for members in lists_of_members]
-        dataset = Dataset.from_dict({"prompt": prompts})
-
-        def _infer_batch(batch: Dict[str, List[Any]]) -> Dict[str, List[str]]:
-            batch_prompts: List[str] = batch["prompt"]
+        outputs: List[str] = []
+        for i in range(0, len(prompts), batch_size):
+            batch = prompts[i : i + batch_size]
             raw = self.llm.get_responses(
-                batch_prompts,
+                batch,
                 max_new_tokens=self.max_new_tokens,
                 temperature=self.temperature,
                 top_p=self.top_p,
                 seed=self.seed,
-                batch_size=batch_size,
+                batch_size=len(batch),
             )
-            labels = [self._first_nonempty_line(r) for r in raw]
-            return {"label": labels}
-
-        dataset = dataset.map(
-            _infer_batch,
-            batched=True,
-            batch_size=batch_size,
-            num_proc=num_proc,
-            desc=desc,
-        )
-        return list(dataset["label"])
+            outputs.extend(self._first_nonempty_line(r) for r in raw)
+        return outputs
 
     @staticmethod
     def _first_nonempty_line(response: str) -> str:
