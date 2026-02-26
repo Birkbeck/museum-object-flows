@@ -44,63 +44,62 @@ def test_add_museums_happy_path_appends_and_deletes_bottom_up(monkeypatch):
     ssid = "S1"
     sheets = FakeSheetsService()
 
-    # Two ready rows (ready checkbox in col 0)
     sheets.values[(ssid, f"{Add.SHEET_NAME}!A2:Z")] = [
         [
-            True,
-            "Museum A",
-            "",
-            "Q1",
-            "",
-            "",
-            "",
-            "",
-            "WC1E 7HZ",
-            "accredited",
-            "",
-            "",
-            "local authority",
-            "",
-            "",
-            "",
-            "",
-            "small",
-            "",
-            "mixed",
-            "1999",
-            "",
-            "2000",
-            "",
-            "",
-            "",
+            True,  # ready
+            "Museum A",  # name
+            "A Museum",  # alternative name
+            "Q1",  # wikidata id
+            "123 Malet Street",  # address 1
+            "Bloomsbury",  # address 2
+            "Camden",  # address 3
+            "London",  # village town city
+            "WC1E 7HZ",  # postcode
+            "accredited",  # accreditation
+            "123",  # accreditation number
+            "",  # date accreditation changes
+            "local authority",  # governance
+            "governance source",  # governance source
+            "independent: not-for-profit",  # previous governance
+            "1999",  # prev gov start
+            "2000",  # prev gov end
+            "small",  # size
+            "size source",  # size source
+            "mixed",  # subject
+            "1999",  # year opened
+            "year opened source",  # year opened source
+            "2001",  # year closed
+            "year closed source",  # year closed source
+            "source",  # primary provenance of data
+            "some notes",  # notes
         ],
         [
-            True,
-            "Museum B",
-            "",
-            "Q2",
-            "",
-            "",
-            "",
-            "",
-            "WC1E 7HZ",
-            "unaccredited",
-            "",
-            "",
-            "local authority",
-            "",
-            "",
-            "",
-            "",
-            "small",
-            "",
-            "mixed",
-            "1999",
-            "",
-            "2000",
-            "",
-            "",
-            "",
+            True,  # ready
+            "Museum B",  # name
+            "",  # alternative name
+            "Q2",  # wikidata id
+            "",  # address 1
+            "",  # address 2
+            "",  # address 3
+            "",  # village town city
+            "WC1E 7HZ",  # postcode
+            "unaccredited",  # accreditation
+            "",  # accreditation number
+            "",  # date accreditation changed
+            "local authority",  # governance
+            "",  # governance source
+            "",  # previous governance
+            "",  # prev gov start
+            "",  # prev gov end
+            "small",  # size
+            "size source",  # size source
+            "mixed",  # subject
+            "1999",  # year opened
+            "year opened source",  # year opened source
+            "2000",  # year closed
+            "year closed source",  # year closed source
+            "source",  # primary provenance of data
+            "some notes",  # notes
         ],
     ]
     sheets.sheet_ids[(ssid, Add.SHEET_NAME)] = 123
@@ -149,7 +148,34 @@ def test_add_museums_skips_not_ready(monkeypatch):
     sheets = FakeSheetsService()
     sheets.values[(ssid, f"{Add.SHEET_NAME}!A2:Z")] = [
         [False, "Museum A"],
-        [True, "Museum B"],
+        [
+            True,  # ready
+            "Museum B",  # name
+            "",  # alternative name
+            "Q2",  # wikidata id
+            "",  # address 1
+            "",  # address 2
+            "",  # address 3
+            "",  # village town city
+            "WC1E 7HZ",  # postcode
+            "unaccredited",  # accreditation
+            "",  # accreditation number
+            "",  # date accreditation changed
+            "local authority",  # governance
+            "",  # governance source
+            "",  # previous governance
+            "",  # prev gov start
+            "",  # prev gov end
+            "small",  # size
+            "size source",  # size source
+            "mixed",  # subject
+            "1999",  # year opened
+            "year opened source",  # year opened source
+            "2000",  # year closed
+            "year closed source",  # year closed source
+            "source",  # primary provenance of data
+            "some notes",  # notes
+        ],
     ]
     sheets.sheet_ids[(ssid, Add.SHEET_NAME)] = 123
 

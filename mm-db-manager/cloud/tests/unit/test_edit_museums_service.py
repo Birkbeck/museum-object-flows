@@ -38,8 +38,60 @@ def test_edit_museums_happy_path_updates_and_deletes_bottom_up(monkeypatch):
     sheets = FakeSheetsService()
 
     sheets.values[(ssid, f"{Edit.SHEET_NAME}!A2:ZZ")] = [
-        [True, "mm.new.1 - Museum One", "New Name 1"],
-        [True, "mm.new.2 - Museum Two", "New Name 2"],
+        [
+            True,
+            "mm.new.1 - Museum One",
+            "New Name 1",  # name
+            "Alt Name 1",  # alternative name
+            "",  # wikidata id
+            "",  # address 1
+            "",  # address 2
+            "",  # address 3
+            "",  # village town city
+            "",  # postcode
+            "unaccredited",  # accreditation
+            "",  # accreditation number
+            "",  # data accreditation changed
+            "local authority",  # governance
+            "",  # governance source
+            "",  # previous governance
+            "",  # prev gov start
+            "",  # prev gov end
+            "small",  # size
+            "",  # size source
+            "local histories",  # subject
+            "2001/2002",  # year opened
+            "",  # year opened source
+            "9999",  # year closed
+            "",  # year closed source
+        ],
+        [
+            True,
+            "mm.new.2 - Museum Two",
+            "New Name 2",
+            "Alt Name 2",
+            "",  # wikidata id
+            "",  # address 1
+            "",  # address 2
+            "",  # address 3
+            "",  # village town city
+            "",  # postcode
+            "unaccredited",  # accreditation
+            "",  # accreditation number
+            "",  # data accreditation changed
+            "local authority",  # governance
+            "",  # governance source
+            "",  # previous governance
+            "",  # prev gov start
+            "",  # prev gov end
+            "small",  # size
+            "",  # size source
+            "local histories",  # subject
+            "2001/2002",  # year opened
+            "",  # year opened source
+            "9999",  # year closed
+            "",  # year closed source
+        ],
     ]
     sheets.sheet_ids[(ssid, Edit.SHEET_NAME)] = 777
 

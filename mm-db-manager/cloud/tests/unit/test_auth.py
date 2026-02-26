@@ -14,7 +14,7 @@ def _sign(secret: str, body: bytes) -> str:
     return base64.b64encode(mac).decode("utf-8")
 
 
-def test_verify_request_allows_when_secret_unset(monkeypatch):
+def test_verify_request_raises_error_when_secret_unset(monkeypatch):
     monkeypatch.setattr(auth, "_HMAC_SECRET", "")
 
     app = Flask(__name__)
@@ -26,7 +26,7 @@ def test_verify_request_allows_when_secret_unset(monkeypatch):
 
     client = app.test_client()
     r = client.post("/x", data=b'{"a":1}', content_type="application/json")
-    assert r.status_code == 200
+    assert r.status_code == 500
 
 
 def test_verify_request_rejects_missing_signature(monkeypatch):
