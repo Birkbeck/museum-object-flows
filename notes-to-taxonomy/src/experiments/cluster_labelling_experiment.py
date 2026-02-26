@@ -83,7 +83,7 @@ class ClusterLabellingExperiment(Experiment):
         taxonomy_name = configuration["taxonomy"].replace(".csv", "")
         llm_name = configuration["llm"].replace("/", "-")
         taxonomy_file_name = (
-            f"{self.output_directory}/labelled-taxonomies-sample/"
+            f"{self.output_directory}/labelled-taxonomies/"
             f"-{taxonomy_name}"
             f"-{llm_name}"
             f"-{configuration['role']}"
