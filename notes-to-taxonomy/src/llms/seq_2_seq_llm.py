@@ -46,6 +46,7 @@ class Seq2SeqLLM(LLM):
             task_input,
             num_return_sequences=num_return_sequences,
             max_new_tokens=max_new_tokens,
+            do_sample=True,
             temperature=temperature,
             top_p=top_p,
         )
@@ -65,6 +66,7 @@ class Seq2SeqLLM(LLM):
             task_inputs,
             num_return_sequences=1,
             max_new_tokens=max_new_tokens,
+            do_sample=True,
             temperature=temperature,
             top_p=top_p,
             batch_size=batch_size,

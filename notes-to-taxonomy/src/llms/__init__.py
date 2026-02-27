@@ -2,14 +2,15 @@ from .base import LLM
 from .completion_llm import CompletionLLM
 from .seq_2_seq_llm import Seq2SeqLLM
 
-SEQ2SEQ_LLMS = ["flan-t5-base"]
-COMPLETION_LLMS = ["gpt2", "llama3.1-8B"]
+SEQ2SEQ_LLMS = ["flan-t5"]
+COMPLETION_LLMS = ["gpt", "llama"]
 
 
 def make_llm_from_name(name: str) -> LLM:
-    short_name = name.split("/")[-1]
-    if short_name in COMPLETION_LLMS:
-        return CompletionLLM.from_model_name(name)
-    if short_name in SEQ2SEQ_LLMS:
-        return Seq2SeqLLM.from_model_name(name)
+    for completion_llm in COMPLETION_LLMS:
+        if completion_llm in name.lower():
+            return CompletionLLM.from_model_name(name)
+    for seq2seq_llm in SEQ2SEQ_LLMS:
+        if seq2seq_llm in name.lower():
+            return Seq2SeqLLM.from_model_name(name)
     raise ValueError(f"Unknown LLM: {name}")
