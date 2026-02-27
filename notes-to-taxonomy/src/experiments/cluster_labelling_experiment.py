@@ -80,22 +80,22 @@ class ClusterLabellingExperiment(Experiment):
             f"{self.taxonomies_directory}/{configuration['taxonomy']}"
         )[taxonomy_columns].drop_duplicates()
         labelled_taxonomy = self._label_clusters(cluster_labeller, taxonomy)
-        taxonomy_name = configuration["taxonomy"].replace(".csv", "")
-        llm_name = configuration["llm"].replace("/", "-")
+        taxonomy_name = configuration["taxonomy"].replace(".csv", "").replace(" ", "_")
+        llm_name = configuration["llm"].replace("/", "_")
         taxonomy_file_name = (
             f"{self.output_directory}/labelled-taxonomies/"
-            f"-{taxonomy_name}"
+            f"{taxonomy_name}"
             f"-{llm_name}"
             f"-{configuration['role']}"
             f"-{configuration['task']}"
             f"-{configuration['example_length']}"
             f"-{configuration['temperature']}"
         )
-        labelled_taxonomy.to_csv(f"{taxonomy_file_name}.csv")
         taxonomy_json = self._taxonomy_to_json(labelled_taxonomy, self.layer_count)
         with open(f"{taxonomy_file_name}.json", "w") as f:
             f.write(taxonomy_json)
         evaluated_taxonomy = self._evaluate_labelled_taxonomy(labelled_taxonomy)
+        evaluated_taxonomy.to_csv(f"{taxonomy_file_name}.csv")
         coherence_score, coverage_score = self._aggregate_taxonomy_scores(
             evaluated_taxonomy
         )
@@ -105,36 +105,33 @@ class ClusterLabellingExperiment(Experiment):
         }
 
     def evaluation_summary(self):
-        """
-        Returns a summary of a factorial ANOVA test
-        of configuration parameters
-        as predictors of the coherence and coverage scores.
-        """
         results = pd.DataFrame(self.results)
+        if len(results) < 2:
+            raise Exception(
+                f"Not enough runs for ANOVA (n={len(results)}). Need at least 2."
+            )
         if results["coherence_score"].isna().any():
-            return "Some results have no coherence score"
-        factors = " + ".join(
-            [
-                f"C({column})"
-                for column in results.columns
-                if column not in ["coherence_score", "coverage_score"]
-            ]
-        )
-        coherence_model_formula = f"coherence_score ~ {factors}"
-        coherence_model = smf.ols(
-            coherence_model_formula,
-            data=results,
-        ).fit()
-        coherence_model_anova = anova_lm(coherence_model, typ=2)
-        coverage_model_formula = f"coverage_score ~ {factors}"
-        coverage_model = smf.ols(
-            coverage_model_formula,
-            data=results,
-        ).fit()
-        coverage_model_anova = anova_lm(coverage_model, typ=2)
+            raise Exception("Some results have no coherence score")
+        candidate_cols = [
+            c for c in results.columns if c not in ["coherence_score", "coverage_score"]
+        ]
+        varying_cols = []
+        dropped = {}
+        for c in candidate_cols:
+            nunique = results[c].dropna().nunique()
+            if nunique >= 2:
+                varying_cols.append(c)
+            else:
+                dropped[c] = nunique
+        if not varying_cols:
+            raise Exception("No varying predictors to test (all factors constant).")
+        factors = " + ".join([f"C({c})" for c in varying_cols])
+        coherence_model = smf.ols(f"coherence_score ~ {factors}", data=results).fit()
+        coverage_model = smf.ols(f"coverage_score  ~ {factors}", data=results).fit()
         return {
-            "coherence_model_anova": coherence_model_anova,
-            "coverage_model_anova": coverage_model_anova,
+            "dropped_predictors": dropped,
+            "coherence_model_anova": anova_lm(coherence_model, typ=2),
+            "coverage_model_anova": anova_lm(coverage_model, typ=2),
         }
 
     def _label_clusters(
