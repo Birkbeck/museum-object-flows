@@ -24,6 +24,7 @@ class TaxonomyJudge:
     """
 
     def __init__(self, config: dict, judge_llm: "LLM"):
+        self.taxonomies_directory = config["taxonomies_directory"]
         self.output_file_name = (
             f"{config['output_directory']}/{config['output_file_name']}"
         )
@@ -50,10 +51,16 @@ class TaxonomyJudge:
     @classmethod
     def from_config(cls, config: dict) -> TaxonomyJudge:
         judge_llm = make_llm_from_name(config["judge_llm"])
+        with open(config["task_file"], "r", encoding="utf-8") as f:
+            config["task"] = f.read()
+        config["examples"]: List[str] = []
+        for example_file in config["example_files"]:
+            with open(example_file, "r", encoding="utf-8") as f:
+                config["examples"].append(f.read())
         return cls(config=config, judge_llm=judge_llm)
 
-    def rank_taxonomies(self, taxonomies_directory: str) -> List[str]:
-        items = self._load_taxonomies(taxonomies_directory)
+    def rank_taxonomies(self, taxonomies_list: List[str]) -> List[str]:
+        items = self._load_taxonomies(taxonomies_list)
         n = len(items)
         if n < 2:
             return [it.filename for it in items]
@@ -81,20 +88,13 @@ class TaxonomyJudge:
         print("None rate of LLM judgements:", none_rate)
         return ranked_taxonomies
 
-    def _load_taxonomies(self, taxonomies_directory: str) -> List[TaxonomyItem]:
-        files = [
-            f
-            for f in os.listdir(taxonomies_directory)
-            if f.lower().endswith(".json")
-            and os.path.isfile(os.path.join(taxonomies_directory, f))
-        ]
-        files.sort()
+    def _load_taxonomies(self, taxonomies_list: List[str]) -> List[TaxonomyItem]:
         items: List[TaxonomyItem] = []
-        for fn in files:
-            path = os.path.join(taxonomies_directory, fn)
+        for taxonomy in taxonomies_list:
+            path = os.path.join(self.taxonomies_directory, taxonomy)
             with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            items.append(TaxonomyItem(filename=fn, data=data))
+            items.append(TaxonomyItem(filename=taxonomy, data=data))
         return items
 
     def _sample_pairs(self, n: int) -> List[Tuple[int, int]]:
