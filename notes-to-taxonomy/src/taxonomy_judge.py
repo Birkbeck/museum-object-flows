@@ -4,10 +4,11 @@ import json
 import os
 import random
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple, Union
 
 import choix
-from openai import OpenAI
+
+from src.llms import LLM, make_llm_from_name
 
 
 @dataclass(frozen=True)
@@ -20,61 +21,65 @@ class TaxonomyJudge:
     """
     LLM-as-a-judge for ranking taxonomy JSON files in a directory, using pairwise comparisons
     aggregated with a Bradley–Terry model via `choix`.
-
-    Defaults:
-      - model: gpt-5-mini
-      - temperature: 0
-      - max_output_tokens: 32
-      - pair_limit: 15_000 (≈52 comparisons/item for n=576)
-      - min_appearances: 40 (try to ensure each item appears in at least this many comparisons)
     """
 
-    def __init__(self, config: dict):
-        self.client = OpenAI(
-            api_key=config.get("api_key") or os.getenv("OPENAI_API_KEY")
+    def __init__(self, config: dict, judge_llm: "LLM"):
+        self.output_file_name = (
+            f"{config['output_directory']}/{config['output_file_name']}"
         )
-        self.model: str = config.get("model", "gpt-5-mini")
-        self.temperature: float = float(config.get("temperature", 0.0))
-        self.max_output_tokens: int = int(config.get("max_output_tokens", 32))
-        self.seed: Optional[int] = config.get("seed", None)
-        self.truncation: str = config.get("truncation", "auto")
-        # For 576 items: 15k pairs ~ 52 comps/item average
-        self.pair_limit: int = int(config.get("pair_limit", 15_000))
-        self.min_appearances: int = int(config.get("min_appearances", 40))
-        self.system_msg: str = config["system_msg"]
-        self.rubric: str = config["rubric"]
-        # Simple in-run cache to avoid duplicate calls if a pair repeats
-        self._cache: Dict[Tuple[int, int, int, int], int] = {}
-        # Seed RNG for reproducibility (pair sampling + optional API seed)
-        if self.seed is not None:
-            random.seed(self.seed)
+        # LLM parameters
+        self.judge_llm = judge_llm
+        self.temperature = config["temperature"]
+        self.top_p = config["top_p"]
+        self.max_new_tokens = config["max_new_tokens"]
+        self.seed = config["seed"]
+        self.task = config["task"]
+        self.examples = config["examples"]
+        if not self.examples:
+            raise ValueError(
+                "self.examples is empty; cannot sample examples for prompts"
+            )
+        # Bradley-Terry parameters
+        self.pair_limit = config["pair_limit"]
+        if self.pair_limit <= 0:
+            raise ValueError("pair_limit must be positive")
+        self.min_appearances = config["min_appearances"]
+        if self.min_appearances < 0:
+            raise ValueError("min_appearances must be non-negative")
+
+    @classmethod
+    def from_config(cls, config: dict) -> TaxonomyJudge:
+        judge_llm = make_llm_from_name(config["judge_llm"])
+        return cls(config=config, judge_llm=judge_llm)
 
     def rank_taxonomies(self, taxonomies_directory: str) -> List[str]:
         items = self._load_taxonomies(taxonomies_directory)
         n = len(items)
         if n < 2:
             return [it.filename for it in items]
-        sampled_pairs = self._sample_sparse_pairs(
-            n=n, pair_limit=self.pair_limit, min_appearances=self.min_appearances
-        )
+        sampled_pairs = self._sample_pairs(n)
+        sampled_pairs_with_examples = self._add_examples_to_pairs(sampled_pairs)
         comparisons: List[Tuple[int, int]] = []
-        number_of_ties = 0
-        for i, j in sampled_pairs:
-            winner = self._elicit_judgement(items[i], items[j])
-            if winner is None:
-                number_of_ties += 1
-                comparisons.append((i, j))
-                comparisons.append((j, i))
-            elif winner == 0:
+        none_count = 0
+        for i, j, example in sampled_pairs_with_examples:
+            taxonomy_a = items[i]
+            taxonomy_b = items[j]
+            result = self._elicit_judgement(taxonomy_a, taxonomy_b, example)
+            choice = result["choice"]
+            if choice is None:
+                none_count += 1
+            elif choice == 0:
                 comparisons.append((i, j))
             else:
                 comparisons.append((j, i))
+        none_rate = none_count / len(sampled_pairs_with_examples)
         skill_scores = choix.ilsr_pairwise(n_items=n, data=comparisons)
         ranked_indices = sorted(range(n), key=lambda k: skill_scores[k], reverse=True)
-        tie_rate = number_of_ties / len(comparisons)
-        if tie_rate > 0:
-            raise Warning(f"Tie rate of {tie_rate}")
-        return [items[k].filename for k in ranked_indices]
+        ranked_taxonomies = [items[k].filename for k in ranked_indices]
+        with open(self.output_file_name, "w", encoding="utf-8") as f:
+            json.dump(ranked_taxonomies, f, indent=2, ensure_ascii=False)
+        print("None rate of LLM judgements:", none_rate)
+        return ranked_taxonomies
 
     def _load_taxonomies(self, taxonomies_directory: str) -> List[TaxonomyItem]:
         files = [
@@ -92,150 +97,137 @@ class TaxonomyJudge:
             items.append(TaxonomyItem(filename=fn, data=data))
         return items
 
-    def _sample_sparse_pairs(
-        self, n: int, pair_limit: int, min_appearances: int
-    ) -> List[Tuple[int, int]]:
+    def _sample_pairs(self, n: int) -> List[Tuple[int, int]]:
         """
-        Sample a sparse set of unique unordered pairs (i, j), i < j, for a tournament.
+        Sample a sparse set of *directed* pairs (i, j) with i != j.
 
-        Goals:
-          1) Coverage: try to ensure each item appears in at least `min_appearances` pairs.
-          2) Budget: never exceed `pair_limit` pairs total.
-          3) No retries: sample opponents without replacement in the coverage phase.
-          4) Reproducible: uses a local RNG seeded by `self.seed` (does not touch global random state).
+        Key differences from the previous version:
+          - (i, j) and (j, i) are DISTINCT and may both appear.
+          - min_appearances is the minimum number of times each i appears
+            in position 0.
+
+        Returns:
+          List of (i, j)
 
         Notes:
-          - If `pair_limit` is too small to meet `min_appearances` for all items, the target is scaled down.
-          - With n=576 and pair_limit=15_000, avg appearances ≈ 52/item.
+          - Maximum number of unique directed pairs is n*(n-1).
+          - If self.pair_limit is too small to satisfy min_appearances for all
         """
         if n < 2:
-            return []
-        if pair_limit <= 0:
-            raise ValueError("pair_limit must be positive")
-        if min_appearances < 0:
-            raise ValueError("min_appearances must be non-negative")
-        max_pairs = n * (n - 1) // 2
-        pair_limit = min(pair_limit, max_pairs)
-        # If budget can't satisfy target coverage, scale target down best-effort.
-        min_pairs_needed = (n * min_appearances + 1) // 2
-        if min_appearances > 0 and pair_limit < min_pairs_needed:
-            min_appearances = max(1, (2 * pair_limit) // n)
-        rng = random.Random(self.seed)
-        pairs_set: set[Tuple[int, int]] = set()
-        appearances = [0] * n
-        neighbors: List[set[int]] = [set() for _ in range(n)]
+            raise ValueError("Need at least 2 items to sample pairs")
+        max_directed_pairs = n * (n - 1)
+        if self.pair_limit > max_directed_pairs:
+            raise ValueError(
+                f"pair_limit of {self.pair_limit} "
+                f"exceeds maximum of {max_directed_pairs} "
+                f"for n={n}"
+            )
+        if self.min_appearances > 0 and self.pair_limit < n * self.min_appearances:
+            raise ValueError(
+                f"pair_limit of {self.pair_limit} "
+                f"is too small to meet min_appearances of {self.min_appearances} "
+                f"for all {n} items (need at least {n * self.min_appearances})"
+            )
+        local_random = random.Random(self.seed)
+        directed_pairs: set[Tuple[int, int]] = set()
+        appearance_counts = [0] * n
+        right_side_pairings: List[Set[int]] = [set() for _ in range(n)]
 
-        def add_pair(i: int, j: int) -> bool:
-            """Add unordered pair if not present. Returns True if added."""
+        def add_directed(i: int, j: int) -> bool:
+            """Add (i, j) if new and i != j.
+            Updates counts. Returns True if added."""
             if i == j:
                 return False
-            a, b = (i, j) if i < j else (j, i)
-            if (a, b) in pairs_set:
+            key = (i, j)
+            if key in directed_pairs:
                 return False
-            pairs_set.add((a, b))
-            neighbors[a].add(b)
-            neighbors[b].add(a)
-            appearances[a] += 1
-            appearances[b] += 1
+            directed_pairs.add(key)
+            right_side_pairings[i].add(j)
+            appearance_counts[i] += 1
             return True
 
+        # Coverage phase: ensure each i appears min_appearances times on left
         indices = list(range(n))
-        rng.shuffle(indices)
+        local_random.shuffle(indices)
         for i in indices:
-            if len(pairs_set) >= pair_limit:
+            if len(directed_pairs) >= self.pair_limit:
                 break
-            need = min_appearances - appearances[i]
+            need = self.min_appearances - appearance_counts[i]
             if need <= 0:
                 continue
-            if len(neighbors[i]) >= n - 1:
-                continue
-            available = [j for j in range(n) if j != i and j not in neighbors[i]]
+            available = [
+                j for j in range(n) if j != i and j not in right_side_pairings[i]
+            ]
             if not available:
                 continue
-            remaining_budget = pair_limit - len(pairs_set)
+            remaining_budget = self.pair_limit - len(directed_pairs)
             k = min(need, remaining_budget, len(available))
-            for j in rng.sample(available, k=k):
-                add_pair(i, j)
-        remaining_budget = pair_limit - len(pairs_set)
-        if remaining_budget <= 0:
-            pairs = list(pairs_set)
-            rng.shuffle(pairs)
-            return pairs
-        remaining_candidates: List[Tuple[int, int]] = []
-        for i in range(n):
-            for j in range(i + 1, n):
-                if (i, j) not in pairs_set:
-                    remaining_candidates.append((i, j))
-        if remaining_candidates:
-            k = min(remaining_budget, len(remaining_candidates))
-            pairs_set.update(rng.sample(remaining_candidates, k=k))
-        pairs = list(pairs_set)
-        rng.shuffle(pairs)
+            for j in local_random.sample(available, k=k):
+                add_directed(i, j)
+        # Fill phase: sample additional directed pairs uniformly from remaining
+        remaining_budget = self.pair_limit - len(directed_pairs)
+        if remaining_budget > 0:
+            remaining_candidates: List[Tuple[int, int]] = []
+            for i in range(n):
+                for j in range(n):
+                    if i == j:
+                        continue
+                    if (i, j) not in directed_pairs:
+                        remaining_candidates.append((i, j))
+            if remaining_candidates:
+                k = min(remaining_budget, len(remaining_candidates))
+                for i, j in local_random.sample(remaining_candidates, k=k):
+                    add_directed(i, j)
+        pairs = list(directed_pairs)
+        local_random.shuffle(pairs)
         return pairs
 
-    def _elicit_judgement(self, a: TaxonomyItem, b: TaxonomyItem) -> Optional[int]:
-        """
-        Returns:
-          0  -> a is better
-          1  -> b is better
-          None -> tie / indeterminate
+    def _add_examples_to_pairs(
+        self, directed_pairs: Iterable[Tuple[int, int]]
+    ) -> List[Tuple[int, int, str]]:
+        local_random = random.Random(self.seed)
+        pairs = list(directed_pairs)
+        local_random.shuffle(pairs)
+        result: List[Tuple[int, int, str]] = []
+        for i, j in pairs:
+            example = local_random.choice(self.examples)
+            result.append((i, j, example))
+        return result
 
-        Makes two calls to reduce order effects:
-          - Call 1 sees (a, b)
-          - Call 2 sees (b, a)
-        """
-        ha, hb = a.content_hash, b.content_hash
-        if ha <= hb:
-            key = (ha, hb)
-            flip = False
+    def _elicit_judgement(
+        self, a: TaxonomyItem, b: TaxonomyItem, example: str
+    ) -> Dict[str, Optional[int] | str]:
+        taxonomy_a = json.dumps(a.data, indent=2, ensure_ascii=False)
+        taxonomy_b = json.dumps(b.data, indent=2, ensure_ascii=False)
+        prompt = (
+            f"{self.task}\n\n"
+            f"{example}"
+            "\n\n"
+            "Taxonomy A:\n"
+            f"{taxonomy_a}"
+            "\n\n"
+            "Taxonomy B:\n"
+            f"{taxonomy_b}"
+            "\n\n"
+        )
+        response = self.judge_llm.get_response(
+            prompt,
+            num_return_sequences=1,
+            max_new_tokens=self.max_new_tokens,
+            temperature=self.temperature,
+            top_p=self.top_p,
+            seed=self.seed,
+        )
+        try:
+            comments = response.split("Comments:")[1].split("Choice:")[0].strip()
+            choice_text = response.split("Choice:")[1].strip().lower()
+        except IndexError:
+            return {"choice": None, "comments": ""}
+        choice: Optional[int]
+        if choice_text in ["a", "taxonomy a", "1"]:
+            choice = 0
+        elif choice_text in ["b", "taxonomy b", "2"]:
+            choice = 1
         else:
-            key = (hb, ha)
-            flip = True
-
-        if key in self._cache:
-            cached = self._cache[key]  # Optional[int]
-            return (None if cached is None else (1 - cached)) if flip else cached
-
-        def judge(first: TaxonomyItem, second: TaxonomyItem) -> str:
-            user_msg = (
-                f"{self.rubric}\n\n"
-                "Taxonomy A (JSON):\n"
-                f"{first.prompt_text}\n\n"
-                "Taxonomy B (JSON):\n"
-                f"{second.prompt_text}\n"
-            )
-            resp = self.client.responses.create(
-                model=self.model,
-                input=[
-                    {"role": "system", "content": self.system_msg},
-                    {"role": "user", "content": user_msg},
-                ],
-                temperature=self.temperature,
-                max_output_tokens=self.max_output_tokens,
-                truncation=self.truncation,
-                seed=self.seed,
-            )
-            raw = (resp.output_text or "").strip().upper()
-            # Be forgiving: extract first valid token
-            for ch in raw:
-                if ch in ("A", "B", "T"):
-                    return ch
-            raise ValueError(f"Model returned unexpected output: {resp.output_text!r}")
-
-        def to_winner_index(result_token: str, swapped: bool) -> Optional[int]:
-            if result_token == "T":
-                return None
-            if not swapped:
-                return 0 if result_token == "A" else 1
-            return 1 if result_token == "A" else 0
-
-        winner_1 = to_winner_index(judge(a, b), swapped=False)
-        winner_2 = to_winner_index(judge(b, a), swapped=True)
-        winner_final: Optional[int] = winner_1 if winner_1 == winner_2 else None
-
-        return winner_final
-
-    @staticmethod
-    def _stable_hash(obj: object) -> int:
-        s = json.dumps(obj, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
-        return hash(s)
+            choice = None
+        return {"choice": choice, "comments": comments}
