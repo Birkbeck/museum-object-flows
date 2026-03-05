@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple, Union
 
 import choix
+import pandas as pd
 
 from src.llms import LLM, make_llm_from_name
 
@@ -92,9 +93,16 @@ class TaxonomyJudge:
         items: List[TaxonomyItem] = []
         for taxonomy in taxonomies_list:
             path = os.path.join(self.taxonomies_directory, taxonomy)
-            with open(path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            items.append(TaxonomyItem(filename=taxonomy, data=data))
+            df = pd.read_csv(path)
+            taxonomy_string = ""
+            for layer_1_label, group in df.groupby("layer_1_label"):
+                taxonomy_string += f"{layer_1_label}:\n"
+                for layer_2_label, subgroup in group.groupby("layer_2_label"):
+                    labels = subgroup["label"].tolist()
+                    labels = sorted(set(labels))
+                    labels_str = ", ".join(labels)
+                    taxonomy_string += f"  {layer_2_label}: {labels_str}\n"
+            items.append(TaxonomyItem(filename=taxonomy, data=taxonomy_string))
         return items
 
     def _sample_pairs(self, n: int) -> List[Tuple[int, int]]:
@@ -197,32 +205,35 @@ class TaxonomyJudge:
     def _elicit_judgement(
         self, a: TaxonomyItem, b: TaxonomyItem, example: str
     ) -> Dict[str, Optional[int] | str]:
-        taxonomy_a = json.dumps(a.data, indent=2, ensure_ascii=False)
-        taxonomy_b = json.dumps(b.data, indent=2, ensure_ascii=False)
+        taxonomy_a = a.data
+        taxonomy_b = b.data
         prompt = (
             f"{self.task}\n\n"
             f"{example}"
-            "\n\n"
+            "\n"
             "Taxonomy A:\n"
             f"{taxonomy_a}"
             "\n\n"
             "Taxonomy B:\n"
             f"{taxonomy_b}"
-            "\n\n"
-        )
-        response = self.judge_llm.get_response(
-            prompt,
-            num_return_sequences=1,
-            max_new_tokens=self.max_new_tokens,
-            temperature=self.temperature,
-            top_p=self.top_p,
-            seed=self.seed,
         )
         try:
-            comments = response.split("Comments:")[1].split("Choice:")[0].strip()
-            choice_text = response.split("Choice:")[1].strip().lower()
+            response = self.judge_llm.get_response(
+                prompt,
+                num_return_sequences=1,
+                max_new_tokens=self.max_new_tokens,
+                temperature=self.temperature,
+                top_p=self.top_p,
+                seed=self.seed,
+            ).lower()
+        except Exception as e:
+            print(f"Error eliciting judgement for {a.filename} vs {b.filename}: {e}")
+            return {"best taxonomy": None, "comments": ""}
+        try:
+            comments = response.split("comments:")[1].split("best taxonomy:")[0].strip()
+            choice_text = response.split("best taxonomy:")[1].strip()
         except IndexError:
-            return {"choice": None, "comments": ""}
+            return {"best taxonomy": None, "comments": ""}
         choice: Optional[int]
         if choice_text in ["a", "taxonomy a", "1"]:
             choice = 0

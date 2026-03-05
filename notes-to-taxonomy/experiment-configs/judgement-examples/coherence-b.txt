@@ -1,0 +1,19 @@
+A:
+condition of building:
+  condition of building: asbestos concerns, damp, building unstable, deterioration, deterioration of building, roof collapsed, condition of building, lack of parking, leaking roof
+health and safety:
+  health and safety: health and safety, seeking larger premises 
+unsuitable:
+  unsuitable: access issues, accessibility issues, accessibility, building unsafe, lack of access, inadequate facilities,   unsuitable building, building unsuitable, premises unsuitable, unsuitable premises, unsuitable space, poor environmental conditions, wanted improved access to collection
+
+B:
+condition of building:
+  condition of building: asbestos concerns, damp, building unstable, deterioration, deterioration of building, roof collapsed, condition of building, leaking roof
+health and safety:
+  health and safety: health and safety, building unsafe
+unsuitable:
+  unsuitable: access issues, accessibility issues, accessibility, lack of access, inadequate facilities, lack of parking, seeking larger premises, unsuitable building, building unsuitable, premises unsuitable, unsuitable premises, unsuitable space, poor environmental conditions, wanted improved access to collection
+
+Comments: Taxonomy B has clusters that are more coherent. Taxonomy A has less coherent clusters. For example "seeking larger premises" is grouped in "health and safety".
+
+Best taxonomy: Taxonomy B

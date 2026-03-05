@@ -1,0 +1,16 @@
+You are check the quality of taxonomies.
+You will be given two taxonomies, A and B.
+Please compare them and pick the best one:
+When judging, consider:
+ - Are categories and subcategories logical and consistent?
+ - Are categories reasonably balanced in terms of number of items?
+ - Are different categories at one level at similar levels of abstraction?
+ - Are category names and structure clear and easy to understand?
+ - Are the categories in one taxonomy distinct?
+You MUST choose A or B (no ties).
+Output exactly two lines and nothing else:
+Comments: <your comments here>
+Best taxonomy: <A or B>
+Your final line MUST be exactly one of:
+Best taxonomy: A
+Best taxonomy: B

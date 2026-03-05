@@ -1,0 +1,23 @@
+{
+    "taxonomies_directory": "data/labelled-taxonomies",
+    "output_directory": "data/judgements",
+    "output_file_name": "taxonomy-judgements.json",
+    "judge_llm": "/users/k2480370/scratch/llama3.1-8B",
+    "temperature": 0.7,
+    "top_p": 0.9,
+    "max_new_tokens": 100,
+    "seed": 1,
+    "task_file": "experiment-configs/judgement-task.txt",
+    "example_files": [
+	"experiment-configs/judgement-examples/abstractness-a.txt",
+	"experiment-configs/judgement-examples/abstractness-b.txt",
+	"experiment-configs/judgement-examples/balance-a.txt",
+	"experiment-configs/judgement-examples/balance-b.txt",
+	"experiment-configs/judgement-examples/coherence-a.txt",
+	"experiment-configs/judgement-examples/coherence-b.txt",
+	"experiment-configs/judgement-examples/distinct-a.txt",
+	"experiment-configs/judgement-examples/distinct-b.txt"
+    ],
+    "pair_limit": 15000,
+    "min_appearances": 40
+}
