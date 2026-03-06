@@ -29,6 +29,10 @@ class TaxonomyJudge:
         self.output_file_name = (
             f"{config['output_directory']}/{config['output_file_name']}"
         )
+        self.judgements_file_name = (
+            f"{config['output_directory']}/{config['judgements_file_name']}"
+        )
+        self.max_new_judgements = config.get("max_new_judgements")
         # LLM parameters
         self.judge_llm = judge_llm
         self.temperature = config["temperature"]
@@ -67,27 +71,88 @@ class TaxonomyJudge:
             return [it.filename for it in items]
         sampled_pairs = self._sample_pairs(n)
         sampled_pairs_with_examples = self._add_examples_to_pairs(sampled_pairs)
-        comparisons: List[Tuple[int, int]] = []
-        none_count = 0
+        existing_judgements = self._load_existing_judgements()
+        completed_keys = {
+            (
+                row["taxonomy_a"],
+                row["taxonomy_b"],
+                row["example"],
+            )
+            for row in existing_judgements
+        }
+        filename_by_index = {i: item.filename for i, item in enumerate(items)}
+        new_judgements = 0
         for i, j, example in sampled_pairs_with_examples:
+            key = (filename_by_index[i], filename_by_index[j], example)
+            if key in completed_keys:
+                continue
+            if (
+                self.max_new_judgements is not None
+                and new_judgements >= self.max_new_judgements
+            ):
+                break
             taxonomy_a = items[i]
             taxonomy_b = items[j]
             result = self._elicit_judgement(taxonomy_a, taxonomy_b, example)
-            choice = result["choice"]
-            if choice is None:
+            row = {
+                "taxonomy_a": taxonomy_a.filename,
+                "taxonomy_b": taxonomy_b.filename,
+                "example": example,
+                "best_taxonomy": result["best_taxonomy"],
+                "comments": result["comments"],
+            }
+            self._append_judgement(row)
+            existing_judgements.append(row)
+            completed_keys.add(key)
+            new_judgements += 1
+            if new_judgements % 50 == 0:
+                print(f"Added {new_judgements} new judgements so far...")
+        comparisons: List[Tuple[int, int]] = []
+        none_count = 0
+        filename_to_index = {item.filename: i for i, item in enumerate(items)}
+        for row in existing_judgements:
+            taxonomy_a = row["taxonomy_a"]
+            taxonomy_b = row["taxonomy_b"]
+            best_taxonomy = row["best_taxonomy"]
+            if (
+                taxonomy_a not in filename_to_index
+                or taxonomy_b not in filename_to_index
+            ):
+                continue
+            i = filename_to_index[taxonomy_a]
+            j = filename_to_index[taxonomy_b]
+            if best_taxonomy is None:
                 none_count += 1
-            elif choice == 0:
+            elif best_taxonomy == 0:
                 comparisons.append((i, j))
             else:
                 comparisons.append((j, i))
-        none_rate = none_count / len(sampled_pairs_with_examples)
+        none_rate = none_count / len(existing_judgements) if existing_judgements else 0
         skill_scores = choix.ilsr_pairwise(n_items=n, data=comparisons)
         ranked_indices = sorted(range(n), key=lambda k: skill_scores[k], reverse=True)
         ranked_taxonomies = [items[k].filename for k in ranked_indices]
         with open(self.output_file_name, "w", encoding="utf-8") as f:
             json.dump(ranked_taxonomies, f, indent=2, ensure_ascii=False)
+        print("New judgements added this run:", new_judgements)
+        print("Total stored judgements:", len(existing_judgements))
         print("None rate of LLM judgements:", none_rate)
         return ranked_taxonomies
+
+    def _load_existing_judgements(self) -> List[dict]:
+        if not os.path.exists(self.judgements_file_name):
+            return []
+        judgements: List[dict] = []
+        with open(self.judgements_file_name, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    judgements.append(json.loads(line))
+        return judgements
+
+    def _append_judgement(self, row: dict) -> None:
+        os.makedirs(os.path.dirname(self.judgements_file_name), exist_ok=True)
+        with open(self.judgements_file_name, "a", encoding="utf-8") as f:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
 
     def _load_taxonomies(self, taxonomies_list: List[str]) -> List[TaxonomyItem]:
         items: List[TaxonomyItem] = []
@@ -234,11 +299,11 @@ class TaxonomyJudge:
             choice_text = response.split("best taxonomy:")[1].strip()
         except IndexError:
             return {"best taxonomy": None, "comments": ""}
-        choice: Optional[int]
+        best_taxonomy: Optional[int]
         if choice_text in ["a", "taxonomy a", "1"]:
-            choice = 0
+            best_taxonomy = 0
         elif choice_text in ["b", "taxonomy b", "2"]:
-            choice = 1
+            best_taxonomy = 1
         else:
-            choice = None
-        return {"choice": choice, "comments": comments}
+            best_taxonomy = None
+        return {"best taxonomy": best_taxonomy, "comments": comments}
