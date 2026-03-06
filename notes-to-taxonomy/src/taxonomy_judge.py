@@ -293,12 +293,12 @@ class TaxonomyJudge:
             ).lower()
         except Exception as e:
             print(f"Error eliciting judgement for {a.filename} vs {b.filename}: {e}")
-            return {"best taxonomy": None, "comments": ""}
+            return {"best_taxonomy": None, "comments": ""}
         try:
             comments = response.split("comments:")[1].split("best taxonomy:")[0].strip()
             choice_text = response.split("best taxonomy:")[1].strip()
         except IndexError:
-            return {"best taxonomy": None, "comments": ""}
+            return {"best_taxonomy": None, "comments": ""}
         best_taxonomy: Optional[int]
         if choice_text in ["a", "taxonomy a", "1"]:
             best_taxonomy = 0
@@ -306,4 +306,4 @@ class TaxonomyJudge:
             best_taxonomy = 1
         else:
             best_taxonomy = None
-        return {"best taxonomy": best_taxonomy, "comments": comments}
+        return {"best_taxonomy": best_taxonomy, "comments": comments}
