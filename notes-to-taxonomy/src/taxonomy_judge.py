@@ -296,11 +296,16 @@ class TaxonomyJudge:
             return {"best_taxonomy": None, "comments": ""}
         try:
             comments = response.split("comments:")[1].split("best taxonomy:")[0].strip()
-            choice_text = response.split("best taxonomy:")[1].strip()
+            choice_text = response.split("best taxonomy:")[1].strip().splitlines()[0]
+            choice_text = choice_text.strip().lower().rstrip(".:")
         except IndexError:
             return {"best_taxonomy": None, "comments": ""}
         best_taxonomy: Optional[int]
-        if choice_text in ["a", "taxonomy a", "1"]:
+        if "taxonomy a" in choice_text:
+            best_taxonomy = 0
+        elif "taxonomy b" in choice_text:
+            best_taxonomy = 1
+        elif choice_text in ["a", "taxonomy a", "1"]:
             best_taxonomy = 0
         elif choice_text in ["b", "taxonomy b", "2"]:
             best_taxonomy = 1
