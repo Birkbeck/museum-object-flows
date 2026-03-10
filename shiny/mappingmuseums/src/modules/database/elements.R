@@ -1,18 +1,53 @@
-make_query_vec <- function(query, term_to_col, idf, ncol_X) {
-  # TODO: preferably use stemming (here and in python code)
-  q <- tolower(query)
-  tokens <- unlist(strsplit(gsub("[^a-z0-9 ]+", " ", q), "\\s+"))
-  tokens <- tokens[nzchar(tokens)]
-  tokens <- wordStem(tokens, language = "en")
+make_char_wb_ngrams <- function(text, ngram_range = c(3L, 5L)) {
+  text <- tolower(text)
+  text <- gsub("\\s+", " ", text)
+  text <- trimws(text)
 
-  cols <- term_to_col[tokens]
+  if (!nzchar(text)) {
+    return(character(0))
+  }
+
+  words <- unlist(strsplit(text, " ", fixed = TRUE), use.names = FALSE)
+  words <- words[nzchar(words)]
+
+  if (!length(words)) {
+    return(character(0))
+  }
+
+  min_n <- as.integer(ngram_range[1])
+  max_n <- as.integer(ngram_range[2])
+
+  grams <- character(0)
+
+  for (word in words) {
+    padded <- paste0(" ", word, " ")
+    n_chars <- nchar(padded, type = "chars")
+
+    for (n in seq.int(min_n, max_n)) {
+      if (n > n_chars) next
+      starts <- seq_len(n_chars - n + 1L)
+      grams <- c(
+        grams,
+        substring(padded, starts, starts + n - 1L)
+      )
+    }
+  }
+
+  grams
+}
+
+make_query_vec <- function(query, term_to_col, idf, ncol_X, ngram_range = c(3L, 5L)) {
+  grams <- make_char_wb_ngrams(query, ngram_range = ngram_range)
+
+  cols <- term_to_col[grams]
   cols <- cols[!is.na(cols)]
 
-  # create zero vector when there are no matching terms
   if (!length(cols)) {
     return(
-      sparseVector(
-        i = integer(0), x = numeric(0), length = ncol_X
+      Matrix::sparseVector(
+        i = integer(0),
+        x = numeric(0),
+        length = ncol_X
       )
     )
   }
@@ -23,23 +58,38 @@ make_query_vec <- function(query, term_to_col, idf, ncol_X) {
 
   x <- tf * idf[j]
 
-  # L2 normalize
   norm <- sqrt(sum(x^2))
-  if (norm > 0) x <- x / norm
-
-  sparseVector(i = j, x = x, length = ncol_X)
-}
-
-score_query <- function(query, X, museum_ids, term_to_col, idf) {
-  qv <- make_query_vec(query, term_to_col, idf, ncol(X))
-  if (length(qv@x) == 0) {
-    return(tibble::tibble(museum_id = museum_ids, score = 0))
+  if (norm > 0) {
+    x <- x / norm
   }
 
-  # cosine similarity: X %*% qv
+  Matrix::sparseVector(i = j, x = x, length = ncol_X)
+}
+
+score_query <- function(query, X, museum_ids, term_to_col, idf, ngram_range = c(3L, 5L)) {
+  qv <- make_query_vec(
+    query = query,
+    term_to_col = term_to_col,
+    idf = idf,
+    ncol_X = ncol(X),
+    ngram_range = ngram_range
+  )
+
+  if (length(qv@x) == 0) {
+    return(
+      tibble::tibble(
+        museum_id = museum_ids,
+        score = 0
+      )
+    )
+  }
+
   s <- as.numeric(X %*% qv)
 
-  tibble::tibble(museum_id = museum_ids, score = s) |>
+  tibble::tibble(
+    museum_id = museum_ids,
+    score = s
+  ) |>
     dplyr::arrange(dplyr::desc(score))
 }
 

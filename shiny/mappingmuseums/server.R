@@ -17,7 +17,6 @@ library(shinyBS)
 library(shinycssloaders)
 library(shinyjs)
 library(shinyWidgets)
-library(SnowballC)
 library(tidyverse)
 library(yaml)
 
