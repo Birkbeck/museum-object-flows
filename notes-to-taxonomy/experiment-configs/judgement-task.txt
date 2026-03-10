@@ -1,4 +1,4 @@
-You are check the quality of taxonomies.
+You check the quality of taxonomies.
 You will be given two taxonomies, A and B.
 Please compare them and pick the best one:
 When judging, consider:
