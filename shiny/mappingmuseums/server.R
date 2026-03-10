@@ -17,7 +17,6 @@ library(shinyBS)
 library(shinycssloaders)
 library(shinyjs)
 library(shinyWidgets)
-library(SnowballC)
 library(tidyverse)
 library(yaml)
 
@@ -75,7 +74,7 @@ source("src/modules/interpreting_data/server.R")
 source("src/modules/help/ui.R")
 source("src/modules/help/server.R")
 
-PRODUCTION <- TRUE
+PRODUCTION <- FALSE
 USE_PASSWORD <- FALSE 
 
 user_base <- readRDS("users.rds")

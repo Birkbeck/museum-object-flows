@@ -12,7 +12,6 @@ import {
     dvDropdown,
     dvRequiredNonBlankText,
     dvMuseumPicker,
-    dvOptionalDate,
     dvOptionalYearOrYearRangeFormat,
     dvPostcode,
     dvWikidataId
@@ -47,7 +46,8 @@ export function buildEditSheetRules(): SheetRule[] {
 	},
 	{
 	    col: EDIT_SHEET.ACCREDITATION_CHANGE_DATE,
-	    rule: dvOptionalDate("Optional: enter a date"),
+	    ruleFactory: ({ a1TopLeft }) =>
+		dvOptionalYearOrYearRangeFormat(a1TopLeft),
 	    clearFirst: true,
 	},
 	{

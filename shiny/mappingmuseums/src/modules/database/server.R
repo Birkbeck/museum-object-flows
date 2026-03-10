@@ -283,8 +283,9 @@ databaseServer <- function(id) {
     })
 
     filtered_museums <- reactive({
-      if (free_text_search() == "") {
-        museum_scores <- data.frame(museum_id=museum_ids) |> mutate(score=1)
+      query <- trimws(free_text_search())
+      if (nchar(query) < 3) {
+        museum_scores <- tibble::tibble(museum_id = museum_ids, score = 1)
       } else {
         museum_scores <- score_query(
           free_text_search(), X, museum_ids, term_to_col, idf
@@ -347,6 +348,7 @@ databaseServer <- function(id) {
 
     output$searchTable <- renderDT({
       filtered_museums() |>
+        mutate(accreditation_number=as.character(accreditation_number)) |>
         select(all_of(search_results_columns()))
     }, options=list(pageLength=100, dom="liptlip"))
     # l = page length menu

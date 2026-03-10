@@ -74,7 +74,7 @@ def publish(request):
 
     museums_data = pd.concat([museums_data, geo_df], axis=1).fillna("")
 
-    search_preprocessor = MuseumSearchPreprocessor.setup(
+    search_preprocessor = MuseumSearchPreprocessor(
         museums_data,
         [
             "museum_name",
@@ -91,7 +91,7 @@ def publish(request):
             "lad",
             "notes",
         ],
-        ngram_range=(1, 2),
+        ngram_range=(3, 5),
     )
 
     search_structures = search_preprocessor.vectorize_museums()

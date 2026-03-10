@@ -8,6 +8,7 @@ from main import publish
 class FakeRequest:
     def __init__(self):
         self.headers = {"X-Publish-Token": os.environ.get("PUBLISH_TOKEN", "")}
+        self.method = "POST"
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ library(shinyWidgets)
 
 source("src/labels.R")
 
-PRODUCTION <- TRUE
+PRODUCTION <- FALSE
 USE_PASSWORD <- FALSE
 
 if (PRODUCTION) {

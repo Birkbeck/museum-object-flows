@@ -11,7 +11,6 @@ import {
     dvCheckbox,
     dvDropdown,
     dvRequiredNonBlankText,
-    dvOptionalDate,
     dvOptionalYearOrYearRangeFormat,
     dvPostcode,
     dvWikidataId
@@ -41,7 +40,8 @@ export function buildAddSheetRules(): SheetRule[] {
 	},
 	{
 	    col: ADD_SHEET.ACCREDITATION_CHANGE_DATE,
-	    rule: dvOptionalDate("Optional: enter a date"),
+	    ruleFactory: ({ a1TopLeft }) =>
+		dvOptionalYearOrYearRangeFormat(a1TopLeft),
 	    clearFirst: true,
 	},
 	{
