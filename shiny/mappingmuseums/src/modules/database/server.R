@@ -347,6 +347,7 @@ databaseServer <- function(id) {
 
     output$searchTable <- renderDT({
       filtered_museums() |>
+        mutate(accreditation_number=as.character(accreditation_number)) |>
         select(all_of(search_results_columns()))
     }, options=list(pageLength=100, dom="liptlip"))
     # l = page length menu
