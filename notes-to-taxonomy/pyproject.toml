@@ -1,0 +1,22 @@
+[project]
+name = "notes-to-taxonomy"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "choix>=0.4.1",
+    "ipython>=9.8.0",
+    "pandas>=2.3.3",
+    "pyarrow>=22.0.0",
+    "seaborn>=0.13.2",
+    "sentence-transformers>=5.2.0",
+    "statsmodels>=0.14.6",
+]
+
+[dependency-groups]
+dev = [
+    "ipython>=9.8.0",
+    "matplotlib>=3.10.8",
+    "pytest>=9.0.2",
+]

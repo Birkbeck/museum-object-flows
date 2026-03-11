@@ -1,0 +1,30 @@
+A:
+condition of building:
+  asbestos: asbestos concerns
+  damp: damp
+  deterioration: building unstable, deterioration, deterioration of building, roof collapsed
+unsuitable:
+  access: access issues, accessibility issues, accessibility, lack of access
+  facilities: inadequate facilities, lack of parking
+  poor environmental conditions: poor environmental conditions
+  too small: seeking larger premises
+
+B:
+health and safety:
+  asbestos: asbestos concerns
+damage:
+  damp: damp
+decline:
+  instability: building unstable,
+deterioration:
+  deterioration: deterioration, deterioration of building,
+  roof problems: roof collapsed
+unsuitable:
+  access: access issues, accessibility issues, accessibility, lack of access
+  facilities: inadequate facilities, lack of parking
+  poor environmental conditions: poor environmental conditions
+  too small: seeking larger premises
+
+Comments: Taxonomy A is more balanced than Taxonomy B. Taxonomy B has one very large cluster ("unsuitable" and several smaller ones.
+
+Best taxonomy: Taxonomy A

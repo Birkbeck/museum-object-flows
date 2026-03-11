@@ -1,0 +1,25 @@
+A:
+condition of building:
+  asbestos: asbestos concerns
+  damp: damp
+  deterioration: building unstable, deterioration, deterioration of building, roof collapsed
+unsuitable:
+  access: access issues, accessibility issues, accessibility, lack of access
+  facilities: inadequate facilities, lack of parking
+  poor environmental conditions: poor environmental conditions
+  problems: seeking larger premises
+
+B:
+condition of building:
+  asbestos: asbestos concerns
+  damp: damp
+  deterioration: building unstable, deterioration, deterioration of building, roof collapsed
+unsuitable:
+  access: access issues, accessibility issues, accessibility, lack of access
+  facilities: inadequate facilities, lack of parking
+  poor environmental conditions: poor environmental conditions
+  too small: seeking larger premises
+
+Comments: Taxonomy B has nodes that are at a similar level of abstractness. Taxonomy A has labels of very different abstractness in the same cluster, e.g. "poor environmental conditions" and "problems".
+
+Best taxonomy: Taxonomy B

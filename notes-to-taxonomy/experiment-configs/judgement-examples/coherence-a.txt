@@ -1,0 +1,25 @@
+A:
+condition of building:
+  asbestos: asbestos concerns
+  damp: damp
+  deterioration: building unstable, deterioration, deterioration of building, roof collapsed
+unsuitable:
+  access: access issues, accessibility issues, accessibility, lack of access
+  facilities: inadequate facilities, lack of parking
+  poor environmental conditions: poor environmental conditions
+  too small: seeking larger premises
+
+B:
+condition of building:
+  asbestos/parking: asbestos concerns, lack of parking
+  damp: damp
+  deterioration: building unstable, deterioration, deterioration of building, roof collapsed
+unsuitable:
+  access: access issues, accessibility, lack of access
+  facilities: inadequate facilities
+  poor environmental conditions: poor environmental conditions
+  too small: accessibility issues, seeking larger premises
+
+Comments: Taxonomy A has clusters that are more coherent. Taxonomy B has less coherent clusters. For example "lack of parking" is grouped with "asbestos concerns".
+
+Best taxonomy: Taxonomy A
