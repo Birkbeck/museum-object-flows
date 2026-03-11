@@ -1,19 +1,25 @@
 A:
 condition of building:
-  condition of building: asbestos concerns, damp, building unstable, deterioration, deterioration of building, roof collapsed, condition of building, leaking roof
-health and safety:
-  health and safety: health and safety, building unsafe
+  asbestos: asbestos concerns
+  damp: damp
+  deterioration: building unstable, deterioration, deterioration of building, roof collapsed
 unsuitable:
-  unsuitable: access issues, accessibility issues, accessibility, lack of access, inadequate facilities, lack of parking, seeking larger premises, unsuitable building, building unsuitable, premises unsuitable, unsuitable premises, unsuitable space, poor environmental conditions, wanted improved access to collection
+  access: access issues, accessibility issues, accessibility, lack of access
+  facilities: inadequate facilities, lack of parking
+  poor environmental conditions: poor environmental conditions
+  too small: seeking larger premises
 
 B:
 condition of building:
-  condition of building: asbestos concerns, damp, building unstable, deterioration, deterioration of building, roof collapsed, condition of building, leaking roof
-health and safety:
-  health and safety: health and safety, building unsafe
-problems:
-  unsuitable: access issues, accessibility issues, accessibility, lack of access, inadequate facilities, lack of parking, seeking larger premises, unsuitable building, building unsuitable, premises unsuitable, unsuitable premises, unsuitable space, poor environmental conditions, wanted improved access to collection
+  asbestos: asbestos concerns
+  damp: damp
+  deterioration: building unstable, deterioration, deterioration of building, roof collapsed
+unsuitable:
+  access: access issues, accessibility issues, accessibility, lack of access
+  facilities: inadequate facilities, lack of parking
+  poor environmental conditions: poor environmental conditions
+  problems: seeking larger premises
 
-Comments: Taxonomy A has nodes that are at a similar level of abstractness. Taxonomy B has labels of very different abstractness in the same cluster, e.g. "health and safety" and "problems".
+Comments: Taxonomy A has nodes that are at a similar level of abstractness. Taxonomy B has labels of very different abstractness in the same cluster, e.g. "poor environmental conditions" and "problems".
 
 Best taxonomy: Taxonomy A

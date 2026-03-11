@@ -1,19 +1,25 @@
 A:
 condition of building:
-  condition of building: asbestos concerns, damp, building unstable, deterioration, deterioration of building, roof collapsed, condition of building, lack of parking, leaking roof
-health and safety:
-  health and safety: health and safety, seeking larger premises 
+  asbestos/parking: asbestos concerns, lack of parking
+  damp: damp
+  deterioration: building unstable, deterioration, deterioration of building, roof collapsed
 unsuitable:
-  unsuitable: access issues, accessibility issues, accessibility, building unsafe, lack of access, inadequate facilities,   unsuitable building, building unsuitable, premises unsuitable, unsuitable premises, unsuitable space, poor environmental conditions, wanted improved access to collection
+  access: access issues, accessibility, lack of access
+  facilities: inadequate facilities
+  poor environmental conditions: poor environmental conditions
+  too small: accessibility issues, seeking larger premises
 
 B:
 condition of building:
-  condition of building: asbestos concerns, damp, building unstable, deterioration, deterioration of building, roof collapsed, condition of building, leaking roof
-health and safety:
-  health and safety: health and safety, building unsafe
+  asbestos: asbestos concerns
+  damp: damp
+  deterioration: building unstable, deterioration, deterioration of building, roof collapsed
 unsuitable:
-  unsuitable: access issues, accessibility issues, accessibility, lack of access, inadequate facilities, lack of parking, seeking larger premises, unsuitable building, building unsuitable, premises unsuitable, unsuitable premises, unsuitable space, poor environmental conditions, wanted improved access to collection
+  access: access issues, accessibility issues, accessibility, lack of access
+  facilities: inadequate facilities, lack of parking
+  poor environmental conditions: poor environmental conditions
+  too small: seeking larger premises
 
-Comments: Taxonomy B has clusters that are more coherent. Taxonomy A has less coherent clusters. For example "seeking larger premises" is grouped in "health and safety".
+Comments: Taxonomy B has clusters that are more coherent. Taxonomy A has less coherent clusters. For example "lack of parking" is grouped with "asbestos concerns".
 
 Best taxonomy: Taxonomy B

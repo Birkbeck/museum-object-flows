@@ -1,21 +1,25 @@
 A:
 condition of building:
-  condition of building: asbestos concerns, damp, building unstable, deterioration, deterioration of building, roof collapsed, condition of building, leaking roof
-health and safety:
-  health and safety: health and safety, building unsafe
+  asbestos: asbestos concerns
+  damp: damp
+  deterioration: building unstable, deterioration, deterioration of building, roof collapsed
 unsuitable:
-  unsuitable: access issues, accessibility issues, accessibility, lack of access, inadequate facilities, lack of parking, seeking larger premises, unsuitable building, building unsuitable, premises unsuitable, unsuitable premises, unsuitable space, poor environmental conditions, wanted improved access to collection
+  access: access issues, accessibility issues, accessibility, lack of access
+  facilities: inadequate facilities, lack of parking
+  poor environmental conditions: poor environmental conditions
+  too small: seeking larger premises
 
 B:
-condition of building:
-  condition of building: asbestos concerns, damp, building unstable, deterioration, deterioration of building, roof collapsed, condition of building, leaking roof
 health and safety:
-  health and safety: health and safety
-safety:
-  health and safety: building unsafe
+  health and safety: asbestos concerns
+  health concerns: damp
+  safety: building unstable, deterioration, deterioration of building, roof collapsed
 unsuitable:
-  unsuitable: access issues, accessibility issues, accessibility, lack of access, inadequate facilities, lack of parking, seeking larger premises, unsuitable building, building unsuitable, premises unsuitable, unsuitable premises, unsuitable space, poor environmental conditions, wanted improved access to collection
+  access: access issues, accessibility issues, accessibility, lack of access
+  facilities: inadequate facilities, lack of parking
+  health and safety: poor environmental conditions
+  too small: seeking larger premises
 
-Comments: Taxonomy A has clusters that are more distinct from one another. Taxonomy B has different clusters which contain similar items and some clusters have the same label. For example, "health and safety" appears at the top level as well as under "safety".
+Comments: Taxonomy A has clusters that are more distinct from one another. Taxonomy B has different clusters which contain similar items and some clusters have the same label. For example, "health and safety" appears at the top level as well as under "unsuitable".
 
 Best taxonomy: Taxonomy A
