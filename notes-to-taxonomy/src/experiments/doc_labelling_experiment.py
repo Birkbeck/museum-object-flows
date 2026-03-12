@@ -22,6 +22,12 @@ class DocLabellingExperiment(Experiment):
         self.sentence_model = sentence_model
         self.cached_embeddings: dict = {}
 
+    @classmethod
+    def from_config(cls, config: dict):
+        dataset = pd.read_csv(config["documents_file"])
+        sentence_model = SentenceTransformer(config["sentence_model"])
+        return cls(config, dataset, sentence_model)
+
     def parameter_combinations(self) -> Iterable:
         return (
             {
@@ -37,7 +43,7 @@ class DocLabellingExperiment(Experiment):
             for task in self.tasks
             for example_length in self.example_lengths
             for temperature in self.temperatures
-            for seed in self.seed
+            for seed in self.seeds
         )
 
     def run_test(self, configuration: dict):
