@@ -53,3 +53,9 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/sheet-to-graph/cloud
         run: uv run python -m pytest tests/unit
+
+      - name: Run Python unit tests (notes-to-taxonomy)
+        working-directory: notes-to-taxonomy
+	env:
+	  PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/notes-to-taxonomy
+	run: uv run python -m pytest tests/unit
