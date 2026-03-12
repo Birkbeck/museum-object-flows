@@ -1,0 +1,28 @@
+{
+    "documents_file": "data/buildings_dataset.csv",
+    "models": [
+	"/users/k2480370/scratch/llama3.1-8B"
+    ],
+    "roles": {
+	"noRole": "",
+	"mixed": "You are a museums expert good at coming up with succinct classifications of notes on museum closure."
+    },
+    "tasks": {
+	"all": "Provide classifications of the change in status, use, and responsibility of museum buildings after closure as described by the notes",
+	"longer": "Read the notes about what happened to museum buildings after they closed. Classify the building's change in status (did the building remain, get demolished, or altered?). Classify the building's change in use (what was it used for after the museum closed?). Classify the change in responsibility (was there a new owner or occupier?). State 'no information' or 'no change' if relevant. Attach '?' to labels that are likely but not certain.",
+	"extended": "Provide classifications of the change in status, use, and responsibility of museum buildings after closure as described by the notes. Focus on the building and not the museum. Change in status should describe whether the building remained, was demolished, or was substantially altered. The fact that the museum closed does not need to be mentioned. Change in use should describe any new uses the building was put to. Change in responsibility should describe whether there was a change in the owner, occupier, or any other people who were responsible for the building. If there is no information for a field, state 'no information'. Similarly if there was no change, state 'no change'. If you think a change is likely but uncertain provide a label and attach '?' to the end of the label."
+},
+    "example_lengths": [
+	0,
+	5
+    ],
+    "temperatures": [
+	0.01,
+	0.05,
+	0.1,
+	0.5,
+	1.0
+    ],
+    "seeds": [123],
+    "sentence_model: "all-MiniLM-L6-v2"
+}
