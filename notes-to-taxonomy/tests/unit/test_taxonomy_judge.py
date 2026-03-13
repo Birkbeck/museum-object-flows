@@ -2,11 +2,12 @@ import json
 from pathlib import Path
 from typing import List, Tuple
 
+import choix
 import pandas as pd
 import pytest
 
-import choix
-from src.taxonomy_judge import TaxonomyJudge, TaxonomyItem
+import src.taxonomy_judge as taxonomy_judge_module
+from src.taxonomy_judge import TaxonomyItem, TaxonomyJudge
 
 
 class FakeLLM:
@@ -54,7 +55,14 @@ def make_config(tmp_path: Path) -> dict:
         "max_new_tokens": 32,
         "seed": 123,
         "task": "Compare the taxonomies.",
-        "examples": ["Example 1", "Example 2"],
+        "examples_with_winner_a": {
+            "example_a_1.txt": "Example A1",
+            "example_a_2.txt": "Example A2",
+        },
+        "examples_with_winner_b": {
+            "example_b_1.txt": "Example B1",
+            "example_b_2.txt": "Example B2",
+        },
         "pair_limit": 4,
         "min_appearances": 1,
     }
@@ -62,6 +70,41 @@ def make_config(tmp_path: Path) -> dict:
 
 def write_taxonomy_csv(path: Path, rows: list[dict]) -> None:
     pd.DataFrame(rows).to_csv(path, index=False)
+
+
+def test_from_config_loads_task_and_examples(tmp_path: Path, monkeypatch):
+    task_file = tmp_path / "task.txt"
+    task_file.write_text("Task text", encoding="utf-8")
+
+    example_a = tmp_path / "demo-a.txt"
+    example_b = tmp_path / "demo-b.txt"
+    example_a.write_text("Example winner A", encoding="utf-8")
+    example_b.write_text("Example winner B", encoding="utf-8")
+
+    fake_llm = FakeLLM()
+    monkeypatch.setattr(taxonomy_judge_module, "make_llm_from_name", lambda _: fake_llm)
+
+    config = {
+        "judge_llm": "fake",
+        "task_file": str(task_file),
+        "example_files": [str(example_a), str(example_b)],
+        "taxonomies_directory": str(tmp_path),
+        "output_directory": str(tmp_path / "outputs"),
+        "output_file_name": "ranking.json",
+        "judgements_file_name": "judgements.jsonl",
+        "temperature": 0.0,
+        "top_p": 1.0,
+        "max_new_tokens": 32,
+        "seed": 1,
+        "pair_limit": 4,
+        "min_appearances": 1,
+    }
+
+    judge = TaxonomyJudge.from_config(config)
+
+    assert judge.task == "Task text"
+    assert judge.examples_with_winner_a == {str(example_a): "Example winner A"}
+    assert judge.examples_with_winner_b == {str(example_b): "Example winner B"}
 
 
 def test_load_taxonomies_builds_taxonomy_strings(tmp_path: Path):
@@ -129,16 +172,23 @@ def test_sample_pairs_returns_directed_unique_pairs_and_respects_constraints(
     assert min(left_counts) >= 2
 
 
-def test_add_examples_to_pairs_is_deterministic(tmp_path: Path):
+def test_add_examples_to_pairs_uses_one_a_and_one_b_example(tmp_path: Path):
     judge = TaxonomyJudge(make_config(tmp_path), FakeLLM())
     pairs = [(0, 1), (1, 0), (2, 1)]
 
-    result_1 = judge._add_examples_to_pairs(pairs)
-    result_2 = judge._add_examples_to_pairs(pairs)
+    result = judge._add_examples_to_pairs(pairs)
 
-    assert result_1 == result_2
-    assert all(len(t) == 3 for t in result_1)
-    assert all(example in judge.examples for _, _, example in result_1)
+    assert len(result) == 3
+    for i, j, example_1, example_2 in result:
+        assert (i, j) in pairs
+        assert example_1[1] != example_2[1]
+        assert {example_1[1], example_2[1]} == {"a", "b"}
+        if example_1[1] == "a":
+            assert example_1[0] in judge.examples_with_winner_a
+            assert example_2[0] in judge.examples_with_winner_b
+        else:
+            assert example_1[0] in judge.examples_with_winner_b
+            assert example_2[0] in judge.examples_with_winner_a
 
 
 def test_elicit_judgement_parses_taxonomy_a_choice(tmp_path: Path):
@@ -149,15 +199,20 @@ def test_elicit_judgement_parses_taxonomy_a_choice(tmp_path: Path):
 
     a = TaxonomyItem(filename="a.csv", data="A taxonomy")
     b = TaxonomyItem(filename="b.csv", data="B taxonomy")
+    example_1 = ("example_a_1.txt", "a")
+    example_2 = ("example_b_1.txt", "b")
 
-    result = judge._elicit_judgement(a, b, "Example 1")
+    result = judge._elicit_judgement(a, b, example_1, example_2)
 
     assert result == {
         "best_taxonomy": 0,
         "comments": "taxonomy a is clearer.",
     }
-    assert "Taxonomy A:\nA taxonomy" in llm.calls[0]["prompt"]
-    assert "Taxonomy B:\nB taxonomy" in llm.calls[0]["prompt"]
+    prompt = llm.calls[0]["prompt"]
+    assert "Example A1" in prompt
+    assert "Example B1" in prompt
+    assert "Taxonomy A:\nA taxonomy" in prompt
+    assert "Taxonomy B:\nB taxonomy" in prompt
 
 
 def test_elicit_judgement_parses_taxonomy_b_choice_with_punctuation(tmp_path: Path):
@@ -171,7 +226,12 @@ def test_elicit_judgement_parses_taxonomy_b_choice_with_punctuation(tmp_path: Pa
     a = TaxonomyItem(filename="a.csv", data="A taxonomy")
     b = TaxonomyItem(filename="b.csv", data="B taxonomy")
 
-    result = judge._elicit_judgement(a, b, "Example 1")
+    result = judge._elicit_judgement(
+        a,
+        b,
+        ("example_b_1.txt", "b"),
+        ("example_a_1.txt", "a"),
+    )
 
     assert result == {
         "best_taxonomy": 1,
@@ -186,9 +246,14 @@ def test_elicit_judgement_returns_none_for_unparseable_response(tmp_path: Path):
     a = TaxonomyItem(filename="a.csv", data="A taxonomy")
     b = TaxonomyItem(filename="b.csv", data="B taxonomy")
 
-    result = judge._elicit_judgement(a, b, "Example 1")
+    result = judge._elicit_judgement(
+        a,
+        b,
+        ("example_a_1.txt", "a"),
+        ("example_b_1.txt", "b"),
+    )
 
-    assert result == {"best_taxonomy": None, "comments": ""}
+    assert result == {"best_taxonomy": None, "comments": "something unstructured"}
 
 
 def test_elicit_judgement_returns_none_on_llm_error(tmp_path: Path):
@@ -198,9 +263,15 @@ def test_elicit_judgement_returns_none_on_llm_error(tmp_path: Path):
     a = TaxonomyItem(filename="a.csv", data="A taxonomy")
     b = TaxonomyItem(filename="b.csv", data="B taxonomy")
 
-    result = judge._elicit_judgement(a, b, "Example 1")
+    result = judge._elicit_judgement(
+        a,
+        b,
+        ("example_a_1.txt", "a"),
+        ("example_b_1.txt", "b"),
+    )
 
-    assert result == {"best_taxonomy": None, "comments": ""}
+    assert result["best_taxonomy"] is None
+    assert "Error eliciting judgement" in result["comments"]
 
 
 def test_rank_taxonomies_writes_ranking_and_judgements_store(
@@ -209,8 +280,7 @@ def test_rank_taxonomies_writes_ranking_and_judgements_store(
     config = make_config(tmp_path)
     config["pair_limit"] = 2
     config["min_appearances"] = 1
-    llm = FakeLLM()
-    judge = TaxonomyJudge(config, llm)
+    judge = TaxonomyJudge(config, FakeLLM())
 
     items = [
         TaxonomyItem(filename="x.csv", data="X"),
@@ -222,7 +292,10 @@ def test_rank_taxonomies_writes_ranking_and_judgements_store(
     monkeypatch.setattr(
         judge,
         "_add_examples_to_pairs",
-        lambda pairs: [(0, 1, "Example 1"), (0, 2, "Example 2")],
+        lambda pairs: [
+            (0, 1, ("example_a_1.txt", "a"), ("example_b_1.txt", "b")),
+            (0, 2, ("example_b_2.txt", "b"), ("example_a_2.txt", "a")),
+        ],
     )
 
     results = [
@@ -230,7 +303,7 @@ def test_rank_taxonomies_writes_ranking_and_judgements_store(
         {"best_taxonomy": 1, "comments": "z beats x"},
     ]
 
-    def fake_elicit(a, b, example):
+    def fake_elicit(a, b, example_1, example_2):
         return results.pop(0)
 
     monkeypatch.setattr(judge, "_elicit_judgement", fake_elicit)
@@ -253,14 +326,16 @@ def test_rank_taxonomies_writes_ranking_and_judgements_store(
         {
             "taxonomy_a": "x.csv",
             "taxonomy_b": "y.csv",
-            "example": "Example 1",
+            "example_1": "example_a_1.txt-a",
+            "example_2": "example_b_1.txt-b",
             "best_taxonomy": 0,
             "comments": "x beats y",
         },
         {
             "taxonomy_a": "x.csv",
             "taxonomy_b": "z.csv",
-            "example": "Example 2",
+            "example_1": "example_b_2.txt-b",
+            "example_2": "example_a_2.txt-a",
             "best_taxonomy": 1,
             "comments": "z beats x",
         },
@@ -271,8 +346,7 @@ def test_rank_taxonomies_resumes_from_existing_judgements(tmp_path: Path, monkey
     config = make_config(tmp_path)
     config["pair_limit"] = 2
     config["min_appearances"] = 1
-    llm = FakeLLM()
-    judge = TaxonomyJudge(config, llm)
+    judge = TaxonomyJudge(config, FakeLLM())
 
     items = [
         TaxonomyItem(filename="x.csv", data="X"),
@@ -284,13 +358,17 @@ def test_rank_taxonomies_resumes_from_existing_judgements(tmp_path: Path, monkey
     monkeypatch.setattr(
         judge,
         "_add_examples_to_pairs",
-        lambda pairs: [(0, 1, "Example 1"), (0, 2, "Example 2")],
+        lambda pairs: [
+            (0, 1, ("example_a_1.txt", "a"), ("example_b_1.txt", "b")),
+            (0, 2, ("example_b_2.txt", "b"), ("example_a_2.txt", "a")),
+        ],
     )
 
     existing_row = {
         "taxonomy_a": "x.csv",
         "taxonomy_b": "y.csv",
-        "example": "Example 1",
+        "example_1": "example_a_1.txt-a",
+        "example_2": "example_b_1.txt-b",
         "best_taxonomy": 0,
         "comments": "existing",
     }
@@ -298,10 +376,10 @@ def test_rank_taxonomies_resumes_from_existing_judgements(tmp_path: Path, monkey
     with open(judge.judgements_file_name, "w", encoding="utf-8") as f:
         f.write(json.dumps(existing_row) + "\n")
 
-    calls: list[Tuple[str, str, str]] = []
+    calls: list[Tuple[str, str, Tuple[str, str], Tuple[str, str]]] = []
 
-    def fake_elicit(a, b, example):
-        calls.append((a.filename, b.filename, example))
+    def fake_elicit(a, b, example_1, example_2):
+        calls.append((a.filename, b.filename, example_1, example_2))
         return {"best_taxonomy": 1, "comments": "new"}
 
     monkeypatch.setattr(judge, "_elicit_judgement", fake_elicit)
@@ -309,7 +387,9 @@ def test_rank_taxonomies_resumes_from_existing_judgements(tmp_path: Path, monkey
 
     judge.rank_taxonomies(["x.csv", "y.csv", "z.csv"])
 
-    assert calls == [("x.csv", "z.csv", "Example 2")]
+    assert calls == [
+        ("x.csv", "z.csv", ("example_b_2.txt", "b"), ("example_a_2.txt", "a"))
+    ]
 
     stored_rows = [
         json.loads(line)
@@ -322,7 +402,8 @@ def test_rank_taxonomies_resumes_from_existing_judgements(tmp_path: Path, monkey
     assert stored_rows[1] == {
         "taxonomy_a": "x.csv",
         "taxonomy_b": "z.csv",
-        "example": "Example 2",
+        "example_1": "example_b_2.txt-b",
+        "example_2": "example_a_2.txt-a",
         "best_taxonomy": 1,
         "comments": "new",
     }
@@ -333,8 +414,7 @@ def test_rank_taxonomies_respects_max_new_judgements(tmp_path: Path, monkeypatch
     config["pair_limit"] = 3
     config["min_appearances"] = 1
     config["max_new_judgements"] = 1
-    llm = FakeLLM()
-    judge = TaxonomyJudge(config, llm)
+    judge = TaxonomyJudge(config, FakeLLM())
 
     items = [
         TaxonomyItem(filename="x.csv", data="X"),
@@ -346,13 +426,17 @@ def test_rank_taxonomies_respects_max_new_judgements(tmp_path: Path, monkeypatch
     monkeypatch.setattr(
         judge,
         "_add_examples_to_pairs",
-        lambda pairs: [(0, 1, "Example 1"), (0, 2, "Example 2"), (1, 2, "Example 1")],
+        lambda pairs: [
+            (0, 1, ("example_a_1.txt", "a"), ("example_b_1.txt", "b")),
+            (0, 2, ("example_a_2.txt", "a"), ("example_b_2.txt", "b")),
+            (1, 2, ("example_b_1.txt", "b"), ("example_a_1.txt", "a")),
+        ],
     )
 
-    calls: list[Tuple[str, str, str]] = []
+    calls: list[Tuple[str, str, Tuple[str, str], Tuple[str, str]]] = []
 
-    def fake_elicit(a, b, example):
-        calls.append((a.filename, b.filename, example))
+    def fake_elicit(a, b, example_1, example_2):
+        calls.append((a.filename, b.filename, example_1, example_2))
         return {"best_taxonomy": 0, "comments": "ok"}
 
     monkeypatch.setattr(judge, "_elicit_judgement", fake_elicit)

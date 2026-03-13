@@ -9,7 +9,6 @@ def main():
     judge = TaxonomyJudge.from_config(config)
     with open("data/candidate-taxonomies.json", "r") as f:
         taxonomies = json.load(f)
-    print(taxonomies)
     judgements = judge.rank_taxonomies(taxonomies)
     print(judgements)
 
