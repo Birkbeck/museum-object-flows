@@ -40,11 +40,8 @@ class TaxonomyJudge:
         self.max_new_tokens = config["max_new_tokens"]
         self.seed = config["seed"]
         self.task = config["task"]
-        self.examples = config["examples"]
-        if not self.examples:
-            raise ValueError(
-                "self.examples is empty; cannot sample examples for prompts"
-            )
+        self.examples_with_winner_a = config["examples_with_winner_a"]
+        self.examples_with_winner_b = config["examples_with_winner_b"]
         # Bradley-Terry parameters
         self.pair_limit = config["pair_limit"]
         if self.pair_limit <= 0:
@@ -58,10 +55,21 @@ class TaxonomyJudge:
         judge_llm = make_llm_from_name(config["judge_llm"])
         with open(config["task_file"], "r", encoding="utf-8") as f:
             config["task"] = f.read()
-        config["examples"]: List[str] = []
+        config["examples_with_winner_a"] = {}
+        config["examples_with_winner_b"] = {}
         for example_file in config["example_files"]:
             with open(example_file, "r", encoding="utf-8") as f:
-                config["examples"].append(f.read())
+                example_winner = example_file.split("/")[-1].split(".")[0]
+                example, winner = example_winner.split("-")
+                if winner == "a":
+                    config["examples_with_winner_a"][example_file] = f.read()
+                elif winner == "b":
+                    config["examples_with_winner_b"][example_file] = f.read()
+                else:
+                    raise ValueError(
+                        f"Invalid example file name {example_file}: "
+                        f"expected format '$example-$winner.txt' where winner is 'a' or 'b'"
+                    )
         return cls(config=config, judge_llm=judge_llm)
 
     def rank_taxonomies(self, taxonomies_list: List[str]) -> List[str]:
@@ -76,14 +84,20 @@ class TaxonomyJudge:
             (
                 row["taxonomy_a"],
                 row["taxonomy_b"],
-                row["example"],
+                row["example_1"],
+                row["example_2"],
             )
             for row in existing_judgements
         }
         filename_by_index = {i: item.filename for i, item in enumerate(items)}
         new_judgements = 0
-        for i, j, example in sampled_pairs_with_examples:
-            key = (filename_by_index[i], filename_by_index[j], example)
+        for i, j, example_1, example_2 in sampled_pairs_with_examples:
+            key = (
+                filename_by_index[i],
+                filename_by_index[j],
+                f"{example_1[0]}-{example_1[1]}",
+                f"{example_2[0]}-{example_2[1]}",
+            )
             if key in completed_keys:
                 continue
             if (
@@ -93,11 +107,14 @@ class TaxonomyJudge:
                 break
             taxonomy_a = items[i]
             taxonomy_b = items[j]
-            result = self._elicit_judgement(taxonomy_a, taxonomy_b, example)
+            result = self._elicit_judgement(
+                taxonomy_a, taxonomy_b, example_1, example_2
+            )
             row = {
                 "taxonomy_a": taxonomy_a.filename,
                 "taxonomy_b": taxonomy_b.filename,
-                "example": example,
+                "example_1": f"{example_1[0]}-{example_1[1]}",
+                "example_2": f"{example_2[0]}-{example_2[1]}",
                 "best_taxonomy": result["best_taxonomy"],
                 "comments": result["comments"],
             }
@@ -257,24 +274,53 @@ class TaxonomyJudge:
 
     def _add_examples_to_pairs(
         self, directed_pairs: Iterable[Tuple[int, int]]
-    ) -> List[Tuple[int, int, str]]:
+    ) -> List[Tuple[int, int, Tuple[str, str], Tuple[str, str]]]:
         local_random = random.Random(self.seed)
         pairs = list(directed_pairs)
         local_random.shuffle(pairs)
-        result: List[Tuple[int, int, str]] = []
+        result: List[Tuple[int, int, Tuple[str, str], Tuple[str, str]]] = []
         for i, j in pairs:
-            example = local_random.choice(self.examples)
-            result.append((i, j, example))
+            example_with_winner_a = local_random.choice(
+                list(self.examples_with_winner_a.keys())
+            )
+            example_with_winner_b = local_random.choice(
+                [
+                    k
+                    for k in self.examples_with_winner_b.keys()
+                    if k != example_with_winner_a
+                ]
+            )
+            example_a = (example_with_winner_a, "a")
+            example_b = (example_with_winner_b, "b")
+            example_1 = local_random.choice([example_a, example_b])
+            example_2 = example_b if example_1 == example_a else example_a
+            result.append((i, j, example_1, example_2))
         return result
 
     def _elicit_judgement(
-        self, a: TaxonomyItem, b: TaxonomyItem, example: str
+        self,
+        a: TaxonomyItem,
+        b: TaxonomyItem,
+        example_1: Tuple[str, str],
+        example_2: Tuple[str, str],
     ) -> Dict[str, Optional[int] | str]:
         taxonomy_a = a.data
         taxonomy_b = b.data
+        example_1_text = (
+            self.examples_with_winner_a[example_1[0]]
+            if example_1[1] == "a"
+            else self.examples_with_winner_b[example_1[0]]
+        )
+        example_2_text = (
+            self.examples_with_winner_a[example_2[0]]
+            if example_2[1] == "a"
+            else self.examples_with_winner_b[example_2[0]]
+        )
         prompt = (
             f"{self.task}\n\n"
-            f"{example}"
+            f"{example_1_text}"
+            "\n"
+            f"{example_2_text}"
             "\n"
             "Taxonomy A:\n"
             f"{taxonomy_a}"
@@ -293,13 +339,16 @@ class TaxonomyJudge:
             ).lower()
         except Exception as e:
             print(f"Error eliciting judgement for {a.filename} vs {b.filename}: {e}")
-            return {"best_taxonomy": None, "comments": ""}
+            return {
+                "best_taxonomy": None,
+                "comments": f"Error eliciting judgement: {e}",
+            }
         try:
             comments = response.split("comments:")[1].split("best taxonomy:")[0].strip()
             choice_text = response.split("best taxonomy:")[1].strip().splitlines()[0]
             choice_text = choice_text.strip().lower().rstrip(".:")
         except IndexError:
-            return {"best_taxonomy": None, "comments": ""}
+            return {"best_taxonomy": None, "comments": response}
         best_taxonomy: Optional[int]
         if "taxonomy a" in choice_text:
             best_taxonomy = 0
