@@ -150,7 +150,8 @@ museums_without_closure_info <- reactive({
       subject_broad=factor(subject_broad, museum_attribute_ordering),
       accreditation=factor(accreditation, museum_attribute_ordering),
       region=factor(region, museum_attribute_ordering),
-      country=factor(country, museum_attribute_ordering)
+      country=factor(country, museum_attribute_ordering),
+      lad=ifelse(country %in% c("Channel Islands", "Isle of Man"), country, lad)
     )
 })
 
