@@ -126,6 +126,30 @@ collection_types <- reactive({
     filter(collection_type != "")
 })
 
+museums_search_table <- reactive({
+  read_csv(museums_url) |>
+    mutate(
+      search_blob = tolower(
+        paste(
+          museum_name,
+          alternative_name,
+          governance,
+          size,
+          subject,
+          accreditation,
+          region,
+          address_1,
+          address_2,
+          address_3,
+          village_town_city,
+          postcode,
+          lad,
+          notes
+        )
+      )
+    )
+})
+
 not_really_museums <- read_csv("data/not-really-museums.csv")
 
 museums_without_closure_info <- reactive({
