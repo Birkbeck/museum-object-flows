@@ -285,11 +285,16 @@ databaseServer <- function(id) {
     filtered_museums <- reactive({
       query <- trimws(free_text_search())
       if (nchar(query) < 3) {
-        museum_scores <- tibble::tibble(museum_id = museum_ids, score = 1)
+        museum_scores <- tibble::tibble(museum_id = museum_ids, score = 1) |> unique()
       } else {
         museum_scores <- score_query(
-          free_text_search(), X, museum_ids, term_to_col, idf
-        ) |> filter(score > 0)
+          free_text_search(),
+          museums_search_table(),
+          X,
+          museum_ids,
+          term_to_col,
+          idf
+        ) |> filter(score > 0.05)
       }
       museums_including_crown_dependencies() |>
         left_join(museum_scores, by="museum_id") |>

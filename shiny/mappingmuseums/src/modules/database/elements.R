@@ -66,7 +66,16 @@ make_query_vec <- function(query, term_to_col, idf, ncol_X, ngram_range = c(3L, 
   Matrix::sparseVector(i = j, x = x, length = ncol_X)
 }
 
-score_query <- function(query, X, museum_ids, term_to_col, idf, ngram_range = c(3L, 5L)) {
+score_query <- function(
+  query,
+  museums,
+  X,
+  museum_ids,
+  term_to_col,
+  idf,
+  ngram_range = c(3L, 5L)
+) {
+
   qv <- make_query_vec(
     query = query,
     term_to_col = term_to_col,
@@ -75,21 +84,86 @@ score_query <- function(query, X, museum_ids, term_to_col, idf, ngram_range = c(
     ngram_range = ngram_range
   )
 
-  if (length(qv@x) == 0) {
+  if (length(qv@x) == 0 && length(terms) == 0) {
     return(
       tibble::tibble(
         museum_id = museum_ids,
+        proportion_of_terms_in_name = 0,
+        proportion_of_terms_in_blob = 0,
+        cosine_similarity = 0,
         score = 0
       )
     )
   }
 
-  s <- as.numeric(X %*% qv)
+  if (length(qv@x) == 0) {
+    cosine_similarity <- rep(0, length(museum_ids))
+  } else {
+    cosine_similarity <- as.numeric(X %*% qv)
+  }
+
+  m <- museums |>
+    select(museum_id, search_blob, museum_name, alternative_name) |>
+    unique() |>
+    mutate(
+      name=tolower(paste(museum_name, ifelse(is.na(alternative_name), "", alternative_name)))
+    )
+  search_blob <- m$search_blob
+  name <- m$name
+  q <- tolower(query)
+  terms <- unlist(strsplit(gsub("[^a-z0-9 ]+", " ", q), "\\s+"))
+  terms <- terms[nzchar(terms)]
+
+  if (length(terms) == 0) {
+    proportion_of_terms_in_name <- rep(0, length(name))
+    proportion_of_terms_in_blob <- rep(0, length(search_blob))
+  } else {
+    name_term_match_matrix <- vapply(
+      terms,
+      function(term) grepl(term, name, fixed = TRUE),
+      logical(length(name))
+    )
+
+    blob_term_match_matrix <- vapply(
+      terms,
+      function(term) grepl(term, search_blob, fixed = TRUE),
+      logical(length(search_blob))
+    )
+
+    if (is.null(dim(name_term_match_matrix))) {
+      proportion_of_terms_in_name <- as.numeric(name_term_match_matrix)
+    } else {
+      proportion_of_terms_in_name <- rowMeans(name_term_match_matrix)
+    }
+
+    if (is.null(dim(blob_term_match_matrix))) {
+      proportion_of_terms_in_blob <- as.numeric(blob_term_match_matrix)
+    } else {
+      proportion_of_terms_in_blob <- rowMeans(blob_term_match_matrix)
+    }
+  }
+
+  table_of_cosine_similarities <- tibble::tibble(
+    museum_id = museum_ids,
+    cosine_similarity = cosine_similarity
+  ) |>
+    unique()
 
   tibble::tibble(
-    museum_id = museum_ids,
-    score = s
+    museum_id = m$museum_id,
+    proportion_of_terms_in_name,
+    proportion_of_terms_in_blob
   ) |>
+    left_join(
+      table_of_cosine_similarities,
+      by="museum_id"
+    ) |>
+    mutate(
+      score =
+        0.3 * proportion_of_terms_in_name +
+        0.3 * proportion_of_terms_in_blob +
+        0.4 * cosine_similarity
+    ) |>
     dplyr::arrange(dplyr::desc(score))
 }
 
