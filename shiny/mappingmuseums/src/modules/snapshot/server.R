@@ -3,9 +3,11 @@ source("src/modules/snapshot/elements.R")
 snapshotServer <- function(id) {
   moduleServer(id, function(input, output, session) {
 
+    CURRENT_YEAR <- as.numeric(format(Sys.Date(), "%Y"))
+
     observeEvent(input$reset, {
       updateRadioButtons(session=session, inputId="yearOrRange", selected="Single year")
-      updateSliderInput(session=session, inputId="year", value=c(2025))
+      updateSliderInput(session=session, inputId="year", value=c(CURRENT_YEAR))
       updateRadioButtons(session=session, inputId="mainAxis", selected="Governance")
       updateSelectInput(session=session, inputId="secondAxis", selected="Country/Region")
       updateRadioButtons(session=session, inputId="countOrPercentage", selected="")
@@ -90,9 +92,9 @@ snapshotServer <- function(id) {
               sliderInput(
                 NS(id, "year"),
                 label="Year:",
-                value=2025,
+                value=CURRENT_YEAR,
                 min=1960,
-                max=2025,
+                max=CURRENT_YEAR,
                 step=1,
                 sep="",
                 ticks=TRUE,
@@ -106,9 +108,9 @@ snapshotServer <- function(id) {
           sliderInput(
             NS(id, "yearRange"),
             label="Time Period:",
-            value=c(1960, 2025),
+            value=c(1960, CURRENT_YEAR),
             min=1960,
-            max=2025,
+            max=CURRENT_YEAR,
             step=1,
             sep="",
             ticks=TRUE,

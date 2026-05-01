@@ -1,4 +1,5 @@
 changesUI <- function(id) {
+  CURRENT_YEAR <- as.numeric(format(Sys.Date(), "%Y"))
   fluidPage(
 
     text_box(top_changes),
@@ -23,9 +24,9 @@ changesUI <- function(id) {
           sliderInput(
             NS(id, "yearRange"),
             label="",
-            value=c(2000, 2025),
+            value=c(2000, CURRENT_YEAR),
             min=1960,
-            max=2025,
+            max=CURRENT_YEAR,
             step=1,
             sep="",
             ticks=TRUE,
