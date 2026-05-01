@@ -3,6 +3,8 @@ source("src/modules/database/elements.R")
 databaseServer <- function(id) {
   moduleServer(id, function(input, output, session) {
 
+    CURRENT_YEAR <- as.numeric(format(Sys.Date(), "%Y"))
+
     museum_ids_file <- paste0(data_url, "museum_ids.csv")
     tfidf_file <- paste0(data_url, "tfidf.mtx")
     idf_file <- paste0(data_url, "idf.csv")
@@ -129,7 +131,7 @@ databaseServer <- function(id) {
             selectInput(
               NS(id, "existedStart"),
               "",
-              choices=c("pre-1960", seq(1960, 2025, by=1)),
+              choices=c("pre-1960", seq(1960, CURRENT_YEAR, by=1)),
               selected="1960",
               multiple=FALSE,
               width=120
@@ -138,8 +140,8 @@ databaseServer <- function(id) {
             selectInput(
               NS(id, "existedEnd"),
               "",
-              choices=c("pre-1960", seq(1960, 2025, by=1)),
-              selected="2025",
+              choices=c("pre-1960", seq(1960, CURRENT_YEAR, by=1)),
+              selected=CURRENT_YEAR,
               multiple=FALSE,
               width=120
             ),
@@ -171,7 +173,7 @@ databaseServer <- function(id) {
               selectInput(
                 NS(id, "openingStart"),
                 "",
-                choices=c("pre-1960", seq(1960, 2025, by=1)),
+                choices=c("pre-1960", seq(1960, CURRENT_YEAR, by=1)),
                 selected="pre-1960",
                 multiple=FALSE,
                 width=120
@@ -180,8 +182,8 @@ databaseServer <- function(id) {
               selectInput(
                 NS(id, "openingEnd"),
                 "",
-                choices=c("pre-1960", seq(1960, 2025, by=1)),
-                selected="2025",
+                choices=c("pre-1960", seq(1960, CURRENT_YEAR, by=1)),
+                selected=CURRENT_YEAR,
                 multiple=FALSE,
                 width=120
               ),
@@ -209,7 +211,7 @@ databaseServer <- function(id) {
               selectInput(
                 NS(id, "closingStart"),
                 "",
-                choices=c("never", "pre-1960", seq(1960, 2025, by=1)),
+                choices=c("never", "pre-1960", seq(1960, CURRENT_YEAR, by=1)),
                 selected="pre-1960",
                 multiple=FALSE,
                 width=120
@@ -218,7 +220,7 @@ databaseServer <- function(id) {
               selectInput(
                 NS(id, "closingEnd"),
                 "",
-                choices=c("never", "pre-1960", seq(1960, 2025, by=1)),
+                choices=c("never", "pre-1960", seq(1960, CURRENT_YEAR, by=1)),
                 selected="never",
                 multiple=FALSE,
                 width=120
@@ -275,7 +277,7 @@ databaseServer <- function(id) {
         session, "existedStart", selected="pre-1960"
       )
       updateSelectInput(
-        session, "existedEnd", selected="2025"
+        session, "existedEnd", selected=CURRENT_YEAR
       )
       updateSelectInput(
         session, "existedInclusivity", selected="inclusive"
